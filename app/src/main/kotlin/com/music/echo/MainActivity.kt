@@ -469,28 +469,6 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-        if (showUpdateDialog) {
-            AlertDialog(
-                onDismissRequest = { showUpdateDialog = false },
-                title = { Text(stringResource(R.string.update_available_title)) },
-                text = { Text("Version $availableUpdateVersion is available. Update now?") },
-                confirmButton = {
-                    Button(onClick = {
-                        showUpdateDialog = false
-                        val intent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse("https://echomusic.fun"))
-                        context.startActivity(intent)
-                    }) {
-                        Text("Update")
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = { showUpdateDialog = false }) {
-                        Text("Next time")
-                    }
-                }
-            )
-        }
-
         LaunchedEffect(enableHighRefreshRate) {
             val window = this@MainActivity.window
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
@@ -588,6 +566,29 @@ class MainActivity : ComponentActivity() {
             pureBlack = pureBlack,
             themeColor = themeColor,
         ) {
+
+
+        if (showUpdateDialog) {
+            AlertDialog(
+                onDismissRequest = { showUpdateDialog = false },
+                title = { Text(stringResource(R.string.update_available_title)) },
+                text = { Text("Version $availableUpdateVersion is available. Update now?") },
+                confirmButton = {
+                    Button(onClick = {
+                        showUpdateDialog = false
+                        val intent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse("https://echomusic.fun"))
+                        context.startActivity(intent)
+                    }) {
+                        Text("Update")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showUpdateDialog = false }) {
+                        Text("Next time")
+                    }
+                }
+            )
+        }
             BoxWithConstraints(
                 modifier = Modifier
                     .fillMaxSize()

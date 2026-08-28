@@ -1308,16 +1308,20 @@ interface DatabaseDao {
     fun insert(playlist: PlaylistEntity)
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    fun insert(map: SongArtistMap)
+    fun insertInternal(map: SongArtistMap)
+    fun insert(map: SongArtistMap) { try { insertInternal(map) } catch (e: Exception) { e.printStackTrace() } }
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    fun insert(map: SongAlbumMap)
+    fun insertInternal(map: SongAlbumMap)
+    fun insert(map: SongAlbumMap) { try { insertInternal(map) } catch (e: Exception) { e.printStackTrace() } }
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    fun insert(map: AlbumArtistMap)
+    fun insertInternal(map: AlbumArtistMap)
+    fun insert(map: AlbumArtistMap) { try { insertInternal(map) } catch (e: Exception) { e.printStackTrace() } }
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    fun insert(map: PlaylistSongMap)
+    fun insertInternal(map: PlaylistSongMap)
+    fun insert(map: PlaylistSongMap) { try { insertInternal(map) } catch (e: Exception) { e.printStackTrace() } }
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(searchHistory: SearchHistory)
@@ -1326,7 +1330,8 @@ interface DatabaseDao {
     fun insert(event: Event)
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    fun insert(map: RelatedSongMap)
+    fun insertInternal(map: RelatedSongMap)
+    fun insert(map: RelatedSongMap) { try { insertInternal(map) } catch (e: Exception) { e.printStackTrace() } }
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insert(playCountEntity: PlayCountEntity): Long
