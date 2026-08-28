@@ -27,6 +27,8 @@ import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.Button
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -169,7 +171,7 @@ fun ActionPromptDialog(
                 }
             }
 
-            TextButton(
+            Button(
                 onClick = { onConfirm() }
             ) {
                 Text(stringResource(android.R.string.ok))
@@ -275,7 +277,7 @@ fun TextFieldDialog(
             val isValid = textFields?.all { isInputValid(it.second.text) }
                 ?: isInputValid(legacyFieldState.value.text)
 
-            TextButton(
+            Button(
                 enabled = isValid,
                 onClick = {
                     if (autoDismiss) onDismiss()
@@ -295,13 +297,14 @@ fun TextFieldDialog(
         ) {
             if (textFields != null) {
                 textFields.forEachIndexed { index, (label, value) ->
-                    TextField(
+                    OutlinedTextField(
                         value = value,
                         onValueChange = { onTextFieldsChange?.invoke(index, it) },
                         placeholder = { Text(label) },
                         singleLine = singleLine,
                         maxLines = maxLines,
                         colors = OutlinedTextFieldDefaults.colors(),
+                        shape = androidx.compose.foundation.shape.CircleShape,
                         keyboardOptions = KeyboardOptions(
                             imeAction = if (singleLine) ImeAction.Done else ImeAction.None,
                             keyboardType = keyboardType
@@ -321,13 +324,14 @@ fun TextFieldDialog(
                     )
                 }
             } else {
-                TextField(
+                OutlinedTextField(
                     value = legacyFieldState.value,
                     onValueChange = { legacyFieldState.value = it },
                     placeholder = placeholder,
                     singleLine = singleLine,
                     maxLines = maxLines,
                     colors = OutlinedTextFieldDefaults.colors(),
+                        shape = androidx.compose.foundation.shape.CircleShape,
                     keyboardOptions = KeyboardOptions(
                         imeAction = if (singleLine) ImeAction.Done else ImeAction.None,
                         keyboardType = keyboardType

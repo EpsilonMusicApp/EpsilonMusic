@@ -630,7 +630,7 @@ private fun SpotifyAddByLinkDialog(
             TextButton(onClick = onDismiss) {
                 Text(stringResource(android.R.string.cancel))
             }
-            TextButton(
+            Button(
                 onClick = { onAdd(link) },
                 enabled = enabled && link.isNotBlank(),
             ) {
@@ -649,6 +649,7 @@ private fun SpotifyAddByLinkDialog(
                 onValueChange = { link = it },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
+                shape = androidx.compose.foundation.shape.CircleShape,
                 placeholder = { Text(stringResource(R.string.spotify_import_by_link_hint)) },
             )
         }

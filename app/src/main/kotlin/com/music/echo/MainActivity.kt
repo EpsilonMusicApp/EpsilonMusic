@@ -71,6 +71,7 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.Button
 
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -474,7 +475,7 @@ class MainActivity : ComponentActivity() {
                 title = { Text(stringResource(R.string.update_available_title)) },
                 text = { Text("Version $availableUpdateVersion is available. Update now?") },
                 confirmButton = {
-                    TextButton(onClick = {
+                    Button(onClick = {
                         showUpdateDialog = false
                         val intent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse("https://echomusic.fun"))
                         context.startActivity(intent)

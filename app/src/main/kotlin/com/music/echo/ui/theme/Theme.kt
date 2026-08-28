@@ -11,6 +11,7 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.unit.dp
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.SaverScope
 import androidx.compose.ui.graphics.Color
@@ -60,9 +61,12 @@ fun echomusicTheme(
     }
 
     
-    MaterialTheme(
+        MaterialTheme(
         colorScheme = colorScheme,
-        typography = AppTypography, 
+        typography = AppTypography,
+        shapes = androidx.compose.material3.MaterialTheme.shapes.copy(
+            extraSmall = androidx.compose.foundation.shape.RoundedCornerShape(24.dp)
+        ),
         content = content
     )
 }
