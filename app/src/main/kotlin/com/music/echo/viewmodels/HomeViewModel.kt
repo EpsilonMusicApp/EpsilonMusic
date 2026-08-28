@@ -81,7 +81,7 @@ class HomeViewModel @Inject constructor(
     val isRandomizing = MutableStateFlow(false)
 
     private val quickPicksEnum = context.dataStore.data.map {
-        it[QuickPicksKey].toEnum(QuickPicks.QUICK_PICKS)
+        (try { it[QuickPicksKey] } catch(e: Exception) { null }).toEnum(QuickPicks.QUICK_PICKS)
     }.distinctUntilChanged()
 
     val quickPicks = MutableStateFlow<List<Song>?>(null)
@@ -672,7 +672,7 @@ class HomeViewModel @Inject constructor(
         
         viewModelScope.launch(Dispatchers.IO) {
             context.dataStore.data
-                .map { it[InnerTubeCookieKey] }
+                .map { (try { it[InnerTubeCookieKey] } catch(e: Exception) { null }) }
                 .distinctUntilChanged()
                 .first()
 
@@ -687,7 +687,7 @@ class HomeViewModel @Inject constructor(
         
         viewModelScope.launch(Dispatchers.IO) {
             context.dataStore.data
-                .map { it[InnerTubeCookieKey] }
+                .map { (try { it[InnerTubeCookieKey] } catch(e: Exception) { null }) }
                 .collect { cookie ->
                     
                     if (isProcessingAccountData) return@collect
@@ -723,7 +723,7 @@ class HomeViewModel @Inject constructor(
         
         viewModelScope.launch(Dispatchers.IO) {
             context.dataStore.data
-                .map { it[HideYoutubeShortsKey] ?: false }
+                .map { (try { it[HideYoutubeShortsKey] } catch(e: Exception) { null }) ?: false }
                 .distinctUntilChanged()
                 .collect {
                     if (YouTube.cookie != null && accountPlaylists.value != null) {

@@ -57,9 +57,9 @@ constructor(
             context.dataStore.data
                 .map {
                     Triple(
-                        it[PlaylistSongSortTypeKey].toEnum(PlaylistSongSortType.CUSTOM),
-                        it[PlaylistSongSortDescendingKey] ?: true,
-                        it[HideVideoSongsKey] ?: false
+                        (try { it[PlaylistSongSortTypeKey] } catch(e: Exception) { null }).toEnum(PlaylistSongSortType.CUSTOM),
+                        (try { it[PlaylistSongSortDescendingKey] } catch(e: Exception) { null }) ?: true,
+                        (try { it[HideVideoSongsKey] } catch(e: Exception) { null }) ?: false
                     )
                 }.distinctUntilChanged(),
         ) { songs, (sortType, sortDescending, hideVideoSongs) ->

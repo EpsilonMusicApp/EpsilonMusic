@@ -107,7 +107,7 @@ class App : Application(), SingletonImageLoader.Factory {
         }
 
         applicationScope.launch(Dispatchers.IO) {
-            cachedCoilCacheSize = dataStore.data.map { it[MaxImageCacheSizeKey] ?: 512 }.first()
+            cachedCoilCacheSize = dataStore.data.map { (try { it[MaxImageCacheSizeKey] } catch(e: Exception) { null }) ?: 512 }.first()
         }
 
         applicationScope.launch {
@@ -188,7 +188,7 @@ class App : Application(), SingletonImageLoader.Factory {
     private fun observeSettingsChanges() {
         applicationScope.launch(Dispatchers.IO) {
             dataStore.data
-                .map { it[VisitorDataKey] }
+                .map { (try { it[VisitorDataKey] } catch(e: Exception) { null }) }
                 .distinctUntilChanged()
                 .collect { visitorData ->
                     YouTube.visitorData = visitorData?.takeIf { it != "null" }
@@ -207,7 +207,7 @@ class App : Application(), SingletonImageLoader.Factory {
 
         applicationScope.launch(Dispatchers.IO) {
             dataStore.data
-                .map { it[DataSyncIdKey] }
+                .map { (try { it[DataSyncIdKey] } catch(e: Exception) { null }) }
                 .distinctUntilChanged()
                 .collect { dataSyncId ->
                     YouTube.dataSyncId = dataSyncId?.let {
@@ -220,7 +220,7 @@ class App : Application(), SingletonImageLoader.Factory {
 
         applicationScope.launch(Dispatchers.IO) {
             dataStore.data
-                .map { it[InnerTubeCookieKey] }
+                .map { (try { it[InnerTubeCookieKey] } catch(e: Exception) { null }) }
                 .distinctUntilChanged()
                 .collect { cookie ->
                     try {
@@ -236,7 +236,7 @@ class App : Application(), SingletonImageLoader.Factory {
 
         applicationScope.launch(Dispatchers.IO) {
             dataStore.data
-                .map { Triple(it[ContentCountryKey], it[ContentLanguageKey], it[AppLanguageKey]) }
+                .map { Triple((try { it[ContentCountryKey] } catch(e: Exception) { null }), (try { it[ContentLanguageKey] } catch(e: Exception) { null }), (try { it[AppLanguageKey] } catch(e: Exception) { null })) }
                 .distinctUntilChanged()
                 .collect { (contentCountry, contentLanguage, appLanguage) ->
                     val systemLocale = Locale.getDefault()
@@ -260,7 +260,7 @@ class App : Application(), SingletonImageLoader.Factory {
 
         applicationScope.launch(Dispatchers.IO) {
             dataStore.data
-                .map { it[IpVersionKey] }
+                .map { (try { it[IpVersionKey] } catch(e: Exception) { null }) }
                 .distinctUntilChanged()
                 .collect { ipVersion ->
                     YouTube.ipVersion = ipVersion?.toEnum(defaultValue = IpVersion.AUTO) ?: IpVersion.AUTO
@@ -273,7 +273,7 @@ class App : Application(), SingletonImageLoader.Factory {
 
     override fun newImageLoader(context: PlatformContext): ImageLoader {
         val cacheSize = cachedCoilCacheSize ?: runBlocking {
-            dataStore.data.map { it[MaxImageCacheSizeKey] ?: 512 }.first()
+            dataStore.data.map { (try { it[MaxImageCacheSizeKey] } catch(e: Exception) { null }) ?: 512 }.first()
         }
         return ImageLoader.Builder(this).apply {
             crossfade(true)

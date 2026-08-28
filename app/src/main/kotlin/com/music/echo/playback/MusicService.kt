@@ -569,22 +569,22 @@ class MusicService :
         scrobbleManager = ScrobbleManager(scope)
 
         scope.launch {
-            dataStore.data.map { it[EnableLastFMScrobblingKey] ?: false }.distinctUntilChanged().collect {
+            dataStore.data.map { (try { it[EnableLastFMScrobblingKey] } catch(e: Exception) { null }) ?: false }.distinctUntilChanged().collect {
                 scrobbleManager?.enableScrobbling = it
             }
         }
         scope.launch {
-            dataStore.data.map { it[LastFMUseNowPlaying] ?: false }.distinctUntilChanged().collect {
+            dataStore.data.map { (try { it[LastFMUseNowPlaying] } catch(e: Exception) { null }) ?: false }.distinctUntilChanged().collect {
                 scrobbleManager?.useNowPlaying = it
             }
         }
         scope.launch {
-            dataStore.data.map { it[LastFMUseSendLikes] ?: false }.distinctUntilChanged().collect {
+            dataStore.data.map { (try { it[LastFMUseSendLikes] } catch(e: Exception) { null }) ?: false }.distinctUntilChanged().collect {
                 scrobbleManager?.useSendLikes = it
             }
         }
         scope.launch {
-            dataStore.data.map { it[LastFMSessionKey] }.distinctUntilChanged().collect { sessionKey ->
+            dataStore.data.map { (try { it[LastFMSessionKey] } catch(e: Exception) { null }) }.distinctUntilChanged().collect { sessionKey ->
                 com.music.echo.utils.lastfm.LastFM.sessionKey = sessionKey
             }
         }        
@@ -748,7 +748,7 @@ class MusicService :
         scope.launch {
             dataStore.data
                 .map { 
-                    val qualityStr = it[AudioQualityKey]
+                    val qualityStr = (try { it[AudioQualityKey] } catch(e: Exception) { null })
                     val quality = qualityStr?.let { value ->
                         echo.music.***REMOVED***.constants.AudioQuality.entries.find { enumVal -> enumVal.name == value }
                     } ?: echo.music.***REMOVED***.constants.AudioQuality.OPUS
@@ -789,7 +789,7 @@ class MusicService :
         
         scope.launch {
             dataStore.data
-                .map { it[IpVersionKey]?.toEnum(IpVersion.AUTO) ?: IpVersion.AUTO }
+                .map { (try { it[IpVersionKey] } catch(e: Exception) { null })?.toEnum(IpVersion.AUTO) ?: IpVersion.AUTO }
                 .distinctUntilChanged()
                 .collect { newIpVersion ->
                     val oldIpVersion = ipVersion
@@ -834,7 +834,7 @@ class MusicService :
         combine(
             currentMediaMetadata.distinctUntilChangedBy { it?.id },
             dataStore.data.map { 
-                val showLyrics = it[ShowLyricsKey] ?: false
+                val showLyrics = (try { it[ShowLyricsKey] } catch(e: Exception) { null }) ?: false
                 val dataSaver = it[echo.music.***REMOVED***.constants.DataSaverEnabledKey] ?: false
                 if (dataSaver) false else showLyrics
             }.distinctUntilChanged(),
@@ -858,7 +858,7 @@ class MusicService :
         }
 
         dataStore.data
-            .map { (it[SkipSilenceKey] ?: false) to (it[SkipSilenceInstantKey] ?: false) }
+            .map { ((try { it[SkipSilenceKey] } catch(e: Exception) { null }) ?: false) to ((try { it[SkipSilenceInstantKey] } catch(e: Exception) { null }) ?: false) }
             .distinctUntilChanged()
             .collectLatest(scope) { (skipSilence, instantSkip) ->
                 player.skipSilenceEnabled = skipSilence
@@ -882,15 +882,15 @@ class MusicService :
         combine(
             currentFormat,
             dataStore.data
-                .map { it[AudioNormalizationKey] ?: true }
+                .map { (try { it[AudioNormalizationKey] } catch(e: Exception) { null }) ?: true }
                 .distinctUntilChanged(),
         ) { format, normalizeAudio ->
             format to normalizeAudio
         }.collectLatest(scope) { (format, normalizeAudio) -> setupLoudnessEnhancer()}
 
         combine(
-            dataStore.data.map { it[AudioOffload] ?: false },
-            dataStore.data.map { it[CrossfadeEnabledKey] ?: false }
+            dataStore.data.map { (try { it[AudioOffload] } catch(e: Exception) { null }) ?: false },
+            dataStore.data.map { (try { it[CrossfadeEnabledKey] } catch(e: Exception) { null }) ?: false }
         ) { offloadPref, crossfadeEnabled ->
              
              if (crossfadeEnabled) false else offloadPref
@@ -931,7 +931,7 @@ class MusicService :
             }
 
         dataStore.data
-            .map { it[AutomixCrossfadeKey] ?: false }
+            .map { (try { it[AutomixCrossfadeKey] } catch(e: Exception) { null }) ?: false }
             .distinctUntilChanged()
             .collect(scope) {
                 automixEnabled = it
@@ -950,18 +950,18 @@ class MusicService :
         // Keep cached preferences in sync so Player.Listener callbacks can read
         // them without blocking the main thread.
         dataStore.data
-            .map { it[RepeatModeKey] ?: REPEAT_MODE_OFF }
+            .map { (try { it[RepeatModeKey] } catch(e: Exception) { null }) ?: REPEAT_MODE_OFF }
             .distinctUntilChanged()
             .collect(scope) { cachedRepeatMode = it }
 
         dataStore.data
-            .map { it[ShuffleModeKey] ?: false }
+            .map { (try { it[ShuffleModeKey] } catch(e: Exception) { null }) ?: false }
             .distinctUntilChanged()
             .collect(scope) { cachedShuffleEnabled = it }
 
         dataStore.data
             .map { 
-                val preload = it[PreloadNextSongEnabledKey] ?: true
+                val preload = (try { it[PreloadNextSongEnabledKey] } catch(e: Exception) { null }) ?: true
                 val dataSaver = it[echo.music.***REMOVED***.constants.DataSaverEnabledKey] ?: false
                 if (dataSaver) false else preload
             }
@@ -969,12 +969,12 @@ class MusicService :
             .collect(scope) { cachedPreloadEnabled = it }
 
         dataStore.data
-            .map { it[PreloadNextSongLimitKey] ?: 1 }
+            .map { (try { it[PreloadNextSongLimitKey] } catch(e: Exception) { null }) ?: 1 }
             .distinctUntilChanged()
             .collect(scope) { cachedPreloadLimit = it }
 
         dataStore.data
-            .map { it[PreloadLyricsEnabledKey] ?: true }
+            .map { (try { it[PreloadLyricsEnabledKey] } catch(e: Exception) { null }) ?: true }
             .distinctUntilChanged()
             .collect(scope) { cachedPreloadLyrics = it }
 
@@ -1944,7 +1944,7 @@ class MusicService :
                 }
 
                 val normalizeAudio = withContext(Dispatchers.IO) {
-                    dataStore.data.map { it[AudioNormalizationKey] ?: true }.first()
+                    dataStore.data.map { (try { it[AudioNormalizationKey] } catch(e: Exception) { null }) ?: true }.first()
                 }
 
                 if (normalizeAudio && currentMediaId != null) {

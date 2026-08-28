@@ -117,7 +117,7 @@ constructor(
         combine(
             selectedOption,
             indexChips,
-            context.dataStore.data.map { it[HideVideoSongsKey] ?: false }.distinctUntilChanged()
+            context.dataStore.data.map { (try { it[HideVideoSongsKey] } catch(e: Exception) { null }) ?: false }.distinctUntilChanged()
         ) { first, second, third -> Triple(first, second, third) }
             .flatMapLatest { (selection, t, hideVideoSongs) ->
                 database
@@ -143,7 +143,7 @@ constructor(
         combine(
             selectedOption,
             indexChips,
-            context.dataStore.data.map { it[HideVideoSongsKey] ?: false }.distinctUntilChanged()
+            context.dataStore.data.map { (try { it[HideVideoSongsKey] } catch(e: Exception) { null }) ?: false }.distinctUntilChanged()
         ) { first, second, third -> Triple(first, second, third) }
             .flatMapLatest { (selection, t, hideVideoSongs) ->
                 database

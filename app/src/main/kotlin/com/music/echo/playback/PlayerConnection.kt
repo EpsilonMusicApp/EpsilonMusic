@@ -495,7 +495,7 @@ class PlayerConnection(
     private fun startSponsorBlockPolling() {
         sponsorBlockJob?.cancel()
         sponsorBlockJob = scope.launch {
-            val sponsorBlockEnabledFlow = context.dataStore.data.map { it[SponsorBlockEnabledKey] ?: false }
+            val sponsorBlockEnabledFlow = context.dataStore.data.map { (try { it[SponsorBlockEnabledKey] } catch(e: Exception) { null }) ?: false }
 
             launch {
                 combine(mediaMetadata, sponsorBlockEnabledFlow) { metadata, enabled ->

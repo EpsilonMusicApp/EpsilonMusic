@@ -377,7 +377,7 @@ class MainActivity : ComponentActivity() {
 
         lifecycleScope.launch {
             dataStore.data
-                .map { it[DisableScreenshotKey] ?: false }
+                .map { (try { it[DisableScreenshotKey] } catch(e: Exception) { null }) ?: false }
                 .distinctUntilChanged()
                 .collectLatest {
                     if (it) {
@@ -393,7 +393,7 @@ class MainActivity : ComponentActivity() {
         
         lifecycleScope.launch {
             dataStore.data
-                .map { it[AiRecommendationsKey] ?: false }
+                .map { (try { it[AiRecommendationsKey] } catch(e: Exception) { null }) ?: false }
                 .distinctUntilChanged()
                 .collectLatest { enabled ->
                     val workManager = androidx.work.WorkManager.getInstance(this@MainActivity)

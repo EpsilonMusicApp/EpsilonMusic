@@ -381,14 +381,14 @@ class ListenTogetherManager @Inject constructor(
     private fun observePreferences() {
         scope.launch {
             context.dataStore.data
-                .map { it[ListenTogetherSyncVolumeKey] ?: true }
+                .map { (try { it[ListenTogetherSyncVolumeKey] } catch(e: Exception) { null }) ?: true }
                 .distinctUntilChanged()
                 .collect { enabled ->
                     syncHostVolumeEnabled.value = enabled
                 }
 
             context.dataStore.data
-                .map { it[ListenTogetherSmartResyncKey] ?: true }
+                .map { (try { it[ListenTogetherSmartResyncKey] } catch(e: Exception) { null }) ?: true }
                 .distinctUntilChanged()
                 .collect { enabled ->
                     smartResyncEnabled.value = enabled

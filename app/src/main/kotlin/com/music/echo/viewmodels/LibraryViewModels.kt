@@ -78,12 +78,12 @@ constructor(
             .map {
                 Triple(
                     Triple(
-                        it[SongFilterKey].toEnum(SongFilter.LIKED),
-                        it[SongSortTypeKey].toEnum(SongSortType.CREATE_DATE),
-                        (it[SongSortDescendingKey] ?: true),
+                        (try { it[SongFilterKey] } catch(e: Exception) { null }).toEnum(SongFilter.LIKED),
+                        (try { it[SongSortTypeKey] } catch(e: Exception) { null }).toEnum(SongSortType.CREATE_DATE),
+                        ((try { it[SongSortDescendingKey] } catch(e: Exception) { null }) ?: true),
                     ),
-                    it[ExportedSongIdsKey] ?: "",
-                    Pair(it[HideExplicitKey] ?: false, it[HideVideoSongsKey] ?: false)
+                    (try { it[ExportedSongIdsKey] } catch(e: Exception) { null }) ?: "",
+                    Pair((try { it[HideExplicitKey] } catch(e: Exception) { null }) ?: false, (try { it[HideVideoSongsKey] } catch(e: Exception) { null }) ?: false)
                 )
             }.distinctUntilChanged()
             .flatMapLatest { (filterSort, exportedSongIds, hideConfig) ->
@@ -126,9 +126,9 @@ constructor(
         context.dataStore.data
             .map {
                 Triple(
-                    it[ArtistFilterKey].toEnum(ArtistFilter.LIKED),
-                    it[ArtistSortTypeKey].toEnum(ArtistSortType.CREATE_DATE),
-                    it[ArtistSortDescendingKey] ?: true,
+                    (try { it[ArtistFilterKey] } catch(e: Exception) { null }).toEnum(ArtistFilter.LIKED),
+                    (try { it[ArtistSortTypeKey] } catch(e: Exception) { null }).toEnum(ArtistSortType.CREATE_DATE),
+                    (try { it[ArtistSortDescendingKey] } catch(e: Exception) { null }) ?: true,
                 )
             }.distinctUntilChanged()
             .flatMapLatest { (filter, sortType, descending) ->
@@ -177,11 +177,11 @@ constructor(
             .map {
                 Pair(
                     Triple(
-                        it[AlbumFilterKey].toEnum(AlbumFilter.LIKED),
-                        it[AlbumSortTypeKey].toEnum(AlbumSortType.CREATE_DATE),
-                        it[AlbumSortDescendingKey] ?: true,
+                        (try { it[AlbumFilterKey] } catch(e: Exception) { null }).toEnum(AlbumFilter.LIKED),
+                        (try { it[AlbumSortTypeKey] } catch(e: Exception) { null }).toEnum(AlbumSortType.CREATE_DATE),
+                        (try { it[AlbumSortDescendingKey] } catch(e: Exception) { null }) ?: true,
                     ),
-                    it[HideExplicitKey] ?: false
+                    (try { it[HideExplicitKey] } catch(e: Exception) { null }) ?: false
                 )
             }.distinctUntilChanged()
             .flatMapLatest { (filterSort, hideExplicit) ->
@@ -236,9 +236,9 @@ constructor(
         context.dataStore.data
             .map {
                 Triple(
-                    it[PlaylistSortTypeKey].toEnum(PlaylistSortType.CREATE_DATE),
-                    it[PlaylistSortDescendingKey] ?: true,
-                    it[HideYoutubeShortsKey] ?: false
+                    (try { it[PlaylistSortTypeKey] } catch(e: Exception) { null }).toEnum(PlaylistSortType.CREATE_DATE),
+                    (try { it[PlaylistSortDescendingKey] } catch(e: Exception) { null }) ?: true,
+                    (try { it[HideYoutubeShortsKey] } catch(e: Exception) { null }) ?: false
                 )
             }.distinctUntilChanged()
             .flatMapLatest { (sortType, descending, hideYoutubeShorts) ->
@@ -251,7 +251,7 @@ constructor(
 
     val topValue =
         context.dataStore.data
-            .map { it[TopSize] ?: "50" }
+            .map { (try { it[TopSize] } catch(e: Exception) { null }) ?: "50" }
             .distinctUntilChanged()
 }
 
@@ -273,10 +273,10 @@ constructor(
         context.dataStore.data
             .map {
                 Triple(
-                    it[ArtistSongSortTypeKey].toEnum(ArtistSongSortType.CREATE_DATE) to (it[ArtistSongSortDescendingKey]
+                    (try { it[ArtistSongSortTypeKey] } catch(e: Exception) { null }).toEnum(ArtistSongSortType.CREATE_DATE) to ((try { it[ArtistSongSortDescendingKey] } catch(e: Exception) { null })
                         ?: true),
-                    it[HideExplicitKey] ?: false,
-                    it[HideVideoSongsKey] ?: false
+                    (try { it[HideExplicitKey] } catch(e: Exception) { null }) ?: false,
+                    (try { it[HideVideoSongsKey] } catch(e: Exception) { null }) ?: false
                 )
             }.distinctUntilChanged()
             .flatMapLatest { (sortDesc, hideExplicit, hideVideoSongs) ->
@@ -312,7 +312,7 @@ constructor(
 
     val topValue =
         context.dataStore.data
-            .map { it[TopSize] ?: "50" }
+            .map { (try { it[TopSize] } catch(e: Exception) { null }) ?: "50" }
             .distinctUntilChanged()
     var artists =
         database
@@ -321,13 +321,13 @@ constructor(
                 true,
             ).stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
     var albums = context.dataStore.data
-        .map { it[HideExplicitKey] ?: false }
+        .map { (try { it[HideExplicitKey] } catch(e: Exception) { null }) ?: false }
         .distinctUntilChanged()
         .flatMapLatest { hideExplicit ->
             database.albumsLiked(AlbumSortType.CREATE_DATE, true).map { it.filterExplicitAlbums(hideExplicit) }
         }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
     var playlists = context.dataStore.data
-        .map { it[HideYoutubeShortsKey] ?: false }
+        .map { (try { it[HideYoutubeShortsKey] } catch(e: Exception) { null }) ?: false }
         .distinctUntilChanged()
         .flatMapLatest { hideYoutubeShorts ->
             database.playlists(PlaylistSortType.CREATE_DATE, true).map { it.filterYoutubeShorts(hideYoutubeShorts) }

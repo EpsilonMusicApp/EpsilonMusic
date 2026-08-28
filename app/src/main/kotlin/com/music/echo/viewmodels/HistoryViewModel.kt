@@ -46,7 +46,7 @@ constructor(
 
     val events =
         context.dataStore.data
-            .map { it[HideVideoSongsKey] ?: false }
+            .map { (try { it[HideVideoSongsKey] } catch(e: Exception) { null }) ?: false }
             .distinctUntilChanged()
             .flatMapLatest { hideVideoSongs ->
                 database

@@ -113,7 +113,7 @@ class SyncUtils @Inject constructor(
 
     init {
         context.dataStore.data
-            .map { it[LastFMUseSendLikes] ?: false }
+            .map { (try { it[LastFMUseSendLikes] } catch(e: Exception) { null }) ?: false }
             .distinctUntilChanged()
             .collectLatest(syncScope) {
                 lastfmSendLikes = it
@@ -157,7 +157,7 @@ class SyncUtils @Inject constructor(
     private suspend fun isLoggedIn(): Boolean {
         return try {
             val cookie = context.dataStore.data
-                .map { it[InnerTubeCookieKey] }
+                .map { (try { it[InnerTubeCookieKey] } catch(e: Exception) { null }) }
                 .first()
             cookie?.let { "SAPISID" in parseCookieString(it) } ?: false
         } catch (e: Exception) {

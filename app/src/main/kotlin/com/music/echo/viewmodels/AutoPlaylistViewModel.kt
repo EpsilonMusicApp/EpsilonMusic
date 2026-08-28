@@ -52,11 +52,11 @@ constructor(
             .map {
                 Triple(
                     Triple(
-                        it[SongSortTypeKey].toEnum(SongSortType.CREATE_DATE) to (it[SongSortDescendingKey] ?: true),
-                        it[HideExplicitKey] ?: false,
-                        it[HideVideoSongsKey] ?: false
+                        (try { it[SongSortTypeKey] } catch(e: Exception) { null }).toEnum(SongSortType.CREATE_DATE) to ((try { it[SongSortDescendingKey] } catch(e: Exception) { null }) ?: true),
+                        (try { it[HideExplicitKey] } catch(e: Exception) { null }) ?: false,
+                        (try { it[HideVideoSongsKey] } catch(e: Exception) { null }) ?: false
                     ),
-                    it[ExportedSongIdsKey] ?: "",
+                    (try { it[ExportedSongIdsKey] } catch(e: Exception) { null }) ?: "",
                     Unit
                 )
             }

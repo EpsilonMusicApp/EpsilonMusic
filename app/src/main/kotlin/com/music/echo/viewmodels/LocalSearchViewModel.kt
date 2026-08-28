@@ -41,7 +41,7 @@ constructor(
         combine(
             query,
             filter,
-            context.dataStore.data.map { it[HideVideoSongsKey] ?: false }.distinctUntilChanged()
+            context.dataStore.data.map { (try { it[HideVideoSongsKey] } catch(e: Exception) { null }) ?: false }.distinctUntilChanged()
         ) { query, filter, hideVideoSongs ->
             Triple(query, filter, hideVideoSongs)
         }.flatMapLatest { (query, filter, hideVideoSongs) ->

@@ -57,14 +57,14 @@ class ArtistViewModel @Inject constructor(
     val libraryArtist = database.artist(artistId)
         .stateIn(viewModelScope, SharingStarted.Lazily, null)
     val librarySongs = context.dataStore.data
-        .map { (it[HideExplicitKey] ?: false) to (it[HideVideoSongsKey] ?: false) }
+        .map { ((try { it[HideExplicitKey] } catch(e: Exception) { null }) ?: false) to ((try { it[HideVideoSongsKey] } catch(e: Exception) { null }) ?: false) }
         .distinctUntilChanged()
         .flatMapLatest { (hideExplicit, hideVideoSongs) ->
             database.artistSongsPreview(artistId).map { it.filterExplicit(hideExplicit).filterVideoSongsLocal(hideVideoSongs) }
         }
         .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
     val libraryAlbums = context.dataStore.data
-        .map { it[HideExplicitKey] ?: false }
+        .map { (try { it[HideExplicitKey] } catch(e: Exception) { null }) ?: false }
         .distinctUntilChanged()
         .flatMapLatest { hideExplicit ->
             database.artistAlbumsPreview(artistId).map { it.filterExplicitAlbums(hideExplicit) }
@@ -77,9 +77,9 @@ class ArtistViewModel @Inject constructor(
             context.dataStore.data
                 .map {
                     Triple(
-                        it[HideExplicitKey] ?: false,
-                        it[HideVideoSongsKey] ?: false,
-                        it[HideYoutubeShortsKey] ?: false
+                        (try { it[HideExplicitKey] } catch(e: Exception) { null }) ?: false,
+                        (try { it[HideVideoSongsKey] } catch(e: Exception) { null }) ?: false,
+                        (try { it[HideYoutubeShortsKey] } catch(e: Exception) { null }) ?: false
                     )
                 }
                 .distinctUntilChanged()

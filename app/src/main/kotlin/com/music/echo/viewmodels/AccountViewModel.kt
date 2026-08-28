@@ -73,7 +73,7 @@ class AccountViewModel @Inject constructor(
         
         viewModelScope.launch(Dispatchers.IO) {
             context.dataStore.data
-                .map { it[HideYoutubeShortsKey] ?: false }
+                .map { (try { it[HideYoutubeShortsKey] } catch(e: Exception) { null }) ?: false }
                 .distinctUntilChanged()
                 .collect {
                     if (playlists.value != null) {
