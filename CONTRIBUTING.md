@@ -294,6 +294,8 @@ We provide issue templates for:
 
 Path: `app/src/main/kotlin/com/music/echo/`
 
+> **Note:** We are currently in Phase 1 of modularizing the application. The `lyrics` and `playback` code, along with shared `constants` and `models`, are actively being migrated out of `:app` into dedicated `:lyrics`, `:playback`, and `:core` Gradle modules. The structure below represents the legacy monolithic structure until migration is complete.
+
 ```
 ai/             AI features (lyrics translation providers, etc.)
 api/            External API clients not covered by a dedicated module

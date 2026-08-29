@@ -31,7 +31,10 @@ include(
     ":canvas",
     ":echomusiccanvas",
     ":applecanvas",
-    ":unison"
+    ":unison",
+    ":core",
+    ":lyrics",
+    ":playback"
 )
 
 

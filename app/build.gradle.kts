@@ -240,6 +240,8 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach 
 }
 
 dependencies {
+    implementation(project(":core"))
+
     // Firebase - GMS flavor only (excluded from F-Droid / FOSS builds)
     "gmsImplementation"(platform("com.google.firebase:firebase-bom:33.1.0"))
     "gmsImplementation"("com.google.firebase:firebase-analytics")

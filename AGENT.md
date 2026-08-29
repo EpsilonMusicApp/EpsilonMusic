@@ -157,6 +157,9 @@ mostly-independent feature/integration:
 | `:canvas`, `:echomusiccanvas`, `:applecanvas` | Canvas-style looping video backgrounds for tracks (different providers) |
 | `:artistvideo` | Artist video features |
 | `:unison` | Cross-cutting shared utility module (check source before editing) |
+| `:core` | Shared models, constants, and database interfaces (Phase 1 migration in progress) |
+| `:lyrics` | Lyrics orchestration and logic (Phase 1 migration in progress) |
+| `:playback` | Media3/ExoPlayer service and audio logic (Phase 1 migration in progress) |
 
 When adding a new external integration (a new lyrics source, a new canvas
 provider, etc.), the existing pattern is: **new Gradle module**, register it

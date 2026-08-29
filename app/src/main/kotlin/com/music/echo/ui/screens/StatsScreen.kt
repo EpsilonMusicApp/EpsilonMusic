@@ -472,4 +472,3 @@ fun StatsScreen(
     }
 }
 
-enum class OptionStats { WEEKS, MONTHS, YEARS, CONTINUOUS }
