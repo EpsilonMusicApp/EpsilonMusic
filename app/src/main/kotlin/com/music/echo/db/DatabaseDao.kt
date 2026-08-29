@@ -51,6 +51,8 @@ import echo.music.***REMOVED***.db.entities.SongWithStats
 import echo.music.***REMOVED***.extensions.reversed
 import echo.music.***REMOVED***.extensions.toSQLiteQuery
 import echo.music.***REMOVED***.models.MediaMetadata
+import echo.music.***REMOVED***.models.toSongEntity
+
 import echo.music.***REMOVED***.models.toMediaMetadata
 import echo.music.***REMOVED***.ui.utils.resize
 import kotlinx.coroutines.flow.Flow

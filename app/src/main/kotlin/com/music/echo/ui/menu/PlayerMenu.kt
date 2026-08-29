@@ -397,7 +397,7 @@ fun PlayerMenu(
                                 title = { Text(text = stringResource(R.string.view_album)) },
                                 description = {
                                     Text(
-                                        text = mediaMetadata.album.title,
+                                        text = mediaMetadata.album!!.title,
                                         maxLines = 1,
                                         overflow = TextOverflow.Ellipsis
                                     )
@@ -410,7 +410,7 @@ fun PlayerMenu(
                                     )
                                 },
                                 onClick = {
-                                    navController.navigate("album/${mediaMetadata.album.id}")
+                                    navController.navigate("album/${mediaMetadata.album!!.id}")
                                     playerBottomSheetState.collapseSoft()
                                     onDismiss()
                                 }

@@ -50,6 +50,7 @@ import echo.music.***REMOVED***.db.entities.PlaylistSongMap
 import echo.music.***REMOVED***.db.entities.Song
 import echo.music.***REMOVED***.extensions.toMediaItem
 import echo.music.***REMOVED***.models.MediaMetadata
+import echo.music.***REMOVED***.models.toSongEntity
 import echo.music.***REMOVED***.models.toMediaMetadata
 import echo.music.***REMOVED***.playback.ExoDownloadService
 import echo.music.***REMOVED***.playback.queues.ListQueue

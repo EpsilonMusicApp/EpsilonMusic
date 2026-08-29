@@ -241,6 +241,8 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach 
 
 dependencies {
     implementation(project(":core"))
+    ksp(project(path = ":core", configuration = "default"))
+
 
     // Firebase - GMS flavor only (excluded from F-Droid / FOSS builds)
     "gmsImplementation"(platform("com.google.firebase:firebase-bom:33.1.0"))
@@ -307,6 +309,7 @@ dependencies {
     implementation(libs.kuromoji.ipadic)
     implementation(libs.tinypinyin)
     ksp(libs.room.compiler)
+
     implementation(libs.room.ktx)
 
     implementation(libs.apache.lang3)
