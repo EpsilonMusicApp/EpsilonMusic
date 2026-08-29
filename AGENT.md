@@ -60,48 +60,21 @@ the agent full context without re-scanning the whole codebase every session.
 ### Strict UI rule: Material You (latest spec) — non-negotiable
 
 All UI work — new screens, new components, and edits to existing ones —
-**must** follow current Material You / Material 3 conventions. This is not
-a style preference, it's a hard requirement for this codebase. Concretely,
-based on the direction already established in `ui/theme/Theme.kt` and
-`ui/component/Dialog.kt`:
+**must** follow current Material Design 3 (Material You) conventions. This is not
+a style preference; it's a hard requirement for this codebase.
 
-- **Dynamic color first.** Colors must come from `MaterialTheme.colorScheme`
-  (seeded via `rememberDynamicColorScheme` / system dynamic color in
-  `echomusicTheme`), never hardcoded hex values in screen/component code.
-  `DefaultThemeColor` and the dynamic-color path in `Theme.kt` are the only
-  places a raw color constant belongs.
-- **Pill/fully-rounded shapes are the standard, not the exception.** Inputs
-  and prominent interactive controls use fully rounded (`CircleShape`) or
-  large-radius (`RoundedCornerShape(24.dp)`) shapes — see the
-  `extraSmall = RoundedCornerShape(24.dp)` override in
-  `MaterialTheme.shapes` and the `CircleShape` on `OutlinedTextField`s.
-  New text fields and similar inputs should follow this shape, not the
-  Material 3 default rectangular/small-radius shape.
-- **Dialog buttons: filled `Button`, not `TextButton`, for the positive/
-  confirm action.** `TextButton` is reserved for the dismiss/cancel action
-  (or truly low-emphasis actions). This mirrors the pattern already applied
-  across `Dialog.kt`, `MainActivity.kt`, and `SpotifyImportScreen.kt` — any
-  new dialog must follow the same split, not use two `TextButton`s or two
-  filled `Button`s.
-- **Use Material 3 components exclusively** (`androidx.compose.material3.*`)
-  — no Material 2 (`androidx.compose.material.*`) components except where
-  already unavoidable (e.g. `material-icons-extended`, which is icons only,
-  not components).
-- **Match the latest Material You spec version already adopted in this
-  repo** — `Theme.kt` pins `ColorSpec.SpecVersion.SPEC_2025` with
-  `PaletteStyle.TonalSpot`. Don't downgrade this or introduce a different
-  palette style in isolated screens; if the spec version or palette style
-  needs to change, change it centrally in `Theme.kt` so it's consistent
-  app-wide, and update this file when you do.
-- Before adding a new UI component, check `ui/component/` for an existing
-  one that already implements these conventions (e.g. `Dialog.kt`'s
-  `ActionPromptDialog` / `TextFieldDialog`) — extend/reuse rather than
-  hand-rolling a new dialog or input that might drift from the pattern.
+We now maintain a dedicated **[DESIGN.md](DESIGN.md)** file which serves as the central
+hub for all design decisions, component usage, and style choices in the Echo Music codebase.
 
-If a new feature needs a UI pattern not covered above, default to what the
-official Material 3 guidelines recommend for that pattern, apply it
-consistently across the whole feature (not just one screen), and document
-the new pattern in this file so it becomes the standard going forward.
+**Key Requirements:**
+- **Always refer to the official Material Design 3 specifications at [m3.material.io](https://m3.material.io/).**
+- **Dynamic color first:** Colors must come from `MaterialTheme.colorScheme`.
+- **Use Material 3 components exclusively** (`androidx.compose.material3.*`).
+- **Consult `DESIGN.md`** for detailed guidance on shapes, typography, elevation, and specific component behaviors (like dialog buttons and navigation).
+
+If a new feature needs a UI pattern not covered in `DESIGN.md`, default to what the
+official Material 3 guidelines recommend for that pattern, apply it consistently
+across the whole feature, and update `DESIGN.md` so it becomes the standard going forward.
 
 ### Conventions worth following
 
