@@ -36,6 +36,27 @@ the agent full context without re-scanning the whole codebase every session.
 > whether "push" was actually meant, stop and ask rather than assuming.
 > This applies to every session, not just the current one.
 
+> **Pre-push checklist — run through this every time before pushing:**
+>
+> 1. **Remove all temporary files.** Before committing and pushing, delete any
+>    scratch/debug/automation scripts that were created during the session.
+>    Common culprits:
+>    - One-off Python/shell scripts (`fix_*.py`, `fix_*.sh`, `patch_*.py`, etc.)
+>    - Debug log files (`build.log`, `*.log` — already in `.gitignore` but
+>      double-check nothing slipped through)
+>    - Temporary data files (`.json`, `.txt` scratch files created during
+>      investigation)
+>    Check with `git status` and `git ls-files | grep -E '\.(py|sh|log)'`
+>    before staging. If a script is genuinely reusable project tooling, move
+>    it to `scripts/` with a clear name and docstring; otherwise delete it.
+> 2. **Verify the build is clean.** Run
+>    `./gradlew :app:compileUniversalGmsDebugKotlin` and confirm
+>    `BUILD SUCCESSFUL` with no errors before committing.
+> 3. **Write a proper commit message.** Title + body in Conventional Commits
+>    format (see "Commit message format" section below).
+> 4. **Update `AGENT.md` and docs** if module structure, conventions, or
+>    architecture changed — stale context is a bug.
+
 ### Strict UI rule: Material You (latest spec) — non-negotiable
 
 All UI work — new screens, new components, and edits to existing ones —
@@ -150,16 +171,16 @@ mostly-independent feature/integration:
 
 | Module | Purpose |
 |---|---|
-| `:app` | Main application — UI, ViewModels, playback service, DB, DI |
+| `:app` | Main application — UI, ViewModels, MusicService, DB, DI, app-level orchestration |
+| `:core` | Shared models, constants, Room database, DataStore, and common utilities |
+| `:playback` | Pure ExoPlayer/Media3 logic — Queues, Equalizer, ChunkingDataSource, SleepTimer, BeatAnalyzer |
+| `:lyrics` | Lyrics orchestration — LyricsHelper, LyricsEntry, LyricsUtils, all provider impls, AI translation |
 | `:innertube` | YouTube Music InnerTube API client (the core music source) |
-| `:kugou`, `:lrclib`, `:betterlyrics`, `:youlyplus`, `:paxsenixlyrics`, `:simpmusic` | Alternative lyrics providers (each implements a lyrics source) |
+| `:kugou`, `:lrclib`, `:betterlyrics`, `:youlyplus`, `:paxsenixlyrics`, `:simpmusic` | Individual lyrics source providers (each consumed by `:lyrics`) |
 | `:shazamkit` | Music recognition ("Echo Find") |
 | `:canvas`, `:echomusiccanvas`, `:applecanvas` | Canvas-style looping video backgrounds for tracks (different providers) |
 | `:artistvideo` | Artist video features |
 | `:unison` | Cross-cutting shared utility module (check source before editing) |
-| `:core` | Shared models, constants, and database interfaces (Phase 1 migration in progress) |
-| `:lyrics` | Lyrics orchestration and logic (Phase 1 migration in progress) |
-| `:playback` | Media3/ExoPlayer service and audio logic (Phase 1 migration in progress) |
 
 When adding a new external integration (a new lyrics source, a new canvas
 provider, etc.), the existing pattern is: **new Gradle module**, register it
