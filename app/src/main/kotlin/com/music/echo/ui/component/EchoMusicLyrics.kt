@@ -102,9 +102,9 @@ fun echomusicLyricsLine(
     
     val wordData = remember(entry.text, entry.words, activeDuration) {
         val isHindiText = echo.music.***REMOVED***.lyrics.LyricsUtils.isHindi(entry.text)
-        if (!isHindiText && entry.words != null && entry.words.isNotEmpty()) {
+        if (!isHindiText && entry.words?.isNotEmpty() == true) {
             
-            entry.words.mapIndexed { index, word ->
+            entry.words!!.mapIndexed { index, word ->
                 val wordStart = ((word.startTime * 1000).toLong() - entry.time).coerceAtLeast(0L)
                 val wordEnd = ((word.endTime * 1000).toLong() - entry.time).coerceAtLeast(wordStart + 50L)
                 Triple(word.text, wordStart, wordEnd)
