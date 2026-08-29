@@ -3,7 +3,7 @@
  * Licensed under GPL-3.0 | See git history for contributors
  */
 
-package com.music.echo.ui.screens.settings
+package echo.music.***REMOVED***.ui.screens.settings
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -51,7 +51,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavController
-import com.music.echo.utils.lastfm.LastFM
+import echo.music.***REMOVED***.utils.lastfm.LastFM
 import echo.music.***REMOVED***.LocalPlayerAwareWindowInsets
 import echo.music.***REMOVED***.R
 import echo.music.***REMOVED***.constants.EnableLastFMScrobblingKey

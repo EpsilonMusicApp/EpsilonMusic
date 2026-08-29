@@ -69,7 +69,8 @@ fun CastButton(
     val castHandler = playerConnection?.service?.castConnectionHandler
     val isCasting by castHandler?.isCasting?.collectAsStateWithLifecycle() ?: remember { mutableStateOf(false) }
     val castDeviceName by castHandler?.castDeviceName?.collectAsStateWithLifecycle() ?: remember { mutableStateOf(null) }
-    val deviceType by castHandler?.deviceType?.collectAsStateWithLifecycle() ?: remember { mutableStateOf(CastDeviceType.UNKNOWN) }
+    val deviceKind by castHandler?.deviceType?.collectAsStateWithLifecycle() ?: remember { mutableStateOf(echo.music.***REMOVED***.playback.CastDeviceKind.UNKNOWN) }
+    val deviceType = CastDeviceType.fromKind(deviceKind)
 
     val showPicker: () -> Unit = {
         menuState.show {

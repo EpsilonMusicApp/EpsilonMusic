@@ -45,8 +45,8 @@ import echo.music.***REMOVED***.LocalPlayerConnection
 import echo.music.***REMOVED***.R
 import echo.music.***REMOVED***.constants.*
 import echo.music.***REMOVED***.db.entities.Song
-import com.music.echo.discord.DiscordAuthCoordinator
-import com.music.echo.discord.DiscordOAuthRepository
+import echo.music.***REMOVED***.discord.DiscordAuthCoordinator
+import echo.music.***REMOVED***.discord.DiscordOAuthRepository
 import echo.music.***REMOVED***.ui.component.EditTextPreference
 import echo.music.***REMOVED***.ui.component.EnumListPreference
 import echo.music.***REMOVED***.ui.component.IconButton

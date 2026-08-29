@@ -428,11 +428,11 @@ fun NavGraphBuilder.navigationBuilder(
     }
 
     composable("settings/lastfm") {
-        com.music.echo.ui.screens.settings.LastFMSettingsScreen(navController)
+        echo.music.***REMOVED***.ui.screens.settings.LastFMSettingsScreen(navController)
     }
 
     composable("settings/discord/experimental") {
-        com.music.echo.ui.screens.settings.DiscordExperimental(navController)
+        echo.music.***REMOVED***.ui.screens.settings.DiscordExperimental(navController)
     }
 
     composable("settings/spotify_import") {

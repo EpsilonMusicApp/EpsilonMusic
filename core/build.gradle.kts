@@ -1,5 +1,6 @@
 plugins {
     id("com.android.library")
+    id("com.google.devtools.ksp")
     alias(libs.plugins.kotlin.serialization)
 }
 
@@ -20,9 +21,23 @@ dependencies {
     api(libs.compose.animation)
     api(libs.room.runtime)
     api(libs.room.ktx)
+    api(libs.timber)
+    api(libs.ktor.client.core)
+
+    api(libs.apache.lang3)
+    api("javax.inject:javax.inject:1")
+
+    api("androidx.core:core-ktx:1.13.1")
+
+    ksp(libs.room.compiler)
+
     api(libs.media3)
     api(libs.media3.session)
     api(project(":innertube"))
     api(libs.ktor.serialization.json)
     api(libs.protobuf.javalite)
+}
+
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
 }

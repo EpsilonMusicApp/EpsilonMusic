@@ -520,7 +520,7 @@ fun LocalPlaylistScreen(
             contentPadding = LocalPlayerAwareWindowInsets.current.union(WindowInsets.ime).asPaddingValues(),
         ) {
             playlist?.let { playlist ->
-                if (playlist.songCount == 0 && playlist.playlist.remoteSongCount == 0) {
+                if (playlist.songCount == 0 && (playlist.playlist.remoteSongCount ?: 0) == 0) {
                     item(key = "empty_placeholder") {
                         EmptyPlaceholder(
                             icon = R.drawable.music_note,
@@ -990,7 +990,7 @@ fun LocalPlaylistHeader(
         val uri = result.value ?: return@LaunchedEffect
         withContext(Dispatchers.IO) {
             when {
-                playlist.playlist.browseId == null -> {
+                playlist.playlist.browseId!! == null -> {
                     overrideThumbnail.value = uri.toString()
                     isCustomThumbnail = true
 
@@ -1003,7 +1003,7 @@ fun LocalPlaylistHeader(
                 else -> {
                     val bytes = uriToByteArray(context, uri)
                     YouTube.uploadCustomThumbnailLink(
-                        playlist.playlist.browseId,
+                        playlist.playlist.browseId!!,
                         bytes!!
                     ).onSuccess { newThumbnailUrl ->
                         overrideThumbnail.value = newThumbnailUrl
@@ -1067,7 +1067,7 @@ fun LocalPlaylistHeader(
                 },
                 onCancel = { showEditNoteDialog = false }
             ) {
-                if (playlist.playlist.browseId != null) {
+                if (playlist.playlist.browseId!! != null) {
                     Text(
                         text = stringResource(R.string.edit_playlist_cover_note),
                         style = MaterialTheme.typography.bodyMedium
@@ -1136,7 +1136,7 @@ fun LocalPlaylistHeader(
                                                 },
                                                 onRemove = {
                                                     when {
-                                                        playlist.playlist.browseId == null -> {
+                                                        playlist.playlist.browseId!! == null -> {
                                                             overrideThumbnail.value = null
                                                             database.query {
                                                                 update(playlist.playlist.copy(thumbnailUrl = null))
@@ -1144,7 +1144,7 @@ fun LocalPlaylistHeader(
                                                         }
                                                         else -> {
                                                             scope.launch(Dispatchers.IO) {
-                                                                YouTube.removeThumbnailPlaylist(playlist.playlist.browseId).onSuccess { newThumbnailUrl -> 
+                                                                YouTube.removeThumbnailPlaylist(playlist.playlist.browseId!!).onSuccess { newThumbnailUrl -> 
                                                                     overrideThumbnail.value = newThumbnailUrl
                                                                     database.query {
                                                                         update(playlist.playlist.copy(thumbnailUrl = newThumbnailUrl))
@@ -1205,7 +1205,7 @@ fun LocalPlaylistHeader(
                                                 },
                                                 onRemove = {
                                                     when {
-                                                        playlist.playlist.browseId == null -> {
+                                                        playlist.playlist.browseId!! == null -> {
                                                             overrideThumbnail.value = null
                                                             database.query {
                                                                 update(playlist.playlist.copy(thumbnailUrl = null))
@@ -1213,7 +1213,7 @@ fun LocalPlaylistHeader(
                                                         }
                                                         else -> {
                                                             scope.launch(Dispatchers.IO) {
-                                                                YouTube.removeThumbnailPlaylist(playlist.playlist.browseId).onSuccess { newThumbnailUrl ->
+                                                                YouTube.removeThumbnailPlaylist(playlist.playlist.browseId!!).onSuccess { newThumbnailUrl ->
                                                                     overrideThumbnail.value = newThumbnailUrl
                                                                     database.query {
                                                                         update(playlist.playlist.copy(thumbnailUrl = newThumbnailUrl))
@@ -1258,8 +1258,8 @@ fun LocalPlaylistHeader(
         Spacer(modifier = Modifier.height(12.dp))
 
         
-        val songCount = if (playlist.songCount == 0 && playlist.playlist.remoteSongCount != null) {
-            playlist.playlist.remoteSongCount
+        val songCount = if (playlist.songCount == 0 && (playlist.playlist.remoteSongCount ?: 0) != null) {
+            (playlist.playlist.remoteSongCount ?: 0)
         } else {
             playlist.songCount
         }
@@ -1363,7 +1363,7 @@ fun LocalPlaylistHeader(
                             onEdit = onShowEditDialog,
                             onSync = {
                                 scope.launch(Dispatchers.IO) {
-                                    val playlistPage = YouTube.playlist(playlist.playlist.browseId!!)
+                                    val playlistPage = YouTube.playlist(playlist.playlist.browseId!!!!)
                                         .completed()
                                         .getOrNull() ?: return@launch
                                     database.transaction {

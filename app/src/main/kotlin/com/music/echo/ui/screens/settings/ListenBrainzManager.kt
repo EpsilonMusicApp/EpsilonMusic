@@ -1,6 +1,6 @@
 
 
-package com.music.echo.ui.screens.settings
+package echo.music.***REMOVED***.ui.screens.settings
 
 import android.content.Context
 import kotlinx.coroutines.*

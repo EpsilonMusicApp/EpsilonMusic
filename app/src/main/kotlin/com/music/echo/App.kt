@@ -200,7 +200,7 @@ class App : Application(), SingletonImageLoader.Factory {
                 }
         }
 
-        com.music.echo.utils.lastfm.LastFM.initialize(
+        echo.music.***REMOVED***.utils.lastfm.LastFM.initialize(
             apiKey = BuildConfig.LASTFM_API_KEY.takeIf { it.isNotEmpty() } ?: "",
             secret = BuildConfig.LASTFM_SECRET.takeIf { it.isNotEmpty() } ?: "",
         )

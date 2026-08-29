@@ -1,8 +1,8 @@
-package com.music.echo.utils.lastfm
+package echo.music.***REMOVED***.utils.lastfm
 
-import com.music.echo.models.lastfm.Authentication
-import com.music.echo.models.lastfm.LastFmError
-import com.music.echo.models.lastfm.TokenResponse
+import echo.music.***REMOVED***.models.lastfm.Authentication
+import echo.music.***REMOVED***.models.lastfm.LastFmError
+import echo.music.***REMOVED***.models.lastfm.TokenResponse
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.engine.okhttp.OkHttp

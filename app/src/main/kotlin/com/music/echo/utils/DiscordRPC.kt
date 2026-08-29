@@ -27,15 +27,15 @@ import echo.music.***REMOVED***.constants.DiscordSmallImageCustomUrlKey
 import echo.music.***REMOVED***.constants.DiscordSmallImageTypeKey
 import echo.music.***REMOVED***.constants.DiscordSmallImageTypeKey
 import echo.music.***REMOVED***.db.entities.Song
-import com.music.echo.discord.DiscordActivityPlatform
-import com.music.echo.discord.DiscordActivityType
-import com.music.echo.discord.DiscordOnlineStatus
-import com.music.echo.discord.DiscordPresenceActivity
-import com.music.echo.discord.DiscordPresenceAssets
-import com.music.echo.discord.DiscordPresenceButton
-import com.music.echo.discord.DiscordPresenceTimestamps
-import com.music.echo.discord.DiscordSocialPresenceClient
-import com.music.echo.discord.DiscordStatusDisplayType
+import echo.music.***REMOVED***.discord.DiscordActivityPlatform
+import echo.music.***REMOVED***.discord.DiscordActivityType
+import echo.music.***REMOVED***.discord.DiscordOnlineStatus
+import echo.music.***REMOVED***.discord.DiscordPresenceActivity
+import echo.music.***REMOVED***.discord.DiscordPresenceAssets
+import echo.music.***REMOVED***.discord.DiscordPresenceButton
+import echo.music.***REMOVED***.discord.DiscordPresenceTimestamps
+import echo.music.***REMOVED***.discord.DiscordSocialPresenceClient
+import echo.music.***REMOVED***.discord.DiscordStatusDisplayType
 import timber.log.Timber
 
 class DiscordRPC(

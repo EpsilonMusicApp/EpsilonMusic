@@ -56,6 +56,13 @@ internal enum class CastDeviceType(val icon: Int, val connectedIcon: Int) {
     UNKNOWN(R.drawable.cast, R.drawable.cast_connected);
 
     companion object {
+        fun fromKind(kind: echo.music.***REMOVED***.playback.CastDeviceKind): CastDeviceType = when (kind) {
+            echo.music.***REMOVED***.playback.CastDeviceKind.TV -> TV
+            echo.music.***REMOVED***.playback.CastDeviceKind.SPEAKER -> SPEAKER
+            echo.music.***REMOVED***.playback.CastDeviceKind.CHROMECAST -> CHROMECAST
+            echo.music.***REMOVED***.playback.CastDeviceKind.UNKNOWN -> UNKNOWN
+        }
+
         private val TV_KEYWORDS = listOf(
             "tv", "bravia", "webos", "tizen", "fire tv", "android tv",
             "google tv", "smart tv", "display", "shield",

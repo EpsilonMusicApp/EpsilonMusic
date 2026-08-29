@@ -1,4 +1,4 @@
-package com.music.echo.models.lastfm
+package echo.music.***REMOVED***.models.lastfm
 
 import kotlinx.serialization.Serializable
 

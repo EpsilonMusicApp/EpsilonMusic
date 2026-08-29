@@ -22,7 +22,7 @@ import com.google.android.gms.common.api.PendingResult
 import com.google.android.gms.common.images.WebImage
 import echo.music.***REMOVED***.extensions.metadata
 import echo.music.***REMOVED***.models.MediaMetadata as AppMediaMetadata
-import echo.music.***REMOVED***.ui.component.CastDeviceType
+import echo.music.***REMOVED***.playback.CastDeviceKind
 import echo.music.***REMOVED***.ui.utils.resize
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -75,14 +75,14 @@ class CastConnectionHandler(
     val castDeviceName: StateFlow<String?> = _castDeviceName.asStateFlow()
 
     /**
-     * Resolved [CastDeviceType] for the connected device.
+     * Resolved [CastDeviceKind] for the connected device.
      *
      * Resolved from the device's friendly name and model name so the UI surfaces
      * (button, session sheet) classify the device from a single source, matching
      * what the picker derives from the route's name + description.
      */
-    private val _deviceType: MutableStateFlow<CastDeviceType> = MutableStateFlow(CastDeviceType.UNKNOWN)
-    internal val deviceType: StateFlow<CastDeviceType> = _deviceType.asStateFlow()
+    private val _deviceType: MutableStateFlow<CastDeviceKind> = MutableStateFlow(CastDeviceKind.UNKNOWN)
+    internal val deviceType: StateFlow<CastDeviceKind> = _deviceType.asStateFlow()
 
     private val _castPosition = MutableStateFlow(0L)
     val castPosition: StateFlow<Long> = _castPosition.asStateFlow()
@@ -136,7 +136,7 @@ class CastConnectionHandler(
     private fun mirroredTotal(): Int = mirroredQueueCounts.values.sum()
 
     /**
-     * Publish the connected device's name and resolved [CastDeviceType].
+     * Publish the connected device's name and resolved [CastDeviceKind].
      *
      * Uses both the friendly name and the model name (which maps to the route
      * "description" the picker classifies from), so every Cast surface derives
@@ -147,8 +147,8 @@ class CastConnectionHandler(
         val device = session.castDevice
         _castDeviceName.value = device?.friendlyName
         _deviceType.value = device?.let {
-            CastDeviceType.fromName(it.friendlyName, it.modelName)
-        } ?: CastDeviceType.UNKNOWN
+            CastDeviceKind.fromName(it.friendlyName, it.modelName)
+        } ?: CastDeviceKind.UNKNOWN
     }
 
     /** Flag to prevent reverse sync when Cast triggers local player update. */
@@ -278,7 +278,7 @@ class CastConnectionHandler(
                 remoteMediaClient = null
                 castSession = null
                 mirroredQueueCounts.clear()
-                _deviceType.value = CastDeviceType.UNKNOWN
+                _deviceType.value = CastDeviceKind.UNKNOWN
 
                 stopPositionUpdates()
 

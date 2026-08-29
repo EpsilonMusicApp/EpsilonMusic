@@ -1,4 +1,4 @@
-package com.music.echo.ui.screens.settings
+package echo.music.***REMOVED***.ui.screens.settings
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column

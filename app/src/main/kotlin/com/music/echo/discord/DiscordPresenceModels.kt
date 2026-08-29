@@ -1,6 +1,6 @@
 
 
-package com.music.echo.discord
+package echo.music.***REMOVED***.discord
 
 import androidx.compose.runtime.Immutable
 

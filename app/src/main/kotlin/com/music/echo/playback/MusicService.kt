@@ -153,8 +153,8 @@ import echo.music.***REMOVED***.extensions.metadata
 import echo.music.***REMOVED***.extensions.setOffloadEnabled
 import echo.music.***REMOVED***.extensions.toEnum
 import echo.music.***REMOVED***.extensions.toMediaItem
-import echo.music.***REMOVED***.extensions.toPersistQueue
-import echo.music.***REMOVED***.extensions.toQueue
+import echo.music.***REMOVED***.playback.toPersistQueue
+import echo.music.***REMOVED***.playback.toQueue
 import echo.music.***REMOVED***.echomusic.updater.downloadmanager.EchoNotificationProvider
 import echo.music.***REMOVED***.lyrics.LyricsHelper
 import echo.music.***REMOVED***.models.PersistPlayerState
@@ -172,7 +172,7 @@ import echo.music.***REMOVED***.utils.CoilBitmapLoader
 import echo.music.***REMOVED***.ui.screens.settings.DiscordPresenceManager
 import echo.music.***REMOVED***.utils.NetworkConnectivityObserver
 import echo.music.***REMOVED***.utils.ScrobbleManager
-import echo.music.***REMOVED***.utils.SyncUtils
+
 import echo.music.***REMOVED***.utils.YTPlayerUtils
 import echo.music.***REMOVED***.utils.dataStore
 import echo.music.***REMOVED***.utils.get
@@ -228,10 +228,10 @@ class MusicService :
     lateinit var database: MusicDatabase
 
     @Inject
-    lateinit var lyricsHelper: LyricsHelper
+    lateinit var lyricsHelper: echo.music.***REMOVED***.lyrics.LyricsHelper
 
     @Inject
-    lateinit var syncUtils: SyncUtils
+    lateinit var syncUtils: echo.music.***REMOVED***.utils.SyncUtils
 
     @Inject
     lateinit var mediaLibrarySessionCallback: MediaLibrarySessionCallback
@@ -243,7 +243,7 @@ class MusicService :
     lateinit var eqProfileRepository: EQProfileRepository
 
     @Inject
-    lateinit var widgetManager: EchoMusicWidgetManager
+    lateinit var widgetManager: echo.music.***REMOVED***.widget.EchoMusicWidgetManager
 
     @Inject
     lateinit var listenTogetherManager: echo.music.***REMOVED***.listentogether.ListenTogetherManager
@@ -585,7 +585,7 @@ class MusicService :
         }
         scope.launch {
             dataStore.data.map { (try { it[LastFMSessionKey] } catch(e: Exception) { null }) }.distinctUntilChanged().collect { sessionKey ->
-                com.music.echo.utils.lastfm.LastFM.sessionKey = sessionKey
+                echo.music.***REMOVED***.utils.lastfm.LastFM.sessionKey = sessionKey
             }
         }        
         
@@ -849,8 +849,8 @@ class MusicService :
                     upsert(
                         LyricsEntity(
                             id = mediaMetadata.id,
-                            lyrics = lyricsWithProvider.lyrics,
-                            provider = lyricsWithProvider.provider,
+                            lyrics = lyricsWithProvider.lyrics ?: "",
+                            provider = lyricsWithProvider.providerName,
                         ),
                     )
                 }
@@ -2853,7 +2853,7 @@ class MusicService :
         if (!listenBrainzEnabled || cleanToken.isBlank()) return
         scope.launch {
             if (isFinished) {
-                com.music.echo.ui.screens.settings.ListenBrainzManager.submitFinished(
+                echo.music.***REMOVED***.ui.screens.settings.ListenBrainzManager.submitFinished(
                     context = this@MusicService,
                     token = cleanToken,
                     title = title,
@@ -2864,7 +2864,7 @@ class MusicService :
                     endMs = endMs
                 )
             } else {
-                com.music.echo.ui.screens.settings.ListenBrainzManager.submitPlayingNow(
+                echo.music.***REMOVED***.ui.screens.settings.ListenBrainzManager.submitPlayingNow(
                     context = this@MusicService,
                     token = cleanToken,
                     title = title,
@@ -4193,7 +4193,7 @@ class MusicService :
                                 )
                                 val lyricsResult = lyricsHelper.getLyrics(metadata)
                                 database.query {
-                                    upsert(echo.music.***REMOVED***.db.entities.LyricsEntity(id = mediaId, lyrics = lyricsResult.lyrics))
+                                    upsert(echo.music.***REMOVED***.db.entities.LyricsEntity(id = mediaId, lyrics = lyricsResult.lyrics ?: ""))
                                 }
                                 Timber.tag(TAG).d("Preloaded lyrics for $mediaId")
                             }

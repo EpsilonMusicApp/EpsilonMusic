@@ -423,7 +423,7 @@ fun SongListItem(
                 song.artists.joinToString { it.name },
                 makeTimeString(song.song.duration * 1000L),
                 if (showSize && song.format?.contentLength != null) {
-                    android.text.format.Formatter.formatFileSize(LocalContext.current, song.format.contentLength)
+                    android.text.format.Formatter.formatFileSize(LocalContext.current, song.format!!.contentLength)
                 } else null
             ),
             badges = badges,
@@ -811,11 +811,11 @@ fun PlaylistListItem(
     subtitle = if (autoPlaylist) {
         ""
     } else {
-        if (playlist.songCount == 0 && playlist.playlist.remoteSongCount != null) {
+        if (playlist.songCount == 0 && playlist.playlist.remoteSongCount!! != null) {
             pluralStringResource(
                 R.plurals.n_song,
-                playlist.playlist.remoteSongCount,
-                playlist.playlist.remoteSongCount
+                playlist.playlist.remoteSongCount!!!!,
+                playlist.playlist.remoteSongCount!!
             )
         } else {
             pluralStringResource(
@@ -912,11 +912,11 @@ fun PlaylistGridItem(
         val subtitle = if (autoPlaylist) {
             ""
         } else {
-            if (playlist.songCount == 0 && playlist.playlist.remoteSongCount != null) {
+            if (playlist.songCount == 0 && playlist.playlist.remoteSongCount!! != null) {
                 pluralStringResource(
                     R.plurals.n_song,
-                    playlist.playlist.remoteSongCount,
-                    playlist.playlist.remoteSongCount
+                    playlist.playlist.remoteSongCount!!!!,
+                    playlist.playlist.remoteSongCount!!
                 )
             } else {
                 pluralStringResource(

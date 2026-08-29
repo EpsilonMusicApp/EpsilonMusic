@@ -10,9 +10,6 @@ import androidx.compose.ui.unit.dp
 import racra.compose.smooth_corner_rect_library.AbsoluteSmoothCornerShape
 import androidx.compose.ui.graphics.Shape
 import java.util.Locale
-fun reportException(throwable: Throwable) {
-    throwable.printStackTrace()
-}
 
 @Suppress("DEPRECATION")
 fun setAppLocale(context: Context, locale: Locale) {

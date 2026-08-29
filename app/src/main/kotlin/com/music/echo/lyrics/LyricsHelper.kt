@@ -10,6 +10,7 @@ import echo.music.***REMOVED***.constants.PreferredLyricsProviderKey
 import echo.music.***REMOVED***.db.entities.LyricsEntity.Companion.LYRICS_NOT_FOUND
 import echo.music.***REMOVED***.extensions.toEnum
 import echo.music.***REMOVED***.models.MediaMetadata
+import echo.music.***REMOVED***.playback.LyricsWithProvider
 import echo.music.***REMOVED***.utils.NetworkConnectivityObserver
 import echo.music.***REMOVED***.utils.dataStore
 import echo.music.***REMOVED***.utils.reportException
@@ -112,7 +113,7 @@ constructor(
                 val result = channel.receive()
                 responses++
                 if (result != null) {
-                    val isSynced = result.lyrics.trimStart().startsWith("[")
+                    val isSynced = result.lyrics?.trimStart()?.startsWith("[") == true
                     if (isSynced) {
                         coroutineContext.cancelChildren()
                         return@coroutineScope result
@@ -193,7 +194,3 @@ data class LyricsResult(
     val lyrics: String,
 )
 
-data class LyricsWithProvider(
-    val lyrics: String,
-    val provider: String,
-)

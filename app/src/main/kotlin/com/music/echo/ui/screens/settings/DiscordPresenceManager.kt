@@ -20,7 +20,7 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
 import echo.music.***REMOVED***.db.entities.Song
-import com.music.echo.discord.DiscordOAuthRepository
+import echo.music.***REMOVED***.discord.DiscordOAuthRepository
 import echo.music.***REMOVED***.utils.DiscordImageResolver
 import echo.music.***REMOVED***.utils.DiscordRPC
 import timber.log.Timber

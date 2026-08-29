@@ -61,7 +61,8 @@ fun CastSessionSheet(
     // Cast state
     val isCasting by castHandler.isCasting.collectAsStateWithLifecycle()
     val castDeviceName by castHandler.castDeviceName.collectAsStateWithLifecycle()
-    val deviceType by castHandler.deviceType.collectAsStateWithLifecycle()
+    val deviceKind by castHandler.deviceType.collectAsStateWithLifecycle()
+    val deviceType = CastDeviceType.fromKind(deviceKind)
 
     // Current media metadata
     val currentMetadata by playerConnection.mediaMetadata.collectAsStateWithLifecycle()

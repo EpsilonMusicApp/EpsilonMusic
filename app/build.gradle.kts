@@ -227,7 +227,6 @@ protobuf {
 }
 
 ksp {
-    arg("room.schemaLocation", "$projectDir/schemas")
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
@@ -241,7 +240,8 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach 
 
 dependencies {
     implementation(project(":core"))
-    ksp(project(path = ":core", configuration = "default"))
+    implementation(project(":playback"))
+
 
 
     // Firebase - GMS flavor only (excluded from F-Droid / FOSS builds)
@@ -308,7 +308,6 @@ dependencies {
     implementation(libs.room.runtime)
     implementation(libs.kuromoji.ipadic)
     implementation(libs.tinypinyin)
-    ksp(libs.room.compiler)
 
     implementation(libs.room.ktx)
 

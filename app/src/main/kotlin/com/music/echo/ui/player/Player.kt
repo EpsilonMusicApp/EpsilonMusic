@@ -2920,7 +2920,7 @@ fun InlineLyricsView(
                     val lyricsHelper = entryPoint.lyricsHelper()
                     val fetchedLyricsWithProvider = lyricsHelper.getLyrics(mediaMetadata)
                     database.query {
-                        upsert(LyricsEntity(mediaMetadata.id, fetchedLyricsWithProvider.lyrics, fetchedLyricsWithProvider.provider))
+                        upsert(LyricsEntity(mediaMetadata.id, fetchedLyricsWithProvider.lyrics ?: "", fetchedLyricsWithProvider.providerName))
                     }
                 } catch (e: Exception) {
                     

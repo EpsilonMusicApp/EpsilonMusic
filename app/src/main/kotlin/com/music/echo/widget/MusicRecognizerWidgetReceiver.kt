@@ -341,8 +341,8 @@ class MusicRecognizerWidgetReceiver : AppWidgetProvider() {
         )
 
     companion object {
-        const val ACTION_START_RECOGNITION = "echo.music.***REMOVED***.widget.recognizer.TAP_MIC"
-        const val ACTION_UPDATE_WIDGET = "echo.music.***REMOVED***.widget.recognizer.UPDATE"
-        const val ACTION_RESET_STATE = "echo.music.***REMOVED***.widget.recognizer.RESET"
+        const val ACTION_START_RECOGNITION = "com.music.echo.widget.recognizer.TAP_MIC"
+        const val ACTION_UPDATE_WIDGET = "com.music.echo.widget.recognizer.UPDATE"
+        const val ACTION_RESET_STATE = "com.music.echo.widget.recognizer.RESET"
     }
 }

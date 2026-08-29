@@ -600,7 +600,7 @@ fun SongMenu(
                                                     YouTube.removeFromPlaylist(
                                                         playlistId,
                                                         playlistSong.map.songId,
-                                                        playlistSong.map.setVideoId
+                                                        playlistSong.map.setVideoId!!
                                                     )
                                                 }
                                             }
