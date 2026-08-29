@@ -292,23 +292,40 @@ We provide issue templates for:
 
 ### Code Organization
 
+Path: `app/src/main/kotlin/com/music/echo/`
+
 ```
-app/src/main/java/com/maxrave/echo/
-├── ui/                    # UI components and screens
-│   ├── components/        # Reusable UI components
-│   ├── screens/          # Screen-specific UI
-│   └── theme/            # Theme and styling
-├── data/                 # Data layer
-│   ├── repository/       # Repository implementations
-│   ├── local/           # Local data sources
-│   └── remote/          # Remote data sources
-├── domain/              # Domain layer
-│   ├── model/           # Domain models
-│   ├── repository/      # Repository interfaces
-│   └── usecase/         # Use cases
-└── common/              # Common utilities
-    ├── utils/           # Utility functions
-    └── extensions/      # Extension functions
+ai/             AI features (lyrics translation providers, etc.)
+api/            External API clients not covered by a dedicated module
+constants/      Preference keys / constant definitions (DataStore keys live here)
+data/           Data layer glue
+db/
+  entities/     Room entities (Song, Album, Artist, Playlist, Lyrics, etc.)
+  daos/         Room DAOs
+di/             Hilt modules (AppModule, NetworkModule, Qualifiers, entry points)
+discord/        Discord Rich Presence integration
+echomusic/      Core app-level classes
+eq/             Equalizer
+extensions/     Kotlin extension functions
+listentogether/ "Listen Together" synced group listening feature
+localmedia/     Local on-device media file playback
+lyrics/         Lyrics orchestration
+models/         Shared data models
+playback/       Media3/ExoPlayer service, download manager, queueing, audio
+quicksettings/  Android quick settings tile
+recognition/    Music recognition (Echo Find) app-side logic
+spotify/        Spotify API integration
+spotifyimport/  Import playlists/tracks from Spotify
+ui/
+  component/    Reusable Compose components (backdrop, floating tab bar, shimmer, etc.)
+  menu/         Context/dropdown menus
+  player/       Now-playing / player UI
+  screens/      Top-level screens (Home, Search, Library, Album, Artist, Settings, etc.)
+  theme/        Theme.kt, Type.kt, Font.kt, color extraction, dynamic color
+  utils/        UI-specific utilities
+utils/          General utilities
+viewmodels/     ViewModels, one (or a few) per screen/feature
+widget/         Home-screen widget
 ```
 
 ### Naming Conventions
