@@ -74,16 +74,8 @@ KEY_PASSWORD=your_key_password
 
 Open the project in Android Studio or build from the command line.
 
-**For FOSS variants (without Google Cast):**
-```bash
-# Debug build
-./gradlew assembleUniversalFossDebug
+Echo Music now ships a single **GMS** build variant (with Google Cast support). The previous FOSS (no Google Play Services) variant has been removed.
 
-# Release build (requires signing configuration)
-./gradlew assembleUniversalFossRelease
-```
-
-**For GMS variants (with Google Cast):**
 ```bash
 # Debug build
 ./gradlew assembleUniversalGmsDebug
@@ -140,10 +132,10 @@ Make sure you've created `local.properties` with the correct SDK path.
 
 ### Firebase-related Build Errors
 
-If you're not using Firebase, you can build the standard debug variant without `app/google-services.json`:
+If you're not using Firebase, you can still build the standard debug variant without `app/google-services.json` — Firebase features will simply be disabled:
 
 ```bash
-./gradlew assembleUniversalFossDebug
+./gradlew assembleUniversalGmsDebug
 ```
 
 ### Gradle Sync Issues
