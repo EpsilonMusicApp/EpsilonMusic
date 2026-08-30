@@ -252,6 +252,12 @@ val LastArtistSyncKey = longPreferencesKey("last_artist_sync")
 val LastPlaylistSyncKey = longPreferencesKey("last_playlist_sync")
 val LastFullSyncKey = longPreferencesKey("last_full_sync")
 
+// Epsilon Music (Supabase) sync watermark — millis since epoch of the last
+// successful cloud sync. Used by SyncManager as the `p_since` parameter to
+// get_user_sync_state(). Distinct from LastFullSyncKey (which tracks the
+// legacy YouTube Music sync).
+val LastEpsilonSyncKey = longPreferencesKey("last_epsilon_sync")
+
 
 
 const val SYNC_COOLDOWN = 30 * 60L
