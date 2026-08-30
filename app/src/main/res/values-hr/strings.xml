@@ -443,9 +443,9 @@
     <string name="listenbrainz_scrobbling">ListenBrainz scrobbling</string>
     <string name="listenbrainz_scrobbling_description">Automatski pošaljite svoje preslušane pjesme na ListenBrainz</string>
     <string name="set_listenbrainz_token">Postavi ListenBrainz token</string>
-    <string name="youtube_decryption_settings"]>Epsilon ekstraktor</string>
+    <string name="youtube_decryption_settings">Epsilon ekstraktor</string>
     <string name="youtube_decryption_desc">Konfigurirajte postavke ekstraktora</string>
-    <string name="youtube_decryption_support"]>Epsilon ekstraktor</string>
+    <string name="youtube_decryption_support">Epsilon ekstraktor</string>
     <string name="youtube_decryption_support_desc">Automatski izdvaja konfiguracije reprodukcije s YouTubea. Zaključano na aktivno stanje.</string>
     <string name="force_update_cipher">Prisilno ažuriraj konfiguracije</string>
     <string name="force_update_cipher_desc">Preuzmite najnovija zamjenska mapiranja ekstraktora. Ograničeno na 3 ažuriranja dnevno.</string>

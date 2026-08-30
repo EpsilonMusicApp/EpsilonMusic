@@ -422,9 +422,9 @@
     <string name="listenbrainz_scrobbling">ListenBrainz 聆聽記錄</string>
     <string name="listenbrainz_scrobbling_description">自動將您聆聽過的曲目提交至 ListenBrainz</string>
     <string name="set_listenbrainz_token">設定 ListenBrainz 權杖</string>
-    <string name="youtube_decryption_settings"]>Epsilon 擷取器</string>
+    <string name="youtube_decryption_settings">Epsilon 擷取器</string>
     <string name="youtube_decryption_desc">設定擷取器</string>
-    <string name="youtube_decryption_support"]>Epsilon 擷取器</string>
+    <string name="youtube_decryption_support">Epsilon 擷取器</string>
     <string name="youtube_decryption_support_desc">自動擷取 YouTube 播放設定。固定為啟用狀態。</string>
     <string name="force_update_cipher">強制更新設定</string>
     <string name="force_update_cipher_desc">下載最新的擷取器覆寫對應資料。每天最多可更新 3 次。</string>

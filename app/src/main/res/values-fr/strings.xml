@@ -458,9 +458,9 @@
     <string name="listenbrainz_scrobbling">Scrobbling sur ListenBrainz</string>
     <string name="listenbrainz_scrobbling_description">Envoyez automatiquement les titres que vous avez écoutés vers ListenBrainz</string>
     <string name="set_listenbrainz_token">Définir le jeton ListenBrainz</string>
-    <string name="youtube_decryption_settings"]>Epsilon Extracteur</string>
+    <string name="youtube_decryption_settings">Epsilon Extracteur</string>
     <string name="youtube_decryption_desc">Configurer les paramètres de l\'extracteur</string>
-    <string name="youtube_decryption_support"]>Epsilon Extracteur</string>
+    <string name="youtube_decryption_support">Epsilon Extracteur</string>
     <string name="youtube_decryption_support_desc">Extrait automatiquement les paramètres de lecture YouTube. Verrouillé sur « Actif ».</string>
     <string name="force_update_cipher">Forcer la mise à jour des configurations</string>
     <string name="force_update_cipher_desc">Téléchargez les derniers mappages de remplacement de l\'extracteur. Limité à 3 mises à jour par jour.</string>

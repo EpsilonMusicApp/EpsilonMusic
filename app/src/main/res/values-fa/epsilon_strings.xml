@@ -523,7 +523,7 @@
     <string name="eq_preset_dirac_game">بازی دیراک</string>
     <string name="eq_enable_title">اکولایزر</string>
     <string name="eq_enable_summary">فعال/غیرفعال‌سازی پردازش صوتی حرفه‌ای</string>
-    <string name="eq_label_epsilon"]>Epsilon Signature</string>
+    <string name="eq_label_epsilon">Epsilon Signature</string>
     <string name="eq_label_dolby">Dolby Atmos</string>
     <string name="eq_label_dirac">Dirac Audio</string>
     <string name="eq_reset">بازنشانی</string>
