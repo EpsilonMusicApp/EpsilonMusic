@@ -30,9 +30,8 @@ class CloudPlaylistRepository @Inject constructor(
 
     suspend fun listPlaylists(): List<PlaylistDto> = try {
         playlistsTable.select {
-            filter { isNull("deleted_at") }
             order("updated_at", Order.DESCENDING)
-        }.decodeList<PlaylistDto>()
+        }.decodeList<PlaylistDto>().filter { it.deletedAt == null }
     } catch (e: Exception) {
         Timber.w(e, "listPlaylists failed")
         emptyList()
