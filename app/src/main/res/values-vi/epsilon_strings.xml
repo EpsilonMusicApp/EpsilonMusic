@@ -240,7 +240,7 @@
     <string name="show_artist_description">Hiển thị mô tả nghệ sĩ</string>
     <string name="show_artist_subscriber_count">Hiện số lượng người đăng ký</string>
     <string name="show_artist_monthly_listeners">Hiển thị số lượt nghe hằng tháng</string>
-    <string name="wrapped_logo_content_description">epsilonmusic Logo</string>
+    <string name="wrapped_logo_content_description">Epsilon Music Logo</string>
     <string name="wrapped_year">2025</string>
     <string name="listen_together_join_room">Tham gia phòng</string>
     <string name="listen_together_create_room_desc">Tạo phòng và chia sẽ mã cho bạn bè</string>

@@ -215,7 +215,7 @@
     <string name="enable_scrobbling">開啟紀錄播放歌曲</string>
     <string name="lastfm_now_playing">傳送正在播放歌曲</string>
     <string name="last_fm_send_likes">傳送喜歡/不喜歡歌曲</string>
-    <string name="last_fm_send_likes_description">同步 epsilonmusic 喜歡/不喜歡歌曲到 Last.fm</string>
+    <string name="last_fm_send_likes_description">同步 Epsilon Music 喜歡/不喜歡歌曲到 Last.fm</string>
     <string name="scrobbling_configuration">歌曲紀錄設定</string>
     <string name="scrobble_min_track_duration">紀錄播放長度超過以下時間的歌曲</string>
     <string name="scrobble_delay_percent">紀錄延遲比例</string>

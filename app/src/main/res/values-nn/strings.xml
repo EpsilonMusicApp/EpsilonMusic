@@ -323,7 +323,7 @@
     <string name="backup_create_failed">Klarte ikkje å oppretta tryggleikskopi</string>
     <string name="restore_failed">Klarte ikkje å gjenoppretta tryggleikskopien</string>
     <string name="discord_integration">Discord-integrasjon</string>
-    <string name="discord_information">epsilonmusic brukar KizzyRPC-biblioteket til å velja statusen for Discord-kontoen din. Dette inneber bruk av Discord Gateway-tilkoplinga, noko som kan reknast som eit brot på bruksvilkåra til Discord. Det finst likevel ingen kjende tilfelle der brukarkontoar har vorte suspenderte av denne grunnen. Bruk på eige ansvar.\nchomusic hentar berre tokenet ditt, og alt anna vert lagra lokalt.</string>
+    <string name="discord_information">Epsilon Music brukar KizzyRPC-biblioteket til å velja statusen for Discord-kontoen din. Dette inneber bruk av Discord Gateway-tilkoplinga, noko som kan reknast som eit brot på bruksvilkåra til Discord. Det finst likevel ingen kjende tilfelle der brukarkontoar har vorte suspenderte av denne grunnen. Bruk på eige ansvar.\nEpsilon Music hentar berre tokenet ditt, og alt anna vert lagra lokalt.</string>
     <string name="dismiss">Lukk</string>
     <string name="options">Val</string>
     <string name="preview">Førehandsvising</string>

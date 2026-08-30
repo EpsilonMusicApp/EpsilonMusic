@@ -322,7 +322,7 @@
     <string name="backup_create_failed">Pa finn kapav kree sovgard</string>
     <string name="restore_failed">Restorasion sovgard finn fel</string>
     <string name="discord_integration">Integrasion Discord</string>
-    <string name="discord_information">epsilonmusic servi bibliotek KizzyRPC pou definir stati ou kont Discord. Sa inplik itilizasion koneksion Discord Gateway, ki kapav konsidere kouma enn violasion bann kondision itilizasion Discord. Selman, pena okenn ka kone kot kont itilizater finn sispann pou sa rezon-la. Servi li lor ou prop risk.\nchomusic pou zis extrer ou zeton, ek tou lezot kitsoz pou stoke lokalman.</string>
+    <string name="discord_information">Epsilon Music servi bibliotek KizzyRPC pou definir stati ou kont Discord. Sa inplik itilizasion koneksion Discord Gateway, ki kapav konsidere kouma enn violasion bann kondision itilizasion Discord. Selman, pena okenn ka kone kot kont itilizater finn sispann pou sa rezon-la. Servi li lor ou prop risk.\nEpsilon Music pou zis extrer ou zeton, ek tou lezot kitsoz pou stoke lokalman.</string>
     <string name="dismiss">Fer disparet</string>
     <string name="options">Opsion</string>
     <string name="preview">Aperse</string>

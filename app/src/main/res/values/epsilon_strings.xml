@@ -473,7 +473,7 @@
     <string name="wrapped_end_create_playlist">Create Your Wrapped Playlist</string>
     <string name="wrapped_end_creating_playlist">Creating...</string>
     <string name="wrapped_end_playlist_saved">Playlist Saved</string>
-    <string name="wrapped_logo_content_description">epsilonmusic Logo</string>
+    <string name="wrapped_logo_content_description">Epsilon Music Logo</string>
     <string name="wrapped_year">2025</string>
     <string name="wrapped_ready_title">YOUR WRAPPED IS READY!</string>
     <string name="wrapped_ready_subtitle">Time to see what you loved this year.</string>
@@ -758,7 +758,7 @@
     <string name="crash_share_logs">Share Logs</string>
     <string name="copy_logs">Copy Logs</string>
     <string name="crash_share_title">Share crash report</string>
-    <string name="crash_report_subject">epsilonmusic Crash Report</string>
+    <string name="crash_report_subject">Epsilon Music Crash Report</string>
     <string name="crash_close">Close</string>
     <string name="crash_no_log">No crash log available</string>
 
@@ -849,9 +849,9 @@
     <string name="discord_rpc_preview">Rich Presence Preview</string>
     <string name="discord_presence">Presence</string>
     <string name="discord_connect_description">Sign in with Discord to share what you\'re listening to</string>
-    <string name="discord_playing_epsilonmusic">Playing epsilonmusic</string>
-    <string name="discord_watching_epsilonmusic">Watching epsilonmusic</string>
-    <string name="discord_competing_epsilonmusic">Competing in epsilonmusic</string>
+    <string name="discord_playing_epsilonmusic">Playing Epsilon Music</string>
+    <string name="discord_watching_epsilonmusic">Watching Epsilon Music</string>
+    <string name="discord_competing_epsilonmusic">Competing in Epsilon Music</string>
     <string name="discord_activity_name">Activity name</string>
     <string name="discord_activity_name_description">Custom name for the activity (leave empty for default)</string>
     <string name="discord_advanced_mode">Advanced mode</string>
@@ -911,7 +911,7 @@
 
     <string name="perm_required">Required</string>
     <string name="perm_permissions">Permissions</string>
-    <string name="perm_intro_text">These permissions are required for epsilonmusic to function correctly. Please grant them to proceed.</string>
+    <string name="perm_intro_text">These permissions are required for Epsilon Music to function correctly. Please grant them to proceed.</string>
 
     <string name="perm_notif_title">Notifications</string>
     <string name="perm_notif_desc">Know immediately when your music is playing and control it from the notification bar.</string>
@@ -921,7 +921,7 @@
 
     <string name="feat_discover">Discover</string>
     <string name="feat_features">Features</string>
-    <string name="feat_intro">Explore everything epsilonmusic has to offer for your music journey.</string>
+    <string name="feat_intro">Explore everything Epsilon Music has to offer for your music journey.</string>
 
     <string name="feat_lyrics_title">Smart Lyrics</string>
     <string name="feat_lyrics_desc">Enjoy synchronized, word-by-word lyrics for millions of songs.</string>
@@ -945,7 +945,7 @@
     <string name="welcome_update_status">Updated</string>
     <string name="welcome_update_intro">Ensuring you have the latest features and security improvements.</string>
     <string name="welcome_checking_updates">Checking for updates…</string>
-    <string name="welcome_up_to_date">epsilonmusic is up to date!</string>
+    <string name="welcome_up_to_date">Epsilon Music is up to date!</string>
     <string name="welcome_update_available">New version is available: %s</string>
     <string name="welcome_everything_ready">Everything is now up to date</string>
     <string name="commits_title">Commits</string>

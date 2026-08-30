@@ -307,7 +307,7 @@
     <string name="wrapped_end_create_playlist">Crie Sua Lista de Reprodução Embrulhada</string>
     <string name="wrapped_end_creating_playlist">Criando...</string>
     <string name="wrapped_end_playlist_saved">Lista de Reprodução Salva</string>
-    <string name="wrapped_logo_content_description">epsilonmusic Logo</string>
+    <string name="wrapped_logo_content_description">Epsilon Music Logo</string>
     <string name="wrapped_year">2025</string>
     <string name="wrapped_ready_title">SEU EMBRULHO ESTÁ PRONTO!</string>
     <string name="wrapped_ready_subtitle">Hora de checar o que você amou esse ano.</string>
@@ -626,9 +626,9 @@
     <string name="discord_rpc_preview">Visualização de rich presence</string>
     <string name="discord_presence">Presença</string>
     <string name="discord_connect_description">Entre com o Discord para compartilhar o que você está ouvindo</string>
-    <string name="discord_playing_epsilonmusic">Jogando epsilonmusic</string>
-    <string name="discord_watching_epsilonmusic">Assistindo epsilonmusic</string>
-    <string name="discord_competing_epsilonmusic">Competindo no epsilonmusic</string>
+    <string name="discord_playing_epsilonmusic">Jogando Epsilon Music</string>
+    <string name="discord_watching_epsilonmusic">Assistindo Epsilon Music</string>
+    <string name="discord_competing_epsilonmusic">Competindo no Epsilon Music</string>
     <string name="discord_activity_name">Nome da atividade</string>
     <string name="discord_activity_name_description">Nome personalizado para a atividade (deixe vazio para padrão)</string>
     <string name="discord_advanced_mode">Modo avançado</string>

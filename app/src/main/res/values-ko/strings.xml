@@ -251,7 +251,7 @@
     <string name="preview">미리보기</string>
     <string name="login_failed">로그인 실패</string>
     <string name="discord_integration">Discord 연동</string>
-    <string name="discord_information">epsilonmusic은 KizzyRPC 라이브러리를 사용하여 Discord 계정의 상태를 설정합니다. 이 과정에서 Discord Gateway 연결을 사용하며, 이는 Discord 이용 약관 위반으로 간주될 수 있습니다. 하지만 이 이유로 사용자 계정이 정지된 사례는 알려진 바가 없습니다. 사용에 따른 책임은 사용자 본인에게 있습니다.\nepsilonmusic은 토큰만 추출하며 그 밖의 모든 데이터는 기기에 저장됩니다.</string>
+    <string name="discord_information">Epsilon Music은 KizzyRPC 라이브러리를 사용하여 Discord 계정의 상태를 설정합니다. 이 과정에서 Discord Gateway 연결을 사용하며, 이는 Discord 이용 약관 위반으로 간주될 수 있습니다. 하지만 이 이유로 사용자 계정이 정지된 사례는 알려진 바가 없습니다. 사용에 따른 책임은 사용자 본인에게 있습니다.\nEpsilon Music은 토큰만 추출하며 그 밖의 모든 데이터는 기기에 저장됩니다.</string>
     <string name="options">옵션</string>
     <string name="action_logout">로그아웃</string>
     <string name="action_like_all">모두 좋아요</string>

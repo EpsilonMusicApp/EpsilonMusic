@@ -240,7 +240,7 @@
     <string name="google_cast">Google Cast</string>
     <string name="google_cast_description">Aktivieren Sie die Audioübertragung auf Chromecast und andere Cast-fähige Geräte.</string>
     <string name="last_fm_send_likes">Likes/Dislikes senden</string>
-    <string name="last_fm_send_likes_description">Lieder bei Last.fm als „Gefällt mir“/„Gefällt mir nicht“ markieren, wenn sie in epsilonmusic als „Gefällt mir“/„Gefällt mir nicht“ markiert werden.</string>
+    <string name="last_fm_send_likes_description">Lieder bei Last.fm als „Gefällt mir“/„Gefällt mir nicht“ markieren, wenn sie in Epsilon Music als „Gefällt mir“/„Gefällt mir nicht“ markiert werden.</string>
     <string name="logging_in">Anmelden…</string>
     <string name="hide_video_songs">Videosongs ausblenden</string>
     <string name="details_desc">Informationen zum Song anzeigen</string>
@@ -311,7 +311,7 @@
     <string name="wrapped_playlist_saved">Playlist gespeichert</string>
     <string name="casting_to">Übertragung auf %s</string>
     <string name="progress_percent">Fortschritt %s%%</string>
-    <string name="listening_to_epsilonmusic">epsilonmusic hören</string>
+    <string name="listening_to_epsilonmusic">Epsilon Music hören</string>
     <string name="listen_on_youtube_music">Auf YouTube Music anhören</string>
     <string name="visit_epsilonmusic">Besuchen Sie epsilonmusic</string>
     <string name="open">Öffnen</string>
@@ -322,7 +322,7 @@
     <string name="failed_to_parse_proxy">Die Proxy-URL konnte nicht analysiert werden.</string>
     <string name="wrapped_artist_image_content_description">Künstlerbild</string>
     <string name="wrapped_top_song_album_art_content_description">Albumcover</string>
-    <string name="wrapped_logo_content_description">epsilonmusic Logo</string>
+    <string name="wrapped_logo_content_description">Epsilon Music Logo</string>
     <string name="wrapped_year">2025</string>
     <string name="top_result">Top Ergebnis</string>
     <string name="wrapped_top_artist_image_content_description">Bild des Top-Künstlers</string>
@@ -346,7 +346,7 @@
     </plurals>
     <string name="system_equalizer">System-Equalizer</string>
     <string name="no_song_playing">Es wird kein Song abgespielt</string>
-    <string name="tap_to_open">Tippen, um epsilonmusic zu öffnen</string>
+    <string name="tap_to_open">Tippen, um Epsilon Music zu öffnen</string>
     <string name="previous">Vorherige</string>
     <string name="play_pause">Wiedergabe/Pause</string>
     <string name="next">Weiter</string>
@@ -487,7 +487,7 @@
     <string name="crash_description">Ein unerwarteter Fehler ist aufgetreten. Bitte teile uns den Absturzbericht mit, damit wir das Problem beheben können.</string>
     <string name="crash_share_logs">Protokolle teilen</string>
     <string name="crash_share_title">Absturzbericht teilen</string>
-    <string name="crash_report_subject">epsilonmusic Absturzbericht</string>
+    <string name="crash_report_subject">Epsilon Music Absturzbericht</string>
     <string name="crash_close">Schließen</string>
     <string name="crash_no_log">Kein Absturzprotokoll verfügbar</string>
     <string name="palette_dynamic">Dynamisch</string>
@@ -512,7 +512,7 @@
     <string name="cd_pure_black_mode">Reines Schwarz Modus</string>
     <string name="cd_palette_item">%1$s Palette</string>
     <string name="not_playing">Es wird kein Lied abgespielt</string>
-    <string name="tap_to_play">Tippen Sie hier, um epsilonmusic zu öffnen</string>
+    <string name="tap_to_play">Tippen Sie hier, um Epsilon Music zu öffnen</string>
     <string name="widget_music_player">Music Player</string>
     <string name="widget_turntable">Drehscheibe</string>
     <string name="together">Gemeinsam</string>
@@ -567,7 +567,7 @@
     <string name="recently_converted">Kürzlich konvertiert</string>
     <string name="csv_import_failed">Fehler beim Importieren der CSV-Datei</string>
     <string name="importing_csv">CSV importieren</string>
-    <string name="play_on_app">Auf epsilonmusic abspielen</string>
+    <string name="play_on_app">Auf Epsilon Music abspielen</string>
     <string name="listening">Hören…</string>
     <string name="continue_action">Weitermachen</string>
     <string name="hold_to_recognize">Halten Sie das Suchsymbol gedrückt, um Musik zu erkennen.</string>

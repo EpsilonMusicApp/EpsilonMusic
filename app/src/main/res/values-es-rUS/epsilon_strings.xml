@@ -633,7 +633,7 @@
     <string name="discord_connect_description">Inicia sesión con Discord para compartir lo que estás escuchando</string>
     <string name="discord_playing_epsilonmusic">Reproduciendo en epsilonmusic</string>
     <string name="discord_watching_epsilonmusic">Viendo en epsilonmusic</string>
-    <string name="discord_competing_epsilonmusic">Compitiendo en epsilonmusic</string>
+    <string name="discord_competing_epsilonmusic">Compitiendo en Epsilon Music</string>
     <string name="discord_activity_name">Nombre de la actividad</string>
     <string name="discord_activity_name_description">Nombre personalizado para la actividad (déjelo vacío para usar el nombre predeterminado)</string>
     <string name="discord_advanced_mode">Modo avanzado</string>

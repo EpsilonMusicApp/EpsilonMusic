@@ -364,7 +364,7 @@
     <string name="backup_create_failed">बैकअप नहीं बनाया जा सका</string>
     <string name="restore_failed">बैकअप पुनर्स्थापित करने में विफल</string>
     <string name="discord_integration">Discord एकीकरण</string>
-    <string name="discord_information">epsilonmusic आपके Discord खाते की स्थिति सेट करने के लिए KizzyRPC लाइब्रेरी का उपयोग करता है। इसमें Discord गेटवे कनेक्शन का उपयोग शामिल है, जिसे Discord की TOS का उल्लंघन माना जा सकता है। हालाँकि, इस कारण से उपयोगकर्ता खातों के निलंबित होने का कोई ज्ञात मामला नहीं है। अपने जोखिम पर उपयोग करें।\nchomusic केवल आपका टोकन निकालेगा, और बाकी सब कुछ स्थानीय रूप से संग्रहीत है।</string>
+    <string name="discord_information">Epsilon Music आपके Discord खाते की स्थिति सेट करने के लिए KizzyRPC लाइब्रेरी का उपयोग करता है। इसमें Discord गेटवे कनेक्शन का उपयोग शामिल है, जिसे Discord की TOS का उल्लंघन माना जा सकता है। हालाँकि, इस कारण से उपयोगकर्ता खातों के निलंबित होने का कोई ज्ञात मामला नहीं है। अपने जोखिम पर उपयोग करें।\nEpsilon Music केवल आपका टोकन निकालेगा, और बाकी सब कुछ स्थानीय रूप से संग्रहीत है।</string>
     <string name="dismiss">ख़ारिज करें</string>
     <string name="options">विकल्प</string>
     <string name="preview">पूर्वावलोकन</string>

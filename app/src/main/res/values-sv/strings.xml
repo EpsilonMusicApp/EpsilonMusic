@@ -323,7 +323,7 @@
     <string name="backup_create_failed">Det gick inte att skapa säkerhetskopian</string>
     <string name="restore_failed">Det gick inte att återställa säkerhetskopian</string>
     <string name="discord_integration">Discord-integrering</string>
-    <string name="discord_information">epsilonmusic använder biblioteket KizzyRPC för att ställa in statusen för ditt Discord-konto. Detta innebär att Discord Gateway-anslutningen används, vilket kan betraktas som ett brott mot Discords användarvillkor. Det finns dock inga kända fall där användarkonton har stängts av av denna anledning. Använd på egen risk.\nchomusic hämtar endast din token, och allt annat lagras lokalt.</string>
+    <string name="discord_information">Epsilon Music använder biblioteket KizzyRPC för att ställa in statusen för ditt Discord-konto. Detta innebär att Discord Gateway-anslutningen används, vilket kan betraktas som ett brott mot Discords användarvillkor. Det finns dock inga kända fall där användarkonton har stängts av av denna anledning. Använd på egen risk.\nEpsilon Music hämtar endast din token, och allt annat lagras lokalt.</string>
     <string name="dismiss">Stäng</string>
     <string name="options">Alternativ</string>
     <string name="preview">Förhandsgranska</string>

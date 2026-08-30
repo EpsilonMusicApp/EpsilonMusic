@@ -458,7 +458,7 @@
     <string name="wrapped_intro_title">مرور سالانه epsilonmusic</string>
     <string name="wrapped_intro_subtitle">وقتشه ببینیم امسال به چه چیزهایی گوش دادی</string>
     <string name="wrapped_intro_button">بزن بریم!</string>
-    <string name="wrapped_end_thanks">ممنون که با epsilonmusic همراه بودید!</string>
+    <string name="wrapped_end_thanks">ممنون که با Epsilon Music همراه بودید!</string>
     <string name="wrapped_end_create_playlist">ساخت لیست پخش مرور سالانه شما</string>
     <string name="wrapped_end_creating_playlist">در حال ساخت…</string>
     <string name="wrapped_end_playlist_saved">لیست پخش ذخیره شد</string>
@@ -560,13 +560,13 @@
     <!-- Widget strings -->
     <string name="album_art">کاور آلبوم</string>
     <string name="no_song_playing">آهنگی در حال پخش نیست</string>
-    <string name="tap_to_open">برای باز کردن epsilonmusic ضربه بزنید</string>
+    <string name="tap_to_open">برای باز کردن Epsilon Music ضربه بزنید</string>
     <string name="previous">قبلی</string>
     <string name="play_pause">پخش/توقف</string>
     <string name="next">بعدی</string>
     <string name="like">پسندیدن</string>
     <string name="not_playing">آهنگی در حال پخش نیست</string>
-    <string name="tap_to_play">برای باز کردن epsilonmusic ضربه بزنید</string>
+    <string name="tap_to_play">برای باز کردن Epsilon Music ضربه بزنید</string>
     <string name="widget_description">ویجت پلیر موسیقی به همراه کنترل‌های پخش</string>
     <string name="queue_widget_description">ویجت پلیر موسیقی با امکان پیش‌نمایش صف پخش</string>
     <string name="turntable_widget_description">ویجت دایره‌ای موسیقی با کنترل‌های پخش و لایک</string>
@@ -816,9 +816,9 @@
     <string name="discord_rpc_preview">پیش‌نمایش Rich Presence</string>
     <string name="discord_presence">حضور (Presence)</string>
     <string name="discord_connect_description">برای اشتراک‌گذاری موزیک‌های در حال پخش، وارد حساب دیسکورد خود شوید</string>
-    <string name="discord_playing_epsilonmusic">در حال اجرای epsilonmusic</string>
-    <string name="discord_watching_epsilonmusic">در حال تماشای epsilonmusic</string>
-    <string name="discord_competing_epsilonmusic">در حال رقابت در epsilonmusic</string>
+    <string name="discord_playing_epsilonmusic">در حال اجرای Epsilon Music</string>
+    <string name="discord_watching_epsilonmusic">در حال تماشای Epsilon Music</string>
+    <string name="discord_competing_epsilonmusic">در حال رقابت در Epsilon Music</string>
     <string name="discord_activity_name">نام فعالیت</string>
     <string name="discord_activity_name_description">نام سفارشی برای فعالیت (برای حالت پیش‌فرض خالی بگذارید)</string>
     <string name="discord_advanced_mode">حالت پیشرفته</string>
@@ -876,7 +876,7 @@
 
     <string name="perm_required">الزامی</string>
     <string name="perm_permissions">دسترسی‌ها</string>
-    <string name="perm_intro_text">این دسترسی‌ها برای کارکرد صحیح epsilonmusic الزامی هستند. لطفاً برای ادامه آن‌ها را اعطا کنید.</string>
+    <string name="perm_intro_text">این دسترسی‌ها برای کارکرد صحیح Epsilon Music الزامی هستند. لطفاً برای ادامه آن‌ها را اعطا کنید.</string>
 
     <string name="perm_notif_title">اعلان‌ها</string>
     <string name="perm_notif_desc">بلافاصله از پخش موسیقی مطلع شوید و آن را از طریق نوار اعلان‌ها کنترل کنید.</string>
@@ -886,7 +886,7 @@
 
     <string name="feat_discover">کشف کردن</string>
     <string name="feat_features">قابلیت‌ها</string>
-    <string name="feat_intro">تمام چیزهایی که epsilonmusic برای سفر موسیقیایی شما ارائه می‌دهد را کاوش کنید.</string>
+    <string name="feat_intro">تمام چیزهایی که Epsilon Music برای سفر موسیقیایی شما ارائه می‌دهد را کاوش کنید.</string>
 
     <string name="feat_lyrics_title">متن آهنگ هوشمند</string>
     <string name="feat_lyrics_desc">از متن‌های همگام‌سازی‌شده کلمه به کلمه برای میلیون‌ها آهنگ لذت ببرید.</string>
@@ -910,7 +910,7 @@
     <string name="welcome_update_status">به‌روز باشید</string>
     <string name="welcome_update_intro">اطمینان از اینکه آخرین قابلیت‌ها و بهبودهای امنیتی را در اختیار دارید.</string>
     <string name="welcome_checking_updates">در حال بررسی برای به‌روزرسانی‌ها…</string>
-    <string name="welcome_up_to_date">برنامه epsilonmusic به‌روز است!</string>
+    <string name="welcome_up_to_date">برنامه Epsilon Music به‌روز است!</string>
     <string name="welcome_update_available">نسخه جدید در دسترس است: %s</string>
     <string name="welcome_everything_ready">اکنون همه‌چیز به‌روز است</string>
     <string name="commits_title">کامیت‌ها (Commits)</string>

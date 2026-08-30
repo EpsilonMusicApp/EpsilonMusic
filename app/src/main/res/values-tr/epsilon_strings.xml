@@ -417,11 +417,11 @@
     <string name="wrapped_intro_title">epsilonmusic</string>
     <string name="wrapped_intro_subtitle">Dinlediklerinize göz atmanın zamanı geldi</string>
     <string name="wrapped_intro_button">hadi başlayalım!</string>
-    <string name="wrapped_end_thanks">epsilonmusic ile dinlediğiniz için teşekkürler!</string>
+    <string name="wrapped_end_thanks">Epsilon Music ile dinlediğiniz için teşekkürler!</string>
     <string name="wrapped_end_create_playlist">Özet Çalma Listeni Oluştur</string>
     <string name="wrapped_end_creating_playlist">Oluşturuluyor...</string>
     <string name="wrapped_end_playlist_saved">Çalma Listesi Kaydedildi</string>
-    <string name="wrapped_logo_content_description">epsilonmusic Logosu</string>
+    <string name="wrapped_logo_content_description">Epsilon Music Logosu</string>
     <string name="wrapped_year">2025</string>
     <string name="wrapped_ready_title">ÖZETİNİZ HAZIR!</string>
     <string name="wrapped_ready_subtitle">Bu yıl neleri sevdiğini görme zamanı.</string>
@@ -459,7 +459,7 @@
     <string name="plays">plays</string>
     <string name="casting_to">%s cihazına yansıtılıyor</string>
     <string name="progress_percent">İlerleme %s%%</string>
-    <string name="listening_to_epsilonmusic">epsilonmusic dinleniyor</string>
+    <string name="listening_to_epsilonmusic">Epsilon Music dinleniyor</string>
     <string name="listen_on_youtube_music">YouTube Music\'te dinle</string>
     <string name="visit_epsilonmusic">epsilonmusic\'i ziyaret et</string>
     <string name="open">Aç</string>
@@ -641,7 +641,7 @@
     <string name="crash_description">Beklenmedik bir hata oluştu. Sorunu çözebilmemiz için lütfen bize oluşan hatayı raporlayın.</string>
     <string name="crash_share_logs">Logları paylaş</string>
     <string name="crash_share_title">Hata raporlarını paylaş</string>
-    <string name="crash_report_subject">epsilonmusic Hata Bildirimi</string>
+    <string name="crash_report_subject">Epsilon Music Hata Bildirimi</string>
     <string name="crash_close">Kapat</string>
     <string name="crash_no_log">Hata logları bulunmamakta</string>
 
@@ -732,8 +732,8 @@
     <string name="discord_rpc_preview">Zengin Görünüm Önizlemesi</string>
     <string name="discord_presence">Görünüm</string>
     <string name="discord_connect_description">Ne dinlediğini paylaşmak için Discord\'a giriş yap</string>
-    <string name="discord_playing_epsilonmusic">epsilonmusic oynatılıyor</string>
-    <string name="discord_watching_epsilonmusic">epsilonmusic izlenliyor</string>
+    <string name="discord_playing_epsilonmusic">Epsilon Music oynatılıyor</string>
+    <string name="discord_watching_epsilonmusic">Epsilon Music izlenliyor</string>
     <string name="discord_competing_epsilonmusic">epsilonmusic\'te yarış</string>
     <string name="discord_activity_name">Aktivite adı</string>
     <string name="discord_activity_name_description">Aktivite için özel ad (boş bırakılırsa varsayılan kullanılır)</string>

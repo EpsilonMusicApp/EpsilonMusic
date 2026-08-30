@@ -298,11 +298,11 @@
     <string name="wrapped_intro_title">epsilonmusic</string>
     <string name="wrapped_intro_subtitle">是时候看看您最近听了什么了</string>
     <string name="wrapped_intro_button">让我们开始吧!</string>
-    <string name="wrapped_end_thanks">感谢您使用 epsilonmusic 听歌!</string>
+    <string name="wrapped_end_thanks">感谢您使用 Epsilon Music 听歌!</string>
     <string name="wrapped_end_create_playlist">创建您的年度总结播放列表</string>
     <string name="wrapped_end_creating_playlist">正在创建…</string>
     <string name="wrapped_end_playlist_saved">播放列表已保存</string>
-    <string name="wrapped_logo_content_description">epsilonmusic 徽标</string>
+    <string name="wrapped_logo_content_description">Epsilon Music 徽标</string>
     <string name="wrapped_year">2025</string>
     <string name="wrapped_ready_title">您的年度总结已准备好！</string>
     <string name="wrapped_ready_subtitle">是时候看看您今年最喜欢什么了.</string>
@@ -459,7 +459,7 @@
     <string name="crash_share_logs">分享日志</string>
     <string name="crash_description">发生意外错误。请提供崩溃报告以帮助我们修复问题。</string>
     <string name="crash_share_title">分享崩溃报告</string>
-    <string name="crash_report_subject">epsilonmusic 崩溃报告</string>
+    <string name="crash_report_subject">Epsilon Music 崩溃报告</string>
     <string name="crash_close">关闭</string>
     <string name="crash_no_log">没有可用的崩溃日志</string>
     <string name="palette_dynamic">灵动</string>
@@ -562,7 +562,7 @@
     <string name="recently_converted">最近转换</string>
     <string name="csv_import_failed">无法导入 CSV 文件</string>
     <string name="importing_csv">正在导入 CSV</string>
-    <string name="play_on_app">在 epsilonmusic 上播放</string>
+    <string name="play_on_app">在 Epsilon Music 上播放</string>
     <string name="listening">正在聆听…</string>
     <string name="continue_action">继续</string>
     <string name="hold_to_recognize">按住搜索图标识别音乐</string>

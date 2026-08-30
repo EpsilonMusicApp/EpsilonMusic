@@ -351,7 +351,7 @@
     <string name="backup_create_failed">Níorbh fhéidir cúltaca a chruthú</string>
     <string name="restore_failed">Theip ar athchóiriú an chúltaca</string>
     <string name="discord_integration">Comhtháthú Discord</string>
-    <string name="discord_information">Úsáideann epsilonmusic leabharlann KizzyRPC chun stádas do chuntais Discord a shocrú. Baineann sé seo úsáid as nasc Discord Gateway, rud a d’fhéadfaí a mheas gur sárú ar Théarmaí Seirbhíse Discord é. Mar sin féin, níl aon chás aitheanta ann inar cuireadh cuntas úsáideora ar fionraí ar an gcúis seo. Úsáid ar do phriacal féin.\nNí bhainfidh chomusic ach do chomhartha amach, agus stórálfar gach rud eile go háitiúil.</string>
+    <string name="discord_information">Úsáideann Epsilon Music leabharlann KizzyRPC chun stádas do chuntais Discord a shocrú. Baineann sé seo úsáid as nasc Discord Gateway, rud a d’fhéadfaí a mheas gur sárú ar Théarmaí Seirbhíse Discord é. Mar sin féin, níl aon chás aitheanta ann inar cuireadh cuntas úsáideora ar fionraí ar an gcúis seo. Úsáid ar do phriacal féin.\nNí bhainfidh Epsilon Music ach do chomhartha amach, agus stórálfar gach rud eile go háitiúil.</string>
     <string name="dismiss">Dífhostaigh</string>
     <string name="options">Roghanna</string>
     <string name="preview">Réamhamharc</string>

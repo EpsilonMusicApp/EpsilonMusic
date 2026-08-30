@@ -632,9 +632,9 @@
     <string name="discord_button_text_variables">Variables: {song_name}, {artist_name}, {album_name}</string>
     <string name="discord_rpc_preview">Vista previa de Rich Presence</string>
     <string name="discord_connect_description">Inicia sesión con Discord para compartir lo que estás escuchando</string>
-    <string name="discord_playing_epsilonmusic">Reproduciendo epsilonmusic</string>
-    <string name="discord_watching_epsilonmusic">Viendo epsilonmusic</string>
-    <string name="discord_competing_epsilonmusic">Compitiendo en epsilonmusic</string>
+    <string name="discord_playing_epsilonmusic">Reproduciendo Epsilon Music</string>
+    <string name="discord_watching_epsilonmusic">Viendo Epsilon Music</string>
+    <string name="discord_competing_epsilonmusic">Compitiendo en Epsilon Music</string>
     <string name="discord_activity_name">Nombre de la actividad</string>
     <string name="discord_activity_name_description">Nombre personalizado para la actividad (dejar vacío para el valor predeterminado)</string>
     <string name="discord_advanced_mode">Modo avanzado</string>

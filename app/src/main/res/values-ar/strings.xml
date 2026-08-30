@@ -301,7 +301,7 @@
     <string name="restore_failed">فشلت استعادة النسخة الاحتياطية</string>
     <string name="options">الخيارات</string>
     <string name="preview">معاينة</string>
-    <string name="discord_information">يستخدم epsilonmusic مكتبة KizzyRPC لتعيين حالة حسابك على Discord. يتضمن ذلك استخدام اتصال Discord Gateway، وهو ما قد يُعد انتهاكًا لشروط خدمة Discord. ومع ذلك، لا توجد حالات معروفة لتعليق حسابات المستخدمين لهذا السبب. استخدمه على مسؤوليتك الخاصة.\nسيستخرج chomusic رمز الوصول الخاص بك فقط، بينما تُخزن جميع البيانات الأخرى محليًا.</string>
+    <string name="discord_information">يستخدم Epsilon Music مكتبة KizzyRPC لتعيين حالة حسابك على Discord. يتضمن ذلك استخدام اتصال Discord Gateway، وهو ما قد يُعد انتهاكًا لشروط خدمة Discord. ومع ذلك، لا توجد حالات معروفة لتعليق حسابات المستخدمين لهذا السبب. استخدمه على مسؤوليتك الخاصة.\nسيستخرج Epsilon Music رمز الوصول الخاص بك فقط، بينما تُخزن جميع البيانات الأخرى محليًا.</string>
     <string name="dismiss">تجاهل</string>
     <string name="enable_discord_rpc">تفعيل Rich Presence</string>
     <string name="new_version_available">يتوفر إصدار جديد</string>

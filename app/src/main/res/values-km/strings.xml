@@ -313,7 +313,7 @@
     <string name="backup_create_failed">មិនអាចបង្កើតការបម្រុងទុកបានទេ</string>
     <string name="restore_failed">ការស្ដារការបម្រុងទុកបានបរាជ័យ</string>
     <string name="discord_integration">ការរួមបញ្ចូល Discord</string>
-    <string name="discord_information">epsilonmusic ប្រើបណ្ណាល័យ KizzyRPC ដើម្បីកំណត់ស្ថានភាពគណនី Discord របស់អ្នក។ វាពាក់ព័ន្ធនឹងការប្រើការតភ្ជាប់ Discord Gateway ដែលអាចត្រូវបានចាត់ទុកថា រំលោភលក្ខខណ្ឌប្រើប្រាស់របស់ Discord។ ទោះយ៉ាងណា មិនមានករណីដែលគេដឹងថា គណនីអ្នកប្រើត្រូវបានផ្អាកដោយសារហេតុផលនេះទេ។ ប្រើដោយទទួលខុសត្រូវលើហានិភ័យផ្ទាល់ខ្លួន។\nchomusic នឹងស្រង់យកតែថូខឹនរបស់អ្នកប៉ុណ្ណោះ ហើយអ្វីៗផ្សេងទៀតត្រូវបានរក្សាទុកក្នុងឧបករណ៍។</string>
+    <string name="discord_information">Epsilon Music ប្រើបណ្ណាល័យ KizzyRPC ដើម្បីកំណត់ស្ថានភាពគណនី Discord របស់អ្នក។ វាពាក់ព័ន្ធនឹងការប្រើការតភ្ជាប់ Discord Gateway ដែលអាចត្រូវបានចាត់ទុកថា រំលោភលក្ខខណ្ឌប្រើប្រាស់របស់ Discord។ ទោះយ៉ាងណា មិនមានករណីដែលគេដឹងថា គណនីអ្នកប្រើត្រូវបានផ្អាកដោយសារហេតុផលនេះទេ។ ប្រើដោយទទួលខុសត្រូវលើហានិភ័យផ្ទាល់ខ្លួន។\nEpsilon Music នឹងស្រង់យកតែថូខឹនរបស់អ្នកប៉ុណ្ណោះ ហើយអ្វីៗផ្សេងទៀតត្រូវបានរក្សាទុកក្នុងឧបករណ៍។</string>
     <string name="dismiss">បិទ</string>
     <string name="options">ជម្រើស</string>
     <string name="preview">មើលជាមុន</string>

@@ -59,8 +59,8 @@ android {
         val isNightly = project.hasProperty("nightly") && project.property("nightly") == "true"
         buildConfigField("Boolean", "IS_NIGHTLY", isNightly.toString())
 
-        val discordApplicationId = "1518210534070292541"
-        val discordApplicationIdLong = 1518210534070292541L
+        val discordApplicationId = "1543663936849584239"
+        val discordApplicationIdLong = 1543663936849584239L
         val discordRedirectScheme = "discord-$discordApplicationId"
 
         buildConfigField("String", "DISCORD_APPLICATION_ID", "\"$discordApplicationId\"")

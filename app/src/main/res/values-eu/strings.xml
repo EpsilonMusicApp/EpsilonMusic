@@ -323,7 +323,7 @@
     <string name="backup_create_failed">Ezin izan da babeskopia sortu</string>
     <string name="restore_failed">Ezin izan da babeskopia leheneratu</string>
     <string name="discord_integration">Discord integrazioa</string>
-    <string name="discord_information">epsilonmusic-ek KizzyRPC liburutegia erabiltzen du zure Discord kontuaren egoera ezartzeko. Horretarako Discord Gateway konexioa erabiltzen da, eta hori Discord-en zerbitzu-baldintzen urraketatzat har daiteke. Hala ere, ez da ezagutzen arrazoi horrengatik erabiltzaile-konturik eten den kasurik. Erabili zure ardurapean.\nchomusic-ek zure tokena soilik aterako du, eta gainerako guztia lokalean gordeko da.</string>
+    <string name="discord_information">Epsilon Music-ek KizzyRPC liburutegia erabiltzen du zure Discord kontuaren egoera ezartzeko. Horretarako Discord Gateway konexioa erabiltzen da, eta hori Discord-en zerbitzu-baldintzen urraketatzat har daiteke. Hala ere, ez da ezagutzen arrazoi horrengatik erabiltzaile-konturik eten den kasurik. Erabili zure ardurapean.\nEpsilon Music-ek zure tokena soilik aterako du, eta gainerako guztia lokalean gordeko da.</string>
     <string name="dismiss">Baztertu</string>
     <string name="options">Aukerak</string>
     <string name="preview">Aurrebista</string>

@@ -274,7 +274,7 @@
     <string name="enable_lrclib">LrcLib লিরিক্স প্রদানকারী চালু করুন</string>
     <string name="hide_explicit">আপত্তিকর কনটেন্ট লুকান</string>
     <string name="discord_integration">Discord ইন্টিগ্রেশন</string>
-    <string name="discord_information">epsilonmusic আপনার Discord অ্যাকাউন্টের স্ট্যাটাস সেট করতে KizzyRPC লাইব্রেরি ব্যবহার করে। এতে Discord Gateway সংযোগ ব্যবহৃত হয়, যা Discord-এর পরিষেবার শর্তাবলীর লঙ্ঘন হিসেবে বিবেচিত হতে পারে। তবে এ কারণে কোনো ব্যবহারকারীর অ্যাকাউন্ট স্থগিত হওয়ার ঘটনা জানা যায়নি। নিজ দায়িত্বে ব্যবহার করুন।\nchomusic শুধু আপনার টোকেন সংগ্রহ করবে এবং অন্য সবকিছু স্থানীয়ভাবে সংরক্ষিত থাকবে।</string>
+    <string name="discord_information">Epsilon Music আপনার Discord অ্যাকাউন্টের স্ট্যাটাস সেট করতে KizzyRPC লাইব্রেরি ব্যবহার করে। এতে Discord Gateway সংযোগ ব্যবহৃত হয়, যা Discord-এর পরিষেবার শর্তাবলীর লঙ্ঘন হিসেবে বিবেচিত হতে পারে। তবে এ কারণে কোনো ব্যবহারকারীর অ্যাকাউন্ট স্থগিত হওয়ার ঘটনা জানা যায়নি। নিজ দায়িত্বে ব্যবহার করুন।\nEpsilon Music শুধু আপনার টোকেন সংগ্রহ করবে এবং অন্য সবকিছু স্থানীয়ভাবে সংরক্ষিত থাকবে।</string>
     <string name="dismiss">বন্ধ করুন</string>
     <string name="options">বিকল্প</string>
     <string name="preview">প্রিভিউ</string>

@@ -274,7 +274,7 @@
     <string name="enable_lrclib">LrcLib dalszövegszolgáltató engedélyezése</string>
     <string name="hide_explicit">Szókimondó tartalmak elrejtése</string>
     <string name="discord_integration">Discord-integráció</string>
-    <string name="discord_information">Az epsilonmusic a KizzyRPC könyvtár használatával állítja be a Discord-fiókod állapotát. Ez a Discord Gateway-kapcsolat használatával jár, ami a Discord felhasználási feltételeinek megsértésének minősülhet. Ugyanakkor nem ismert olyan eset, amikor emiatt felfüggesztettek volna egy felhasználói fiókot. Csak saját felelősségre használd.\nAz epsilonmusic kizárólag a tokenedet nyeri ki, minden más adat helyben tárolódik.</string>
+    <string name="discord_information">Az Epsilon Music a KizzyRPC könyvtár használatával állítja be a Discord-fiókod állapotát. Ez a Discord Gateway-kapcsolat használatával jár, ami a Discord felhasználási feltételeinek megsértésének minősülhet. Ugyanakkor nem ismert olyan eset, amikor emiatt felfüggesztettek volna egy felhasználói fiókot. Csak saját felelősségre használd.\nAz Epsilon Music kizárólag a tokenedet nyeri ki, minden más adat helyben tárolódik.</string>
     <string name="dismiss">Bezárás</string>
     <string name="options">Beállítások</string>
     <string name="preview">Előnézet</string>

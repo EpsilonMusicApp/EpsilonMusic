@@ -323,7 +323,7 @@
     <string name="backup_create_failed">বেকআপ সৃষ্টি কৰিব পৰা নগ’ল</string>
     <string name="restore_failed">বেকআপ পুনৰুদ্ধাৰ কৰাত বিফল</string>
     <string name="discord_integration">Discord সংহতি</string>
-    <string name="discord_information">আপোনাৰ Discord একাউণ্টৰ স্থিতি নিৰ্ধাৰণ কৰিবলৈ epsilonmusic-এ KizzyRPC লাইব্ৰেৰী ব্যৱহাৰ কৰে। ইয়াত Discord Gateway সংযোগ ব্যৱহাৰ কৰা হয়, যাক Discord-ৰ সেৱাৰ চৰ্তৰ উলংঘন বুলি গণ্য কৰা হ’ব পাৰে। অৱশ্যে এই কাৰণত ব্যৱহাৰকাৰীৰ একাউণ্ট স্থগিত হোৱাৰ কোনো জ্ঞাত ঘটনা নাই। নিজৰ দায়িত্বত ব্যৱহাৰ কৰক। \nchomusic-এ কেৱল আপোনাৰ ট’কেন আহৰণ কৰিব আৰু বাকী সকলো তথ্য স্থানীয়ভাৱে সংৰক্ষণ কৰা হয়।chomusic-এ কেৱল আপোনাৰ ট’কেন আহৰণ কৰিব আৰু বাকী সকলো তথ্য স্থানীয়ভাৱে সংৰক্ষণ কৰা হয়।</string>
+    <string name="discord_information">আপোনাৰ Discord একাউণ্টৰ স্থিতি নিৰ্ধাৰণ কৰিবলৈ Epsilon Music-এ KizzyRPC লাইব্ৰেৰী ব্যৱহাৰ কৰে। ইয়াত Discord Gateway সংযোগ ব্যৱহাৰ কৰা হয়, যাক Discord-ৰ সেৱাৰ চৰ্তৰ উলংঘন বুলি গণ্য কৰা হ’ব পাৰে। অৱশ্যে এই কাৰণত ব্যৱহাৰকাৰীৰ একাউণ্ট স্থগিত হোৱাৰ কোনো জ্ঞাত ঘটনা নাই। নিজৰ দায়িত্বত ব্যৱহাৰ কৰক। \nEpsilon Music-এ কেৱল আপোনাৰ ট’কেন আহৰণ কৰিব আৰু বাকী সকলো তথ্য স্থানীয়ভাৱে সংৰক্ষণ কৰা হয়।Epsilon Music-এ কেৱল আপোনাৰ ট’কেন আহৰণ কৰিব আৰু বাকী সকলো তথ্য স্থানীয়ভাৱে সংৰক্ষণ কৰা হয়।</string>
     <string name="dismiss">খাৰিজ কৰক</string>
     <string name="options">বিকল্পসমূহ</string>
     <string name="preview">পূৰ্বদৰ্শন</string>
