@@ -63,7 +63,7 @@ class HistorySyncRepository @Inject constructor(
     suspend fun listRecentlyPlayed(limit: Int = 50): List<RecentlyPlayedDto> = try {
         postgrest.from("recently_played").select {
             order("last_played_at", Order.DESCENDING)
-            range(0, (limit - 1).coerceAtLeast(0))
+            range(0L, (limit - 1).coerceAtLeast(0).toLong())
         }.decodeList<RecentlyPlayedDto>()
     } catch (e: Exception) {
         Timber.w(e, "listRecentlyPlayed failed")
@@ -73,7 +73,7 @@ class HistorySyncRepository @Inject constructor(
     suspend fun listListeningHistory(limit: Int = 200): List<com.epsilonmusic.app.supabase.model.ListeningHistoryDto> = try {
         postgrest.from("listening_history").select {
             order("played_at", Order.DESCENDING)
-            range(0, (limit - 1).coerceAtLeast(0))
+            range(0L, (limit - 1).coerceAtLeast(0).toLong())
         }.decodeList<com.epsilonmusic.app.supabase.model.ListeningHistoryDto>()
     } catch (e: Exception) {
         Timber.w(e, "listListeningHistory failed")

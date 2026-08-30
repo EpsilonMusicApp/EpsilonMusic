@@ -63,7 +63,7 @@ class StorageRepository @Inject constructor(
     ): String? = try {
         bucket.upload(path, bytes) {
             upsert = true
-            this.contentType = mimeType
+            this.contentType = io.ktor.http.ContentType.parse(mimeType)
         }
         bucket.publicUrl(path)
     } catch (e: Exception) {

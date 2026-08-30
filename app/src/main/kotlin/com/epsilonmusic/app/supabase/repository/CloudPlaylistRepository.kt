@@ -30,7 +30,7 @@ class CloudPlaylistRepository @Inject constructor(
 
     suspend fun listPlaylists(): List<PlaylistDto> = try {
         playlistsTable.select {
-            filter { eq("deleted_at", null) }
+            filter { isNull("deleted_at") }
             order("updated_at", Order.DESCENDING)
         }.decodeList<PlaylistDto>()
     } catch (e: Exception) {
@@ -163,9 +163,8 @@ class CloudPlaylistRepository @Inject constructor(
      * library" should also purge it from any playlists.
      */
     suspend fun removeTrackFromAllPlaylists(provider: MusicProvider, songId: String): Int = try {
-        val deleted = tracksTable.delete(
-            returning = io.github.jan.supabase.postgrest.query.Returning.REPRESENTATION,
-        ) {
+        val deleted = tracksTable.delete {
+            select()
             filter {
                 eq("provider", provider.id)
                 eq("song_id", songId)

@@ -8,7 +8,8 @@ import com.epsilonmusic.app.db.entities.PlaylistSongMap
 import com.epsilonmusic.app.db.entities.SongEntity
 import com.epsilonmusic.app.models.MediaMetadata
 import com.epsilonmusic.app.utils.dataStore
-import com.epsilonmusic.app.constants.PreferenceKeys
+import com.epsilonmusic.app.utils.get
+import com.epsilonmusic.app.constants.LastEpsilonSyncKey
 import androidx.datastore.preferences.core.edit
 import com.epsilonmusic.app.supabase.repository.AuthRepository
 import com.epsilonmusic.app.supabase.repository.CloudPlaylistRepository
@@ -108,7 +109,7 @@ class SyncManager @Inject constructor(
         }
         _state.value = SyncProgress(isRunning = true, stage = "Fetching sync state")
         try {
-            val sinceMs = context.dataStore.get(PreferenceKeys.LastEpsilonSyncKey, 0L) ?: 0L
+            val sinceMs = context.dataStore.get(LastEpsilonSyncKey, 0L) ?: 0L
             val sinceIso = if (sinceMs > 0) {
                 OffsetDateTime.ofInstant(
                     java.time.Instant.ofEpochMilli(sinceMs),
@@ -186,7 +187,7 @@ class SyncManager @Inject constructor(
                     OffsetDateTime.parse(it).toInstant().toEpochMilli()
                 }.getOrDefault(System.currentTimeMillis())
                 context.dataStore.edit { prefs ->
-                    prefs[PreferenceKeys.LastEpsilonSyncKey] = epochMs
+                    prefs[LastEpsilonSyncKey] = epochMs
                 }
             }
 
@@ -212,7 +213,7 @@ class SyncManager @Inject constructor(
         // If the playlist already exists locally (by cloud id), leave it alone —
         // the local copy may have unsynced edits. Otherwise, insert the cloud
         // version. Two-way reconciliation is handled by the next sync cycle.
-        val existing = database.dao.getPlaylistById(pl.id)
+        val existing = database.getPlaylistById(pl.id)
         if (existing != null) return
         val entity = PlaylistEntity(
             id = pl.id,
@@ -227,7 +228,7 @@ class SyncManager @Inject constructor(
             isAutoSync = true,
             isPinned = false,
         )
-        database.dao.insert(entity)
+        database.insert(entity)
     }
 
     private suspend fun mergePlaylistTrack(t: com.epsilonmusic.app.supabase.model.PlaylistTrackDto) {
@@ -241,7 +242,7 @@ class SyncManager @Inject constructor(
             isDownloaded = false,
             isVideo = false,
         )
-        database.dao.upsert(song)
+        database.upsert(song)
 
         val map = PlaylistSongMap(
             playlistId = t.playlistId,
@@ -250,7 +251,7 @@ class SyncManager @Inject constructor(
             setVideoId = t.setVideoId,
         )
         try {
-            database.dao.insert(map)
+            database.insert(map)
         } catch (e: Exception) {
             // Duplicate insert is fine — means the mapping already exists
         }
@@ -268,7 +269,7 @@ class SyncManager @Inject constructor(
             isDownloaded = false,
             isVideo = false,
         )
-        database.dao.upsert(song)
+        database.upsert(song)
     }
 
     private suspend fun mergeSavedAlbum(a: com.epsilonmusic.app.supabase.model.SavedAlbumDto) {
@@ -285,7 +286,7 @@ class SyncManager @Inject constructor(
             isLocal = false,
             isUploaded = false,
         )
-        database.dao.insert(entity)
+        database.insert(entity)
     }
 
     private suspend fun mergeSavedArtist(ar: com.epsilonmusic.app.supabase.model.SavedArtistDto) {
@@ -298,7 +299,7 @@ class SyncManager @Inject constructor(
             bookmarkedAt = ar.savedAt.toLocalDateTimeOrNull() ?: LocalDateTime.now(),
             isLocal = false,
         )
-        database.dao.insert(entity)
+        database.insert(entity)
     }
 
     // ── Push helpers (called by ViewModels when local data changes) ──────────

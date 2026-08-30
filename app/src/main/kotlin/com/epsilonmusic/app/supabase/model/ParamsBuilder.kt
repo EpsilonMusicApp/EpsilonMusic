@@ -1,10 +1,9 @@
 package com.epsilonmusic.app.supabase.model
 
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.buildJsonObject
-import kotlinx.serialization.json.put
-import kotlinx.serialization.json.putJsonNull
 
 /**
  * Helper for building kotlinx.serialization `JsonObject` parameters for Supabase
@@ -28,30 +27,54 @@ fun buildParams(block: ParamsBuilder.() -> Unit): JsonObject {
 }
 
 class ParamsBuilder {
-    private val map = mutableMapOf<String, kotlinx.serialization.json.JsonElement>()
+    private val map = mutableMapOf<String, JsonElement>()
 
     fun put(key: String, value: String?) {
-        if (value == null) putJsonNull(key) else map[key] = JsonPrimitive(value)
+        if (value == null) {
+            map[key] = JsonNull
+        } else {
+            map[key] = JsonPrimitive(value)
+        }
     }
 
     fun put(key: String, value: Int?) {
-        if (value == null) putJsonNull(key) else map[key] = JsonPrimitive(value)
+        if (value == null) {
+            map[key] = JsonNull
+        } else {
+            map[key] = JsonPrimitive(value)
+        }
     }
 
     fun put(key: String, value: Long?) {
-        if (value == null) putJsonNull(key) else map[key] = JsonPrimitive(value)
+        if (value == null) {
+            map[key] = JsonNull
+        } else {
+            map[key] = JsonPrimitive(value)
+        }
     }
 
     fun put(key: String, value: Boolean?) {
-        if (value == null) putJsonNull(key) else map[key] = JsonPrimitive(value)
+        if (value == null) {
+            map[key] = JsonNull
+        } else {
+            map[key] = JsonPrimitive(value)
+        }
     }
 
     fun put(key: String, value: Float?) {
-        if (value == null) putJsonNull(key) else map[key] = JsonPrimitive(value)
+        if (value == null) {
+            map[key] = JsonNull
+        } else {
+            map[key] = JsonPrimitive(value)
+        }
     }
 
     fun put(key: String, value: Double?) {
-        if (value == null) putJsonNull(key) else map[key] = JsonPrimitive(value)
+        if (value == null) {
+            map[key] = JsonNull
+        } else {
+            map[key] = JsonPrimitive(value)
+        }
     }
 
     fun build(): JsonObject = JsonObject(map)

@@ -9,7 +9,6 @@ import io.github.jan.supabase.postgrest.Postgrest
 import io.github.jan.supabase.realtime.Realtime
 import io.github.jan.supabase.storage.Storage
 import io.ktor.client.engine.okhttp.OkHttp
-import okhttp3.logging.HttpLoggingInterceptor
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -42,12 +41,6 @@ class SupabaseClientProvider @Inject constructor() {
                 connectTimeout(30, TimeUnit.SECONDS)
                 readTimeout(60, TimeUnit.SECONDS)
                 writeTimeout(60, TimeUnit.SECONDS)
-                // Verbose network logging in debug builds only
-                if (BuildConfig.DEBUG) {
-                    addInterceptor(HttpLoggingInterceptor().apply {
-                        level = HttpLoggingInterceptor.Level.BASIC
-                    })
-                }
             }
         }
         install(Auth)

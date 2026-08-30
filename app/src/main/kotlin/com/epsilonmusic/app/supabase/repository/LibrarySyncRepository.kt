@@ -27,7 +27,7 @@ class LibrarySyncRepository @Inject constructor(
     suspend fun listLikedSongs(limit: Int = 500): List<LikedSongDto> = try {
         postgrest.from("liked_songs").select {
             order("liked_at", Order.DESCENDING)
-            range(0, limit - 1)
+            range(0L, (limit - 1).toLong())
         }.decodeList<LikedSongDto>()
     } catch (e: Exception) {
         Timber.w(e, "listLikedSongs failed")
