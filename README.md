@@ -3,12 +3,12 @@
 
   <h1>Epsilon Music</h1>
 
-  <p><b>A modern Android music app with ad-free streaming, synced lyrics, offline playback, and an intuitive user experience.</b></p>
-  
+  <p><b>A modern Android music app with ad-free streaming, synced lyrics, offline playback, Supabase-powered cloud sync, and an intuitive user experience.</b></p>
+
   <table style="margin: 0 auto; border-collapse: collapse; border: none;">
     <tr>
       <td align="center" style="padding: 15px; border: none;">
-        <a href="https://epsilonmusic.app/download" style="text-decoration:none;"><img src="assets/download.png" alt="Download" width="150" style="border-radius: 12px; box-shadow: 0 8px 16px rgba(0,0,0,0.2);"/></a>
+        <a href="https://github.com/VihaanAngaria/EpsilonMusic/releases/latest" style="text-decoration:none;"><img src="assets/download.png" alt="Download" width="150" style="border-radius: 12px; box-shadow: 0 8px 16px rgba(0,0,0,0.2);"/></a>
       </td>
     </tr>
   </table>
@@ -18,7 +18,7 @@
 
 ## Overview
 
-Epsilon Music delivers a seamless, premium listening experience by leveraging YouTube Music's vast library — without the ads. It adds powerful extras including offline downloads, real-time synchronized lyrics, and environment-aware music recognition.
+Epsilon Music delivers a seamless, premium listening experience by leveraging YouTube Music's vast library — without the ads. It adds powerful extras including offline downloads, real-time synchronized lyrics, environment-aware music recognition, Supabase-backed cross-device sync, and Discord Rich Presence integration.
 
 ---
 
@@ -31,8 +31,7 @@ Epsilon Music delivers a seamless, premium listening experience by leveraging Yo
 - [Translations](#translations)
 - [Community & Support](#community--support)
 - [Support the Project](#support-the-project)
-- [Contributors](#contributors)
-- [Special Thanks](#special-thanks)
+- [Legal Disclaimer & Terms of Use](#legal-disclaimer--terms-of-use)
 
 ---
 
@@ -77,12 +76,13 @@ Epsilon Music delivers a seamless, premium listening experience by leveraging Yo
 
 ### What's New
 
+> - **Supabase Cloud Sync** — Authenticate, sync your playlists, liked songs, saved albums/artists, listening history, and preferences across all your devices. Fully offline-capable — your local Room database remains the source of truth.
+> - **Discord Rich Presence** — Show what you're listening to on your Discord profile.
 > - **Data Saver Mode (Beta)** — Automatically reduces data usage during playback for limited connections.
 > - **Settings Search Index** — Quickly find and navigate to any settings option instantly.
 > - **Redesigned UI** — Cleaner, faster, and more intuitive interface from the ground up.
 > - **Import from Spotify** — Bring your playlists and tracks over with ease.
 > - **Listen Together** — Sync music in real time, similar to Spotify Jam.
-> - **Podcast Support** — Listen to podcasts alongside your music library.
 > - **Local Media Support** — Play music files stored directly on your device.
 > - **Dynamic Island Support** — Enhanced playback notifications on supported Android devices.
 
@@ -107,9 +107,9 @@ Epsilon Music delivers a seamless, premium listening experience by leveraging Yo
 <br>
 
 - **Epsilon Find** — Identify songs playing around you using advanced audio recognition.
-- **Epsilon Brain** — An intelligent, on-device engine that analyzes your listening momentum and auto-injects perfectly aligned tracks into your queue. Read more in the [Epsilon Brain Documentation](EPSILON_BRAIN_DOCS.md).
+- **Epsilon Brain** — An intelligent, on-device engine that analyzes your listening momentum and auto-injects perfectly aligned tracks into your queue.
 - **Smart Recommendations** — Personalized suggestions based on your listening history.
-- **Comprehensive Browsing** — Explore Charts, Podcasts, Moods, and Genres.
+- **Comprehensive Browsing** — Explore Charts, Moods, and Genres.
 
 </details>
 
@@ -120,7 +120,19 @@ Epsilon Music delivers a seamless, premium listening experience by leveraging Yo
 - **Multiple Lyric Animations** — Choose from various lyric display styles.
 - **Word-by-Word Lyrics** — Precise per-word synchronization.
 - **Lyrics+** — New lyrics provider for improved accuracy and coverage.
-- **AI Translation** — Built-in Google Translate integration for lyrics in any language.
+- **AI Translation** — Built-in translation integration for lyrics in any language.
+
+</details>
+
+<details>
+<summary><b>Cloud Sync & Account (Supabase)</b></summary>
+<br>
+
+- **Cross-Device Sync** — Playlists, liked songs, saved albums/artists, and listening history roam across all your devices.
+- **Cloud Settings** — Theme, language, sort orders, and playback preferences sync automatically.
+- **Offline-First** — The local Room database is always the source of truth. Cloud sync runs in the background when network is available.
+- **Secure Authentication** — Email/password sign-up via Supabase Auth. No passwords or tokens are stored in the app beyond the standard Supabase session.
+- **User-Uploaded Assets** — Profile avatars and playlist cover art stored in Supabase Storage with per-user RLS policies.
 
 </details>
 
@@ -128,8 +140,11 @@ Epsilon Music delivers a seamless, premium listening experience by leveraging Yo
 <summary><b>Integrations</b></summary>
 <br>
 
+- **Discord Rich Presence** — Display your current track on your Discord profile with customizable buttons and assets.
 - **Music Sharing via Odesli** — Share songs as Song.link for cross-platform listening.
 - **Set as Ringtone** — Directly set any song as your device ringtone.
+- **Last.fm Scrobbling** — Scrobble your plays to your Last.fm account.
+- **ListenBrainz Support** — Submit listens to ListenBrainz.
 
 </details>
 
@@ -181,22 +196,57 @@ Download the latest pre-compiled APK from the [Releases Page](https://github.com
    *(For detailed paths on Windows/macOS/Linux, refer to [SETUP.md](SETUP.md))*
 
 3. **Firebase Configuration (Optional)**
-   Firebase is required for analytics and crash reporting. See the instructions in [SETUP.md](SETUP.md#3-configure-firebase-optional) for adding your `google-services.json`.
+   Firebase is used for analytics and crash reporting. See the instructions in [SETUP.md](SETUP.md#3-configure-firebase-optional) for adding your `google-services.json`. The included config is for the `epsilonmusic-b7b95` Firebase project with package `com.epsilonmusic.app`.
 
 4. **Build the Application**
-   Epsilon Music has two build variants: **FOSS** (without Google Play Services / Cast) and **GMS** (with Cast support).
+   Epsilon Music ships as a single **GMS** build variant (Google Cast + Firebase enabled). The previous FOSS flavor has been removed.
    
-   - To build the **FOSS** Universal Debug variant:
-     ```bash
-     ./gradlew assembleUniversalFossDebug
-     ```
-   - To build the **GMS** Universal Debug variant:
+   - To build the **Universal GMS Debug** variant:
      ```bash
      ./gradlew assembleUniversalGmsDebug
      ```
-   *(For optimized ARM64 builds, release builds, or other options, refer to [SETUP.md](SETUP.md))*
+   - To build the **Universal GMS Release** variant:
+     ```bash
+     ./gradlew assembleUniversalGmsRelease
+     ```
+   *(For optimized ARM64 builds, signing config, or other options, refer to [SETUP.md](SETUP.md))*
 
 </details>
+
+<details>
+<summary><b>Supabase Configuration</b></summary>
+<br>
+
+Epsilon Music uses Supabase for authentication, cloud database, storage, and cross-device sync. The Supabase project URL and anon key are pre-configured in `app/build.gradle.kts` as `BuildConfig.SUPABASE_URL` and `BuildConfig.SUPABASE_ANON_KEY`.
+
+- **Project URL**: `https://ztxkyzstgeckbsfagqco.supabase.co`
+- **Region**: `ap-northeast-2` (Seoul)
+- **Database**: PostgreSQL 17.6 with Row Level Security on all user-owned tables
+- **Storage**: `epsilon-avatars` and `epsilon-playlist-art` buckets with per-user RLS policies
+- **Auth**: Email/password (extensible to OAuth providers)
+
+The anon key is safe to ship in the APK — all access is enforced by RLS policies on the server. The service_role key is **never** embedded in the app.
+
+For full backend documentation, see [`supabase/README.md`](supabase/README.md) and [`supabase/SCHEMA.md`](supabase/SCHEMA.md).
+
+</details>
+
+---
+
+## Translations
+
+Epsilon Music is community-translated. If you'd like to contribute a translation:
+
+1. Fork the repository.
+2. Add or update the `strings.xml` and `epsilon_strings.xml` files under `app/src/main/res/values-<locale>/`.
+3. Submit a pull request.
+
+---
+
+## Community & Support
+
+- **GitHub Issues**: [Report a bug or request a feature](https://github.com/VihaanAngaria/EpsilonMusic/issues)
+- **GitHub Discussions**: [Join the conversation](https://github.com/VihaanAngaria/EpsilonMusic/discussions)
 
 ---
 
@@ -205,49 +255,10 @@ Download the latest pre-compiled APK from the [Releases Page](https://github.com
 If Epsilon Music has been useful to you, consider supporting its development.
 
 <div align="center">
-  <table style="margin: 0 auto; border-collapse: collapse; border: none;">
-    <tr>
-      <td align="center" style="padding: 15px; border: none;">
-        <a href="https://buymeacoffee.com/***REMOVED***" style="text-decoration:none;"><img src="assets/bmac.png" alt="Buy Me A Coffee Logo" width="140" style="border-radius: 12px; box-shadow: 0 8px 16px rgba(0,0,0,0.2);"/></a>
-      </td>
-      <td align="center" style="padding: 15px; border: none;">
-        <a href="https://intradeus.github.io/http-protocol-redirector/?r=upi://pay?pa=***REMOVED***&pn=***REMOVED***&am=&tn=Thank%20You" style="text-decoration:none;"><img src="assets/upi.svg" alt="UPI Logo" width="100" style="border-radius: 12px; box-shadow: 0 8px 16px rgba(0,0,0,0.2);"/></a>
-      </td>
-      <td align="center" style="padding: 15px; border: none;">
-        <a href="https://www.patreon.com/cw/***REMOVED***" style="text-decoration:none;"><img src="assets/patreon3.png" alt="Patreon Logo" width="100" style="border-radius: 12px; box-shadow: 0 8px 16px rgba(0,0,0,0.2);"/></a>
-      </td>
-    </tr>
-  </table>
+  <a href="https://buymeacoffee.com/vihaanangag" style="text-decoration:none;">
+    <img src="assets/bmac.png" alt="Buy Me A Coffee" width="180" style="border-radius: 12px; box-shadow: 0 8px 16px rgba(0,0,0,0.2);"/>
+  </a>
 </div>
-
-<br>
-
-<details>
-<summary><b>Cryptocurrency Options</b></summary>
-<br>
-
-| Network | Address |
-| :--- | :--- |
-| **Bitcoin** | `bc1qcvyr7eekha8uytmffcvgzf4h7xy7shqzke35fy` |
-| **Ethereum** | `0x51bc91022E2dCef9974D5db2A0e22d57B360e700` |
-| **Solana** | `9wjca3EQnEiqzqgy7N5iqS1JGXJiknMQv6zHgL96t94S` |
-
-</details>
-
----
-
-## Special Thanks
-
-Epsilon Music stands on the shoulders of several excellent open-source projects. Sincere thanks to:
-
-| Project | Description |
-| :--- | :--- |
-| **[Metrolist](https://github.com/MetrolistGroup/Metrolist)** & **[Vivi Music](https://github.com/vivizzz007/vivi-music)** | Foundational inspiration and architecture reference |
-| **[ArchiveTune](https://github.com/koiverse/ArchiveTune)** | Material You UI inspiration |
-| **[Better Lyrics](https://better-lyrics.boidu.dev/)** | Lyrics enhancement and synchronization |
-| **[SimpMusic](https://github.com/maxrave-dev/SimpMusic)** | Lyrics implementation reference |
-| **[Music Recognizer](https://github.com/aleksey-saenko/MusicRecognizer)** | Audio recognition (Epsilon Find) |
-| **[BravePipe](https://github.com/bravepipeproject/BravePipe)** | Decryption handling and backup playback engine |
 
 ---
 
@@ -263,12 +274,12 @@ Epsilon Music acts strictly as a specialized, third-party web browser and client
 We deeply respect the hard work of artists, musicians, and content creators. We strongly encourage all users to subscribe to [YouTube Premium](https://www.youtube.com/premium). Purchasing a Premium subscription is the best way to financially support the creators you listen to and ensure the continued growth of the platform. Epsilon Music is built as a proof-of-concept for developers and enthusiasts, not to harm creators' revenues.
 
 ### 4. No Hosting of Copyrighted Material
-We do not host, upload, distribute, or store any audio, video, or copyrighted media files on our own servers. All content accessed through this application is stored entirely on Google's/YouTube's servers and remains the property of their respective copyright owners. The app merely acts as a conduit to stream publicly accessible links.
+We do not host, upload, distribute, or store any audio, video, or copyrighted media files on our own servers. All content accessed through this application is stored entirely on Google's/YouTube's servers and remains the property of their respective copyright owners. The app merely acts as a conduit to stream publicly accessible links. Supabase is used only for user-owned data (playlists, likes, settings) — never for hosting media content.
 
 ### 5. User Responsibility & Legal Contact
 The software is provided "AS IS", without warranty of any kind. The developers of Epsilon Music do not encourage or condone piracy. Users are solely responsible for ensuring their usage of this app complies with their local copyright laws and the Terms of Service of the platforms they access.
 
-Because we do not host any media files, we cannot process DMCA takedown requests for audio or video content. However, if you represent a copyright holder or have legal concerns regarding the open-source code itself, please contact us via email at: [hello@epsilonmusic.app](mailto:hello@epsilonmusic.app)
+Because we do not host any media files, we cannot process DMCA takedown requests for audio or video content. However, if you represent a copyright holder or have legal concerns regarding the open-source code itself, please open a [GitHub Issue](https://github.com/VihaanAngaria/EpsilonMusic/issues).
 
 ---
 
