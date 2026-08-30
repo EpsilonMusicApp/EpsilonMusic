@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "echo.music.***REMOVED***.artistvideo"
+    namespace = "epsilon.music.***REMOVED***.artistvideo"
     compileSdk = 36
 
     defaultConfig {

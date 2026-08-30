@@ -1,4 +1,4 @@
-# AGENT.md - Echo Music
+# AGENT.md - Epsilon Music
 
 Context file for AI agents (Antigravity, Claude Code, etc.) working in this repo.
 Keep this file up to date as the project evolves — it's the fastest way to give
@@ -64,7 +64,7 @@ All UI work — new screens, new components, and edits to existing ones —
 a style preference; it's a hard requirement for this codebase.
 
 We now maintain a dedicated **[DESIGN.md](DESIGN.md)** file which serves as the central
-hub for all design decisions, component usage, and style choices in the Echo Music codebase.
+hub for all design decisions, component usage, and style choices in the Epsilon Music codebase.
 
 **Key Requirements:**
 - **Always refer to the official Material Design 3 specifications at [m3.material.io](https://m3.material.io/).**
@@ -94,19 +94,19 @@ across the whole feature, and update `DESIGN.md` so it becomes the standard goin
 
 ### Things to double check before assuming
 
-- Exact current contents of `com/music/echo/echomusic/` (contains core app-level initializers/application class) and `:unison` (cross-cutting/shared utilities and common base classes) — check source before editing.
+- Exact current contents of `com/music/echo/epsilonmusic/` (contains core app-level initializers/application class) and `:unison` (cross-cutting/shared utilities and common base classes) — check source before editing.
 
 ## What this app is
 
-Echo Music is a native **Android** music streaming client (Kotlin + Jetpack
+Epsilon Music is a native **Android** music streaming client (Kotlin + Jetpack
 Compose) that streams from YouTube Music's catalog ad-free, and layers on
-offline downloads, real-time synced lyrics, music recognition ("Echo Find"),
+offline downloads, real-time synced lyrics, music recognition ("Epsilon Find"),
 podcasts, local media playback, Spotify import, "Listen Together" (synced
 group listening), Discord Rich Presence, and more. It ships as a single
 **GMS** build variant (Google Cast + Firebase enabled) — the previous FOSS
 (no-Google-services) flavor has been removed. See "Build variants" below.
 
-Package/namespace: `echo.music.***REMOVED***` (app module). Application ID matches.
+Package/namespace: `epsilon.music.***REMOVED***` (app module). Application ID matches.
 
 ## Tech stack
 
@@ -150,8 +150,8 @@ mostly-independent feature/integration:
 | `:lyrics` | Lyrics orchestration — LyricsHelper, LyricsEntry, LyricsUtils, all provider impls, AI translation |
 | `:innertube` | YouTube Music InnerTube API client (the core music source) |
 | `:kugou`, `:lrclib`, `:betterlyrics`, `:youlyplus`, `:paxsenixlyrics`, `:simpmusic` | Individual lyrics source providers (each consumed by `:lyrics`) |
-| `:shazamkit` | Music recognition ("Echo Find") |
-| `:canvas`, `:echomusiccanvas`, `:applecanvas` | Canvas-style looping video backgrounds for tracks (different providers) |
+| `:shazamkit` | Music recognition ("Epsilon Find") |
+| `:canvas`, `:epsilonmusiccanvas`, `:applecanvas` | Canvas-style looping video backgrounds for tracks (different providers) |
 | `:artistvideo` | Artist video features |
 | `:unison` | Cross-cutting shared utility module (check source before editing) |
 
@@ -175,7 +175,7 @@ db/
   daos/         Room DAOs
 di/             Hilt modules (AppModule, NetworkModule, Qualifiers, entry points)
 discord/        Discord Rich Presence integration
-echomusic/      Core app-level classes (Application class, core initializers)
+epsilonmusic/      Core app-level classes (Application class, core initializers)
 eq/             Equalizer
 extensions/     Kotlin extension functions
 listentogether/ "Listen Together" synced group listening feature
@@ -184,7 +184,7 @@ lyrics/         Lyrics orchestration (aggregates the lyrics provider modules)
 models/         Shared data models
 playback/       Media3/ExoPlayer service, download manager, queueing, audio
 quicksettings/  Android quick settings tile
-recognition/    Music recognition (Echo Find) app-side logic
+recognition/    Music recognition (Epsilon Find) app-side logic
 spotify/        Spotify API integration
 spotifyimport/  Import playlists/tracks from Spotify
 ui/

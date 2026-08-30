@@ -6,20 +6,20 @@
 #   http://developer.android.com/guide/developing/tools/proguard.html
 
 # WEB_REMIX Streaming - WebView JavaScript interfaces
--keepclassmembers class echo.music.***REMOVED***.utils.sabr.EjsNTransformSolver$SolverWebView {
+-keepclassmembers class epsilon.music.***REMOVED***.utils.sabr.EjsNTransformSolver$SolverWebView {
     @android.webkit.JavascriptInterface public *;
 }
--keepclassmembers class echo.music.***REMOVED***.utils.cipher.CipherWebView {
+-keepclassmembers class epsilon.music.***REMOVED***.utils.cipher.CipherWebView {
     @android.webkit.JavascriptInterface public *;
 }
--keepclassmembers class echo.music.***REMOVED***.utils.potoken.PoTokenWebView {
+-keepclassmembers class epsilon.music.***REMOVED***.utils.potoken.PoTokenWebView {
     @android.webkit.JavascriptInterface public *;
 }
 
 # Keep streaming utility classes
--keep class echo.music.***REMOVED***.utils.cipher.** { *; }
--keep class echo.music.***REMOVED***.utils.sabr.** { *; }
--keep class echo.music.***REMOVED***.utils.potoken.** { *; }
+-keep class epsilon.music.***REMOVED***.utils.cipher.** { *; }
+-keep class epsilon.music.***REMOVED***.utils.sabr.** { *; }
+-keep class epsilon.music.***REMOVED***.utils.potoken.** { *; }
 
 # Keep coroutine continuation for WebView callbacks
 -keepclassmembers class * {
@@ -117,11 +117,11 @@
 
 ## Queue Persistence Rules
 # Keep queue-related classes to prevent serialization issues in release builds
--keep class echo.music.***REMOVED***.models.PersistQueue { *; }
--keep class echo.music.***REMOVED***.models.PersistPlayerState { *; }
--keep class echo.music.***REMOVED***.models.QueueData { *; }
--keep class echo.music.***REMOVED***.models.QueueType { *; }
--keep class echo.music.***REMOVED***.playback.queues.** { *; }
+-keep class epsilon.music.***REMOVED***.models.PersistQueue { *; }
+-keep class epsilon.music.***REMOVED***.models.PersistPlayerState { *; }
+-keep class epsilon.music.***REMOVED***.models.QueueData { *; }
+-keep class epsilon.music.***REMOVED***.models.QueueType { *; }
+-keep class epsilon.music.***REMOVED***.playback.queues.** { *; }
 
 # Keep serialization methods for queue persistence
 -keepclassmembers class * implements java.io.Serializable {
@@ -135,7 +135,7 @@
 -keep interface com.yalantis.ucrop** { *; }
 
 ## Google Cast Rules
--keep class echo.music.***REMOVED***.cast.** { *; }
+-keep class epsilon.music.***REMOVED***.cast.** { *; }
 -keep class com.google.android.gms.cast.** { *; }
 -keep class androidx.mediarouter.** { *; }
 
@@ -143,8 +143,8 @@
 -dontwarn com.google.re2j.**
 
 # Vibra fingerprint library
--keep class echo.music.***REMOVED***.recognition.VibraSignature { *; }
--keepclassmembers class echo.music.***REMOVED***.recognition.VibraSignature {
+-keep class epsilon.music.***REMOVED***.recognition.VibraSignature { *; }
+-keepclassmembers class epsilon.music.***REMOVED***.recognition.VibraSignature {
     native <methods>;
 }
 
@@ -174,13 +174,13 @@
 }
 
 ## Listen Together Serialization
--keep class echo.music.***REMOVED***.listentogether.** { *; }
--keepclassmembers class echo.music.***REMOVED***.listentogether.** {
+-keep class epsilon.music.***REMOVED***.listentogether.** { *; }
+-keepclassmembers class epsilon.music.***REMOVED***.listentogether.** {
     *;
 }
--keepclassmembers class echo.music.***REMOVED***.listentogether.** {
+-keepclassmembers class epsilon.music.***REMOVED***.listentogether.** {
     *** Companion;
 }
--keepclasseswithmembers class echo.music.***REMOVED***.listentogether.** {
+-keepclasseswithmembers class epsilon.music.***REMOVED***.listentogether.** {
     kotlinx.serialization.KSerializer serializer(...);
 }

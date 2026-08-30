@@ -1,14 +1,14 @@
 <div align="center">
-  <img src="assets/Echo-new.png" alt="Echo Music Logo" width="120"/>
+  <img src="assets/Epsilon-new.png" alt="Epsilon Music Logo" width="120"/>
 
-  <h1>Echo Music</h1>
+  <h1>Epsilon Music</h1>
 
   <p><b>A modern Android music app with ad-free streaming, synced lyrics, offline playback, and an intuitive user experience.</b></p>
   
   <table style="margin: 0 auto; border-collapse: collapse; border: none;">
     <tr>
       <td align="center" style="padding: 15px; border: none;">
-        <a href="https://echomusic.fun/download" style="text-decoration:none;"><img src="assets/download.png" alt="Download" width="150" style="border-radius: 12px; box-shadow: 0 8px 16px rgba(0,0,0,0.2);"/></a>
+        <a href="https://epsilonmusic.app/download" style="text-decoration:none;"><img src="assets/download.png" alt="Download" width="150" style="border-radius: 12px; box-shadow: 0 8px 16px rgba(0,0,0,0.2);"/></a>
       </td>
     </tr>
   </table>
@@ -18,7 +18,7 @@
 
 ## Overview
 
-Echo Music delivers a seamless, premium listening experience by leveraging YouTube Music's vast library — without the ads. It adds powerful extras including offline downloads, real-time synchronized lyrics, and environment-aware music recognition.
+Epsilon Music delivers a seamless, premium listening experience by leveraging YouTube Music's vast library — without the ads. It adds powerful extras including offline downloads, real-time synchronized lyrics, and environment-aware music recognition.
 
 ---
 
@@ -64,8 +64,8 @@ Echo Music delivers a seamless, premium listening experience by leveraging YouTu
         <img src="Screenshots/sc_5.png" alt="Music Library" width="220" style="border-radius: 12px; box-shadow: 0 8px 16px rgba(0,0,0,0.2);"/>
       </td>
       <td align="center" style="padding: 15px; border: none;">
-        <b>Echo Find (Recognition)</b><br><br>
-        <img src="Screenshots/sc_6.png" alt="Echo Find" width="220" style="border-radius: 12px; box-shadow: 0 8px 16px rgba(0,0,0,0.2);"/>
+        <b>Epsilon Find (Recognition)</b><br><br>
+        <img src="Screenshots/sc_6.png" alt="Epsilon Find" width="220" style="border-radius: 12px; box-shadow: 0 8px 16px rgba(0,0,0,0.2);"/>
       </td>
     </tr>
   </table>
@@ -103,11 +103,11 @@ Echo Music delivers a seamless, premium listening experience by leveraging YouTu
 </details>
 
 <details>
-<summary><b>Discovery & Echo Find</b></summary>
+<summary><b>Discovery & Epsilon Find</b></summary>
 <br>
 
-- **Echo Find** — Identify songs playing around you using advanced audio recognition.
-- **Echo Brain** — An intelligent, on-device engine that analyzes your listening momentum and auto-injects perfectly aligned tracks into your queue. Read more in the [Echo Brain Documentation](ECHO_BRAIN_DOCS.md).
+- **Epsilon Find** — Identify songs playing around you using advanced audio recognition.
+- **Epsilon Brain** — An intelligent, on-device engine that analyzes your listening momentum and auto-injects perfectly aligned tracks into your queue. Read more in the [Epsilon Brain Documentation](EPSILON_BRAIN_DOCS.md).
 - **Smart Recommendations** — Personalized suggestions based on your listening history.
 - **Comprehensive Browsing** — Explore Charts, Podcasts, Moods, and Genres.
 
@@ -161,7 +161,7 @@ Echo Music delivers a seamless, premium listening experience by leveraging YouTu
 
 ### Android Installation
 
-Download the latest pre-compiled APK from the [Releases Page](https://github.com/***REMOVED***/Echo-Music/releases/latest).
+Download the latest pre-compiled APK from the [Releases Page](https://github.com/VihaanAngaria/EpsilonMusic/releases/latest).
 
 <details>
 <summary><b>Building from Source</b></summary>
@@ -169,8 +169,8 @@ Download the latest pre-compiled APK from the [Releases Page](https://github.com
 
 1. **Clone the Repository**
    ```bash
-   git clone https://github.com/***REMOVED***/Echo-Music.git
-   cd Echo-Music
+   git clone https://github.com/VihaanAngaria/EpsilonMusic.git
+   cd EpsilonMusic
    ```
 
 2. **Configure Android SDK**
@@ -184,7 +184,7 @@ Download the latest pre-compiled APK from the [Releases Page](https://github.com
    Firebase is required for analytics and crash reporting. See the instructions in [SETUP.md](SETUP.md#3-configure-firebase-optional) for adding your `google-services.json`.
 
 4. **Build the Application**
-   Echo Music has two build variants: **FOSS** (without Google Play Services / Cast) and **GMS** (with Cast support).
+   Epsilon Music has two build variants: **FOSS** (without Google Play Services / Cast) and **GMS** (with Cast support).
    
    - To build the **FOSS** Universal Debug variant:
      ```bash
@@ -202,7 +202,7 @@ Download the latest pre-compiled APK from the [Releases Page](https://github.com
 
 ## Support the Project
 
-If Echo Music has been useful to you, consider supporting its development.
+If Epsilon Music has been useful to you, consider supporting its development.
 
 <div align="center">
   <table style="margin: 0 auto; border-collapse: collapse; border: none;">
@@ -238,7 +238,7 @@ If Echo Music has been useful to you, consider supporting its development.
 
 ## Special Thanks
 
-Echo Music stands on the shoulders of several excellent open-source projects. Sincere thanks to:
+Epsilon Music stands on the shoulders of several excellent open-source projects. Sincere thanks to:
 
 | Project | Description |
 | :--- | :--- |
@@ -246,7 +246,7 @@ Echo Music stands on the shoulders of several excellent open-source projects. Si
 | **[ArchiveTune](https://github.com/koiverse/ArchiveTune)** | Material You UI inspiration |
 | **[Better Lyrics](https://better-lyrics.boidu.dev/)** | Lyrics enhancement and synchronization |
 | **[SimpMusic](https://github.com/maxrave-dev/SimpMusic)** | Lyrics implementation reference |
-| **[Music Recognizer](https://github.com/aleksey-saenko/MusicRecognizer)** | Audio recognition (Echo Find) |
+| **[Music Recognizer](https://github.com/aleksey-saenko/MusicRecognizer)** | Audio recognition (Epsilon Find) |
 | **[BravePipe](https://github.com/bravepipeproject/BravePipe)** | Decryption handling and backup playback engine |
 
 ---
@@ -254,21 +254,21 @@ Echo Music stands on the shoulders of several excellent open-source projects. Si
 ## Legal Disclaimer & Terms of Use
 
 ### 1. 100% Free, Open-Source & Strictly Non-Commercial
-Echo Music is a fully open-source project (FOSS) created purely for educational purposes and personal use. We do not sell this application, nor do we monetize it in any way. There are no advertisements, no premium features, no subscriptions, and no hidden fees within the app. This project has absolutely no commercial value or financial intent.
+Epsilon Music is a fully open-source project (FOSS) created purely for educational purposes and personal use. We do not sell this application, nor do we monetize it in any way. There are no advertisements, no premium features, no subscriptions, and no hidden fees within the app. This project has absolutely no commercial value or financial intent.
 
 ### 2. A Custom Browser with Content Filtering
-Echo Music acts strictly as a specialized, third-party web browser and client. It simply parses the publicly available website content and APIs of YouTube and YouTube Music, rendering them in a custom user interface. The ad-free experience it provides is fundamentally no different from using a standard web browser (like Chrome, Firefox, or Brave) equipped with a common ad-blocking extension (such as uBlock Origin).
+Epsilon Music acts strictly as a specialized, third-party web browser and client. It simply parses the publicly available website content and APIs of YouTube and YouTube Music, rendering them in a custom user interface. The ad-free experience it provides is fundamentally no different from using a standard web browser (like Chrome, Firefox, or Brave) equipped with a common ad-blocking extension (such as uBlock Origin).
 
 ### 3. Support Content Creators
-We deeply respect the hard work of artists, musicians, and content creators. We strongly encourage all users to subscribe to [YouTube Premium](https://www.youtube.com/premium). Purchasing a Premium subscription is the best way to financially support the creators you listen to and ensure the continued growth of the platform. Echo Music is built as a proof-of-concept for developers and enthusiasts, not to harm creators' revenues.
+We deeply respect the hard work of artists, musicians, and content creators. We strongly encourage all users to subscribe to [YouTube Premium](https://www.youtube.com/premium). Purchasing a Premium subscription is the best way to financially support the creators you listen to and ensure the continued growth of the platform. Epsilon Music is built as a proof-of-concept for developers and enthusiasts, not to harm creators' revenues.
 
 ### 4. No Hosting of Copyrighted Material
 We do not host, upload, distribute, or store any audio, video, or copyrighted media files on our own servers. All content accessed through this application is stored entirely on Google's/YouTube's servers and remains the property of their respective copyright owners. The app merely acts as a conduit to stream publicly accessible links.
 
 ### 5. User Responsibility & Legal Contact
-The software is provided "AS IS", without warranty of any kind. The developers of Echo Music do not encourage or condone piracy. Users are solely responsible for ensuring their usage of this app complies with their local copyright laws and the Terms of Service of the platforms they access.
+The software is provided "AS IS", without warranty of any kind. The developers of Epsilon Music do not encourage or condone piracy. Users are solely responsible for ensuring their usage of this app complies with their local copyright laws and the Terms of Service of the platforms they access.
 
-Because we do not host any media files, we cannot process DMCA takedown requests for audio or video content. However, if you represent a copyright holder or have legal concerns regarding the open-source code itself, please contact us via email at: [hello@echomusic.fun](mailto:hello@echomusic.fun)
+Because we do not host any media files, we cannot process DMCA takedown requests for audio or video content. However, if you represent a copyright holder or have legal concerns regarding the open-source code itself, please contact us via email at: [hello@epsilonmusic.app](mailto:hello@epsilonmusic.app)
 
 ---
 

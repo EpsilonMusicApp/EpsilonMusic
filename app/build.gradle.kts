@@ -24,13 +24,13 @@ if (hasGoogleServicesConfig) {
 }
 
 android {
-    namespace = "echo.music.***REMOVED***"
+    namespace = "epsilon.music.***REMOVED***"
     compileSdk = 36
     ndkVersion = "27.0.12077973"
 
 
     defaultConfig {
-        applicationId = "echo.music.***REMOVED***"
+        applicationId = "epsilon.music.***REMOVED***"
         minSdk = 26
         targetSdk = 36
         versionCode = 152
@@ -342,7 +342,7 @@ dependencies {
     implementation(project(":shazamkit"))
     implementation(project(":artistvideo"))
     implementation(project(":applecanvas"))
-    implementation(project(":echomusiccanvas"))
+    implementation(project(":epsilonmusiccanvas"))
     implementation(project(":paxsenixlyrics"))
     implementation(project(":unison"))
 

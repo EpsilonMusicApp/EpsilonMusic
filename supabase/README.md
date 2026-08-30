@@ -172,7 +172,7 @@ psql "postgresql://postgres.ztxkyzstgeckbsfagqco:<password>@aws-0-ap-northeast-2
 
 ## Android Integration
 
-The Android client lives under `app/src/main/kotlin/com/music/echo/supabase/`:
+The Android client lives under `app/src/main/kotlin/com/music/epsilon/supabase/`:
 
 ```
 di/

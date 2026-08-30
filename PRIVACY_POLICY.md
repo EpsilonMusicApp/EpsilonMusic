@@ -1,8 +1,8 @@
-# Privacy Policy for Echo Music App
+# Privacy Policy for Epsilon Music App
 
 ## Introduction
 
-Echo Music ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our mobile application (the "App").
+Epsilon Music ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our mobile application (the "App").
 
 ## Information We Collect
 
@@ -119,9 +119,9 @@ We may update this Privacy Policy from time to time. We will notify you of any c
 
 If you have any questions about this Privacy Policy or our data practices, please contact us:
 
-- **GitHub**: [https://github.com/***REMOVED***/Echo-Music](https://github.com/***REMOVED***/Echo-Music)
-- **Issues**: [https://github.com/***REMOVED***/Echo-Music/issues](https://github.com/***REMOVED***/Echo-Music/issues)
-- **Discussions**: [https://github.com/***REMOVED***/Echo-Music/discussions](https://github.com/***REMOVED***/Echo-Music/discussions)
+- **GitHub**: [https://github.com/VihaanAngaria/EpsilonMusic](https://github.com/VihaanAngaria/EpsilonMusic)
+- **Issues**: [https://github.com/VihaanAngaria/EpsilonMusic/issues](https://github.com/VihaanAngaria/EpsilonMusic/issues)
+- **Discussions**: [https://github.com/VihaanAngaria/EpsilonMusic/discussions](https://github.com/VihaanAngaria/EpsilonMusic/discussions)
 
 ## Data Protection Compliance
 
@@ -141,5 +141,5 @@ This Privacy Policy complies with:
 
 ---
 
-**By using Echo Music, you agree to the collection and use of information in accordance with this Privacy Policy.**
+**By using Epsilon Music, you agree to the collection and use of information in accordance with this Privacy Policy.**
 

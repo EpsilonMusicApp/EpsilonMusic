@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "com.music.echo.playback"
+    namespace = "com.music.epsilon.playback"
     compileSdk = 36
     defaultConfig { minSdk = 26 }
     compileOptions {

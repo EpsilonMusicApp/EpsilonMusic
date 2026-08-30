@@ -1,6 +1,6 @@
 # Setup Instructions
 
-This document provides instructions for setting up the Echo Music project for development.
+This document provides instructions for setting up the Epsilon Music project for development.
 
 ## Prerequisites
 
@@ -14,8 +14,8 @@ This document provides instructions for setting up the Echo Music project for de
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/***REMOVED***/Echo-Music.git
-cd Echo-Music
+git clone https://github.com/VihaanAngaria/EpsilonMusic.git
+cd EpsilonMusic
 ```
 
 ### 2. Configure Local Properties
@@ -43,11 +43,13 @@ sdk.dir=/path/to/your/android/sdk
 Firebase is used for analytics and crash reporting. If you want to use these features:
 
 1. Create a Firebase project at [Firebase Console](https://console.firebase.google.com/)
-2. Add an Android app to your Firebase project
+2. Add an Android app to your Firebase project with package name `epsilon.music.***REMOVED***`
 3. Download the `google-services.json` file
-4. Place it in the `app/` directory
+4. Place it in the `app/` directory (replacing the existing one)
 
-**Note:** If you skip Firebase setup, the app will still build and run, but analytics and crash reporting will be disabled.
+**Important (post-rename):** The `mobilesdk_app_id` in the existing `app/google-services.json` was issued for the old `echo.music.***REMOVED***` package name. After the rename, you MUST re-register the Android app in the Firebase console with the new package name and download a fresh `google-services.json`. Otherwise the `processGoogleServicesDebug` Gradle task will fail validation.
+
+**Note:** If you skip Firebase setup, the app will still build and run, but analytics and crash reporting will be disabled. To build without Firebase, simply delete `app/google-services.json` — the build system auto-detects its absence and skips the Google Services plugin.
 
 ### 4. Configure Release Signing (Optional)
 
@@ -74,7 +76,7 @@ KEY_PASSWORD=your_key_password
 
 Open the project in Android Studio or build from the command line.
 
-Echo Music now ships a single **GMS** build variant (with Google Cast support). The previous FOSS (no Google Play Services) variant has been removed.
+Epsilon Music now ships a single **GMS** build variant (with Google Cast support). The previous FOSS (no Google Play Services) variant has been removed.
 
 ```bash
 # Debug build
@@ -88,7 +90,7 @@ Echo Music now ships a single **GMS** build variant (with Google Cast support). 
 
 ### 6. Configure AI Translation (Optional)
 
-Echo Music supports AI-powered lyrics translation. You can configure this in **Settings -> AI Settings**.
+Epsilon Music supports AI-powered lyrics translation. You can configure this in **Settings -> AI Settings**.
 
 #### Option A: Using OpenRouter (Default)
 

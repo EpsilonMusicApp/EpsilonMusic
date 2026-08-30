@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "com.music.echo.lyrics"
+    namespace = "com.music.epsilon.lyrics"
     compileSdk = 36
     defaultConfig { minSdk = 26 }
     compileOptions {

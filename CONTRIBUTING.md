@@ -1,6 +1,6 @@
-# Contributing to Echo Music
+# Contributing to Epsilon Music
 
-Thank you for your interest in contributing to Echo Music! This document provides comprehensive guidelines and information for contributors.
+Thank you for your interest in contributing to Epsilon Music! This document provides comprehensive guidelines and information for contributors.
 
 ## Table of Contents
 
@@ -65,12 +65,12 @@ We are committed to providing a welcoming and inspiring community for all. We pl
 1. Fork the repository on GitHub
 2. Clone your fork locally:
    ```bash
-   git clone https://github.com/YOUR_USERNAME/Echo-Music.git
-   cd Echo-Music
+   git clone https://github.com/VihaanAngaria/EpsilonMusic.git
+   cd EpsilonMusic
    ```
 3. Add the upstream repository:
    ```bash
-   git remote add upstream https://github.com/***REMOVED***/Echo-Music.git
+   git remote add upstream https://github.com/VihaanAngaria/EpsilonMusic.git
    ```
 
 ## Development Setup
@@ -95,8 +95,8 @@ If you want to test Firebase features:
 
 1. Create a Firebase project
 2. Add Android apps with package names:
-   - `***REMOVED***.echo.music` (release)
-   - `***REMOVED***.echo.music.debug` (debug)
+   - `epsilon.music.***REMOVED***` (release)
+   - `epsilon.music.***REMOVED***.debug` (debug)
 3. Copy the template and configure it with your Firebase credentials:
    ```bash
    cp app/google-services.json.template app/google-services.json
@@ -107,7 +107,7 @@ If you want to test Firebase features:
 
 ## Handling Sensitive Information
 
-When contributing to Echo Music, it's crucial to handle sensitive information properly:
+When contributing to Epsilon Music, it's crucial to handle sensitive information properly:
 
 ### Files That Should Never Be Committed
 
@@ -306,7 +306,7 @@ db/
   daos/         Room DAOs
 di/             Hilt modules (AppModule, NetworkModule, Qualifiers, entry points)
 discord/        Discord Rich Presence integration
-echomusic/      Core app-level classes
+epsilonmusic/      Core app-level classes
 eq/             Equalizer
 extensions/     Kotlin extension functions
 listentogether/ "Listen Together" synced group listening feature
@@ -315,7 +315,7 @@ lyrics/         Lyrics orchestration
 models/         Shared data models
 playback/       Media3/ExoPlayer service, download manager, queueing, audio
 quicksettings/  Android quick settings tile
-recognition/    Music recognition (Echo Find) app-side logic
+recognition/    Music recognition (Epsilon Find) app-side logic
 spotify/        Spotify API integration
 spotifyimport/  Import playlists/tracks from Spotify
 ui/
@@ -424,7 +424,7 @@ We follow [Semantic Versioning](https://semver.org/):
 
 If you have questions about contributing:
 
-1. Check the [GitHub Discussions](https://github.com/***REMOVED***/Echo-Music/discussions)
+1. Check the [GitHub Discussions](https://github.com/VihaanAngaria/EpsilonMusic/discussions)
 2. Create a new discussion
 3. Contact maintainers directly through GitHub
 
@@ -440,11 +440,11 @@ Contributors will be recognized in:
 
 If you have questions about contributing:
 
-1. Check the [GitHub Discussions](https://github.com/***REMOVED***/Echo-Music/discussions)
+1. Check the [GitHub Discussions](https://github.com/VihaanAngaria/EpsilonMusic/discussions)
 2. Create a new discussion
 3. Contact maintainers directly
 
-Thank you for contributing to Echo Music!
+Thank you for contributing to Epsilon Music!
 
 ---
 <div align="center">
