@@ -43,11 +43,19 @@ sdk.dir=/path/to/your/android/sdk
 Firebase is used for analytics and crash reporting. If you want to use these features:
 
 1. Create a Firebase project at [Firebase Console](https://console.firebase.google.com/)
-2. Add an Android app to your Firebase project with package name `epsilon.music.***REMOVED***`
+2. Add an Android app to your Firebase project with package name `com.epsilonmusic.app`
 3. Download the `google-services.json` file
 4. Place it in the `app/` directory (replacing the existing one)
 
-**Important (post-rename):** The `mobilesdk_app_id` in the existing `app/google-services.json` was issued for the old `echo.music.***REMOVED***` package name. After the rename, you MUST re-register the Android app in the Firebase console with the new package name and download a fresh `google-services.json`. Otherwise the `processGoogleServicesDebug` Gradle task will fail validation.
+**Important (post-rename):** The current `app/google-services.json` is configured for Firebase project `epsilonmusic-b7b95` with package `com.epsilonmusic.app` (release) and `com.epsilonmusic.app.debug` (debug). If you need to use a different Firebase project, replace the file with one downloaded from your own Firebase console.
+
+**Firebase services used:**
+- ✅ Firebase Analytics (GMS flavor only)
+- ✅ Firebase Crashlytics (GMS flavor only)
+- ❌ Firebase Authentication — NOT used (Supabase Auth handles all authentication)
+- ❌ Cloud Firestore — NOT used (Supabase PostgreSQL handles all database)
+- ❌ Firebase Realtime Database — NOT used
+- ❌ Firebase Storage — NOT used (Supabase Storage handles all user assets)
 
 **Note:** If you skip Firebase setup, the app will still build and run, but analytics and crash reporting will be disabled. To build without Firebase, simply delete `app/google-services.json` — the build system auto-detects its absence and skips the Google Services plugin.
 

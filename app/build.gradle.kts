@@ -24,13 +24,13 @@ if (hasGoogleServicesConfig) {
 }
 
 android {
-    namespace = "epsilon.music.***REMOVED***"
+    namespace = "com.epsilonmusic.app"
     compileSdk = 36
     ndkVersion = "27.0.12077973"
 
 
     defaultConfig {
-        applicationId = "epsilon.music.***REMOVED***"
+        applicationId = "com.epsilonmusic.app"
         minSdk = 26
         targetSdk = 36
         versionCode = 152

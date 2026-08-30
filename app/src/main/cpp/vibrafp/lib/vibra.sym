@@ -1,6 +1,6 @@
 {
   global:
-    Java_epsilon_music_***REMOVED***_recognition_VibraSignature_*;
+    Java_com_epsilonmusic_app_recognition_VibraSignature_*;
   local:
     *;
 };

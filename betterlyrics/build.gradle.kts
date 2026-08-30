@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "epsilon.music.***REMOVED***.betterlyrics"
+    namespace = "com.epsilonmusic.app.betterlyrics"
     compileSdk = 36
 
     defaultConfig {

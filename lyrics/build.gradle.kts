@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "com.music.epsilon.lyrics"
+    namespace = "com.epsilonmusic.app.lyrics"
     compileSdk = 36
     defaultConfig { minSdk = 26 }
     compileOptions {

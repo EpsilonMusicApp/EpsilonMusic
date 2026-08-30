@@ -4,7 +4,7 @@ import android.content.Context
 import com.music.paxsenix.models.LyricsResponse
 import com.music.paxsenix.models.SearchResponse
 import com.music.paxsenix.models.SearchResult
-import epsilon.music.***REMOVED***.betterlyrics.TTMLParser
+import com.epsilonmusic.app.betterlyrics.TTMLParser
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.engine.cio.CIO

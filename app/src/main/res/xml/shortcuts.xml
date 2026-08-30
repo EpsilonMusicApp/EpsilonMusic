@@ -6,9 +6,9 @@
         android:shortcutId="search"
         android:shortcutShortLabel="@string/search">
         <intent
-            android:action="epsilon.music.***REMOVED***.action.SEARCH"
-            android:targetClass="epsilon.music.***REMOVED***.MainActivity"
-            android:targetPackage="epsilon.music.***REMOVED***" />
+            android:action="com.epsilonmusic.app.action.SEARCH"
+            android:targetClass="com.epsilonmusic.app.MainActivity"
+            android:targetPackage="com.epsilonmusic.app" />
     </shortcut>
     <shortcut
         android:enabled="true"
@@ -16,8 +16,8 @@
         android:shortcutId="library"
         android:shortcutShortLabel="@string/filter_library">
         <intent
-            android:action="epsilon.music.***REMOVED***.action.LIBRARY"
-            android:targetClass="epsilon.music.***REMOVED***.MainActivity"
-            android:targetPackage="epsilon.music.***REMOVED***" />
+            android:action="com.epsilonmusic.app.action.LIBRARY"
+            android:targetClass="com.epsilonmusic.app.MainActivity"
+            android:targetPackage="com.epsilonmusic.app" />
     </shortcut>
 </shortcuts>

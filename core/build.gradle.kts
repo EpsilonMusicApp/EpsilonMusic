@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "com.music.epsilon.core"
+    namespace = "com.epsilonmusic.app.core"
     compileSdk = 36
     defaultConfig { minSdk = 26 }
     compileOptions {

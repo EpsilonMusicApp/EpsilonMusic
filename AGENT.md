@@ -106,7 +106,7 @@ group listening), Discord Rich Presence, and more. It ships as a single
 **GMS** build variant (Google Cast + Firebase enabled) — the previous FOSS
 (no-Google-services) flavor has been removed. See "Build variants" below.
 
-Package/namespace: `epsilon.music.***REMOVED***` (app module). Application ID matches.
+Package/namespace: `com.epsilonmusic.app` (app module). Application ID matches.
 
 ## Tech stack
 
