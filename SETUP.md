@@ -80,6 +80,38 @@ KEY_ALIAS=your_key_alias
 KEY_PASSWORD=your_key_password
 ```
 
+#### GitHub Actions Secrets (for CI release builds)
+
+The `.github/workflows/android-build.yml` workflow builds a signed release APK on every push to `main`. The following GitHub repository secrets must be configured under **Settings → Secrets and variables → Actions**:
+
+| Secret Name | Description | How to generate |
+|---|---|---|
+| `KEYSTORE_BASE64` | Your release keystore (`.jks`), base64-encoded | `base64 -i keystore.jks \| tr -d '\n'` |
+| `KEY_ALIAS` | The alias of the signing key inside the keystore | Set when you created the keystore with `keytool` |
+| `KEY_PASSWORD` | The password for the signing key | Set when you created the keystore |
+| `STORE_PASSWORD` | The password for the keystore file itself | Set when you created the keystore |
+
+**Never** commit the keystore file or passwords to the repository. The `.gitignore` already excludes `*.keystore` and `*.jks` files.
+
+To generate a new release keystore locally:
+
+```bash
+keytool -genkeypair -v \
+  -keystore keystore.jks \
+  -alias epsilon-music \
+  -keyalg RSA -keysize 2048 -validity 10000 \
+  -storepass <your-store-password> \
+  -keypass <your-key-password>
+```
+
+Then base64-encode it and add it as the `KEYSTORE_BASE64` secret:
+
+```bash
+base64 -i keystore.jks | tr -d '\n' | pbcopy   # macOS
+# or
+base64 -w 0 keystore.jks                        # Linux
+```
+
 ### 5. Build the Project
 
 Open the project in Android Studio or build from the command line.
