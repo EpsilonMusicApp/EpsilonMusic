@@ -10,7 +10,7 @@ android {
 
     defaultConfig {
         minSdk = 26
-        buildConfigField("String", "INNERTUBE_API_KEY", "\"REDACTED_INNERTUBE_KEY\"")
+        buildConfigField("String", "INNERTUBE_API_KEY", "\"***REMOVED***\"")
     }
 
     compileOptions {
