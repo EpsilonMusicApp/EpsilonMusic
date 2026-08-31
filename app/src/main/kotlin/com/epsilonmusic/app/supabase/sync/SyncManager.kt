@@ -146,7 +146,7 @@ class SyncManager @Inject constructor(
 
             // 1. Playlists
             for (pl in payload.playlists) {
-                mergePlaylist(pl)
+                try { mergePlaylist(pl) } catch (e: Exception) { Timber.w(e, "mergePlaylist failed") }
                 processed++
                 _state.value = _state.value.copy(
                     stage = "Syncing playlists",
@@ -157,13 +157,13 @@ class SyncManager @Inject constructor(
 
             // 2. Playlist tracks
             for (t in payload.playlistTracks) {
-                mergePlaylistTrack(t)
+                try { mergePlaylistTrack(t) } catch (e: Exception) { Timber.w(e, "mergePlaylistTrack failed") }
                 processed++
             }
 
             // 3. Liked songs
             for (ls in payload.likedSongs) {
-                mergeLikedSong(ls)
+                try { mergeLikedSong(ls) } catch (e: Exception) { Timber.w(e, "mergeLikedSong failed") }
                 processed++
                 _state.value = _state.value.copy(
                     stage = "Syncing liked songs",
@@ -173,11 +173,11 @@ class SyncManager @Inject constructor(
 
             // 4. Saved albums / artists
             for (a in payload.savedAlbums) {
-                mergeSavedAlbum(a)
+                try { mergeSavedAlbum(a) } catch (e: Exception) { Timber.w(e, "mergeSavedAlbum failed") }
                 processed++
             }
             for (ar in payload.savedArtists) {
-                mergeSavedArtist(ar)
+                try { mergeSavedArtist(ar) } catch (e: Exception) { Timber.w(e, "mergeSavedArtist failed") }
                 processed++
             }
 

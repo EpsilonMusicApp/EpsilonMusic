@@ -58,6 +58,9 @@ class App : Application(), SingletonImageLoader.Factory {
     @ApplicationScope
     lateinit var applicationScope: CoroutineScope
 
+    @Inject
+    lateinit var authRepository: com.epsilonmusic.app.supabase.repository.AuthRepository
+
     override fun startForegroundService(service: Intent): android.content.ComponentName? {
         return try {
             super.startForegroundService(service)
@@ -113,6 +116,11 @@ class App : Application(), SingletonImageLoader.Factory {
         applicationScope.launch {
             initializeSettings()
             observeSettingsChanges()
+        }
+
+        // Restore Supabase session from disk (if user was previously logged in)
+        applicationScope.launch {
+            authRepository.loadSession()
         }
     }
 

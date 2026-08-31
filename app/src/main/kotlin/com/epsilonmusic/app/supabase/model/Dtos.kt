@@ -28,13 +28,13 @@ enum class MusicProvider(val id: String) {
 
 @Serializable
 data class ProfileDto(
-    val id: String,
+    val id: String = "",
     val username: String? = null,
     val displayName: String? = null,
     @SerialName("avatar_url") val avatarUrl: String? = null,
     val bio: String? = null,
-    @SerialName("created_at") val createdAt: String,
-    @SerialName("updated_at") val updatedAt: String,
+    @SerialName("created_at") val createdAt: String = "",
+    @SerialName("updated_at") val updatedAt: String = "",
 )
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -44,7 +44,7 @@ data class ProfileDto(
 @Serializable
 data class UserSettingsDto(
     val id: String? = null,
-    @SerialName("user_id") val userId: String,
+    @SerialName("user_id") val userId: String = "",
     val theme: String = "system",
     @SerialName("pure_black") val pureBlack: Boolean = false,
     @SerialName("selected_theme_color") val selectedThemeColor: String? = null,
@@ -93,9 +93,9 @@ data class UserSettingsDto(
 
 @Serializable
 data class PlaylistDto(
-    val id: String,
-    @SerialName("user_id") val userId: String,
-    val title: String,
+    val id: String = "",
+    @SerialName("user_id") val userId: String = "",
+    val title: String = "",
     val description: String? = null,
     @SerialName("artwork_url") val artworkUrl: String? = null,
     @SerialName("is_public") val isPublic: Boolean = false,
@@ -103,13 +103,13 @@ data class PlaylistDto(
     @SerialName("share_slug") val shareSlug: String? = null,
     @SerialName("last_synced_at") val lastSyncedAt: String? = null,
     @SerialName("deleted_at") val deletedAt: String? = null,
-    @SerialName("created_at") val createdAt: String,
-    @SerialName("updated_at") val updatedAt: String,
+    @SerialName("created_at") val createdAt: String = "",
+    @SerialName("updated_at") val updatedAt: String = "",
 )
 
 @Serializable
 data class PlaylistUpsertDto(
-    val title: String,
+    val title: String = "",
     val description: String? = null,
     @SerialName("artwork_url") val artworkUrl: String? = null,
     @SerialName("is_public") val isPublic: Boolean = false,
@@ -122,33 +122,33 @@ data class PlaylistUpsertDto(
 
 @Serializable
 data class PlaylistTrackDto(
-    val id: String,
-    @SerialName("playlist_id") val playlistId: String,
+    val id: String = "",
+    @SerialName("playlist_id") val playlistId: String = "",
     val provider: String = "youtube",
-    @SerialName("song_id") val songId: String,
+    @SerialName("song_id") val songId: String = "",
     val title: String? = null,
     val artist: String? = null,
     val album: String? = null,
     @SerialName("duration_ms") val durationMs: Int? = null,
     @SerialName("thumbnail_url") val thumbnailUrl: String? = null,
     @SerialName("set_video_id") val setVideoId: String? = null,
-    val position: Int,
-    @SerialName("added_at") val addedAt: String,
-    @SerialName("updated_at") val updatedAt: String,
+    val position: Int = 0,
+    @SerialName("added_at") val addedAt: String = "",
+    @SerialName("updated_at") val updatedAt: String = "",
 )
 
 @Serializable
 data class PlaylistTrackInsertDto(
-    @SerialName("playlist_id") val playlistId: String,
+    @SerialName("playlist_id") val playlistId: String = "",
     val provider: String = "youtube",
-    @SerialName("song_id") val songId: String,
+    @SerialName("song_id") val songId: String = "",
     val title: String? = null,
     val artist: String? = null,
     val album: String? = null,
     @SerialName("duration_ms") val durationMs: Int? = null,
     @SerialName("thumbnail_url") val thumbnailUrl: String? = null,
     @SerialName("set_video_id") val setVideoId: String? = null,
-    val position: Int,
+    val position: Int = 0,
 )
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -157,43 +157,43 @@ data class PlaylistTrackInsertDto(
 
 @Serializable
 data class LikedSongDto(
-    val id: String,
-    @SerialName("user_id") val userId: String,
+    val id: String = "",
+    @SerialName("user_id") val userId: String = "",
     val provider: String = "youtube",
-    @SerialName("song_id") val songId: String,
+    @SerialName("song_id") val songId: String = "",
     val title: String? = null,
     val artist: String? = null,
     val album: String? = null,
     @SerialName("duration_ms") val durationMs: Int? = null,
     @SerialName("thumbnail_url") val thumbnailUrl: String? = null,
-    @SerialName("liked_at") val likedAt: String,
+    @SerialName("liked_at") val likedAt: String = "",
 )
 
 @Serializable
 data class SavedAlbumDto(
-    val id: String,
-    @SerialName("user_id") val userId: String,
+    val id: String = "",
+    @SerialName("user_id") val userId: String = "",
     val provider: String = "youtube",
-    @SerialName("album_id") val albumId: String,
+    @SerialName("album_id") val albumId: String = "",
     val title: String? = null,
     val artist: String? = null,
     val year: Int? = null,
     @SerialName("thumbnail_url") val thumbnailUrl: String? = null,
     @SerialName("song_count") val songCount: Int? = null,
     @SerialName("duration_ms") val durationMs: Int? = null,
-    @SerialName("saved_at") val savedAt: String,
+    @SerialName("saved_at") val savedAt: String = "",
 )
 
 @Serializable
 data class SavedArtistDto(
-    val id: String,
-    @SerialName("user_id") val userId: String,
+    val id: String = "",
+    @SerialName("user_id") val userId: String = "",
     val provider: String = "youtube",
-    @SerialName("artist_id") val artistId: String,
+    @SerialName("artist_id") val artistId: String = "",
     val name: String? = null,
     @SerialName("thumbnail_url") val thumbnailUrl: String? = null,
     @SerialName("channel_id") val channelId: String? = null,
-    @SerialName("saved_at") val savedAt: String,
+    @SerialName("saved_at") val savedAt: String = "",
 )
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -202,10 +202,10 @@ data class SavedArtistDto(
 
 @Serializable
 data class ListeningHistoryDto(
-    val id: String,
-    @SerialName("user_id") val userId: String,
+    val id: String = "",
+    @SerialName("user_id") val userId: String = "",
     val provider: String = "youtube",
-    @SerialName("song_id") val songId: String,
+    @SerialName("song_id") val songId: String = "",
     val title: String? = null,
     val artist: String? = null,
     val album: String? = null,
@@ -213,25 +213,25 @@ data class ListeningHistoryDto(
     @SerialName("thumbnail_url") val thumbnailUrl: String? = null,
     @SerialName("event_type") val eventType: String = "played",
     @SerialName("listened_ms") val listenedMs: Int = 0,
-    @SerialName("played_at") val playedAt: String,
+    @SerialName("played_at") val playedAt: String = "",
     @SerialName("device_id") val deviceId: String? = null,
-    @SerialName("created_at") val createdAt: String,
+    @SerialName("created_at") val createdAt: String = "",
 )
 
 @Serializable
 data class RecentlyPlayedDto(
-    val id: String,
-    @SerialName("user_id") val userId: String,
+    val id: String = "",
+    @SerialName("user_id") val userId: String = "",
     val provider: String = "youtube",
-    @SerialName("song_id") val songId: String,
+    @SerialName("song_id") val songId: String = "",
     val title: String? = null,
     val artist: String? = null,
     val album: String? = null,
     @SerialName("duration_ms") val durationMs: Int? = null,
     @SerialName("thumbnail_url") val thumbnailUrl: String? = null,
-    @SerialName("last_played_at") val lastPlayedAt: String,
+    @SerialName("last_played_at") val lastPlayedAt: String = "",
     @SerialName("play_count") val playCount: Int = 1,
-    @SerialName("created_at") val createdAt: String,
+    @SerialName("created_at") val createdAt: String = "",
 )
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -240,19 +240,19 @@ data class RecentlyPlayedDto(
 
 @Serializable
 data class DeviceDto(
-    val id: String,
-    @SerialName("user_id") val userId: String,
-    @SerialName("device_fingerprint") val deviceFingerprint: String,
+    val id: String = "",
+    @SerialName("user_id") val userId: String = "",
+    @SerialName("device_fingerprint") val deviceFingerprint: String = "",
     @SerialName("device_name") val deviceName: String? = null,
     @SerialName("device_type") val deviceType: String = "android",
     val platform: String? = null,
     @SerialName("app_version") val appVersion: String? = null,
     @SerialName("os_version") val osVersion: String? = null,
-    @SerialName("last_seen_at") val lastSeenAt: String,
+    @SerialName("last_seen_at") val lastSeenAt: String = "",
     @SerialName("push_token") val pushToken: String? = null,
     @SerialName("is_active") val isActive: Boolean = true,
-    @SerialName("created_at") val createdAt: String,
-    @SerialName("updated_at") val updatedAt: String,
+    @SerialName("created_at") val createdAt: String = "",
+    @SerialName("updated_at") val updatedAt: String = "",
 )
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -269,5 +269,5 @@ data class SyncStateDto(
     @SerialName("recently_played") val recentlyPlayed: List<RecentlyPlayedDto> = emptyList(),
     @SerialName("user_settings") val userSettings: UserSettingsDto? = null,
     val profile: ProfileDto? = null,
-    @SerialName("server_time") val serverTime: String,
+    @SerialName("server_time") val serverTime: String = "",
 )

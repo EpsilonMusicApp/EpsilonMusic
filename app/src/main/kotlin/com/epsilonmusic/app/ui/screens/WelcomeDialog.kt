@@ -167,7 +167,7 @@ private fun WelcomeAppCard() {
         ) {
             val isDark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
             AsyncImage(
-                model = R.mipmap.ic_launcher,
+                model = R.drawable.ic_launcher_foreground,
                 contentDescription = null,
                 modifier = Modifier
                     .size(100.dp)

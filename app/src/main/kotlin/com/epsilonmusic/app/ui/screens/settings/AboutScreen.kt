@@ -256,19 +256,17 @@ private fun AboutAppCard() {
             ) {
                 if (rotation <= 90f) {
                     Image(
-                        painter = painterResource(R.drawable.ic_launcher_nobg),
+                        painter = painterResource(R.drawable.ic_launcher_foreground),
                         contentDescription = null,
-                        colorFilter = ColorFilter.tint(if (isDark) Color.White else Color(0xFFEA3829)),
                         modifier = Modifier.fillMaxSize()
                     )
                 } else {
-                    coil3.compose.AsyncImage(
-                        model = "https://avatars.githubusercontent.com/u/147871321?v=4",
+                    Image(
+                        painter = painterResource(R.drawable.ic_launcher_foreground),
                         contentDescription = null,
                         modifier = Modifier
                             .fillMaxSize()
-                            .graphicsLayer { rotationY = 180f }, // Un-flip the backside image
-                        contentScale = androidx.compose.ui.layout.ContentScale.Crop
+                            .graphicsLayer { rotationY = 180f },
                     )
                 }
             }
