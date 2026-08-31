@@ -413,12 +413,14 @@
         <service
             android:name=".widget.MusicRecognizerWidgetService"
             android:exported="false"
-            android:foregroundServiceType="microphone" />
+            android:foregroundServiceType="microphone"
+            android:process=":recognizer" />
 
         <service
             android:name=".recognition.RecognitionForegroundService"
             android:exported="false"
-            android:foregroundServiceType="microphone" />
+            android:foregroundServiceType="microphone"
+            android:process=":recognizer" />
 
         <!-- Music Recognizer Quick Settings Tile -->
         <service
