@@ -5,10 +5,12 @@ plugins {
 
 android {
     namespace = "com.music.innertube"
+    buildFeatures { buildConfig = true }
     compileSdk = 36
 
     defaultConfig {
         minSdk = 26
+        buildConfigField("String", "INNERTUBE_API_KEY", "\"REDACTED_INNERTUBE_KEY\"")
     }
 
     compileOptions {

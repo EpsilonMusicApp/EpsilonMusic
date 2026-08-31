@@ -387,7 +387,7 @@ class InnerTube {
         videoId: String,
     ) = withRetry {
         httpClient.post("https://music.youtube.com/youtubei/v1/get_transcript") {
-            parameter("key", "REDACTED_INNERTUBE_KEY")
+            parameter("key", com.music.innertube.BuildConfig.INNERTUBE_API_KEY)
             headers {
                 append("Content-Type", "application/json")
             }
@@ -798,7 +798,7 @@ class InnerTube {
                     append("Authorization", "SAPISIDHASH ${currentTime}_${sapisidHash}")
                 }
             }
-            parameter("key", "REDACTED_INNERTUBE_KEY")
+            parameter("key", com.music.innertube.BuildConfig.INNERTUBE_API_KEY)
             parameter("prettyPrint", false)
             setBody(requestBody)
         }

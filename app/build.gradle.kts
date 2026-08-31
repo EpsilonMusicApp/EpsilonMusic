@@ -80,6 +80,14 @@ android {
             ?: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp0eGt5enN0Z2Vja2JzZmFncWNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgwODQ5NjQsImV4cCI6MjEwMzY2MDk2NH0.DPjE3fnIJBkYKIPvqo_jWXF-7vlz3qXdQeM61FMMRp0"
         buildConfigField("String", "SUPABASE_URL", "\"$supabaseUrl\"")
         buildConfigField("String", "SUPABASE_ANON_KEY", "\"$supabaseAnonKey\"")
+        
+        // Google API key for PO Token generation (YouTube streaming)
+        val googleApiKey = localProperties.getProperty("GOOGLE_API_KEY")
+            ?: System.getenv("GOOGLE_API_KEY")
+            ?: "REDACTED_POTOKEN_KEY"
+        buildConfigField("String", "GOOGLE_API_KEY", "\"$googleApiKey\"")
+        
+            ?: "REDACTED_INNERTUBE_KEY"
         // ────────────────────────────────────────────────────────────────────
     }
 
