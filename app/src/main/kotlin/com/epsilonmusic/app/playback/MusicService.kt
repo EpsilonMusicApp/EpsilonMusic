@@ -1499,10 +1499,11 @@ class MusicService :
             if (initialStatus.items.isEmpty()) return@launch
             
             originalQueueSize = initialStatus.items.size
-            if (queue.preloadItem != null) {
+            val preloadItem = queue.preloadItem
+            if (preloadItem != null) {
                 // Check if the preloadItem is actually in the queue.
                 // If it is, skip it (it's already playing). If not, insert all items.
-                val preloadMediaId = queue.preloadItem.id
+                val preloadMediaId = preloadItem.id
                 val preloadInQueue = initialStatus.items.any { it.mediaId == preloadMediaId }
                 if (preloadInQueue) {
                     val safeIndex = initialStatus.mediaItemIndex.coerceIn(0, (initialStatus.items.size - 1).coerceAtLeast(0))
