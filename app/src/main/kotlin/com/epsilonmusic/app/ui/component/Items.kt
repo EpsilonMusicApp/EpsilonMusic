@@ -811,11 +811,15 @@ fun PlaylistListItem(
     subtitle = if (autoPlaylist) {
         ""
     } else {
-        if (playlist.songCount == 0 && playlist.playlist.remoteSongCount!! != null) {
+        // Safe null check: newly created playlists (both local and YouTube-synced) have
+        // remoteSongCount == null. Using '!!' here would crash the app with NPE during
+        // recomposition. Fall back to local songCount when remoteSongCount is null.
+        val remoteCount = playlist.playlist.remoteSongCount
+        if (playlist.songCount == 0 && remoteCount != null && remoteCount > 0) {
             pluralStringResource(
                 R.plurals.n_song,
-                playlist.playlist.remoteSongCount!!!!,
-                playlist.playlist.remoteSongCount!!
+                remoteCount,
+                remoteCount
             )
         } else {
             pluralStringResource(
@@ -912,11 +916,15 @@ fun PlaylistGridItem(
         val subtitle = if (autoPlaylist) {
             ""
         } else {
-            if (playlist.songCount == 0 && playlist.playlist.remoteSongCount!! != null) {
+            // Safe null check: see PlaylistListItem for the same rationale — using '!!'
+            // here would crash with NPE for newly created playlists where
+            // remoteSongCount is null (both local-only and YouTube-synced).
+            val remoteCount = playlist.playlist.remoteSongCount
+            if (playlist.songCount == 0 && remoteCount != null && remoteCount > 0) {
                 pluralStringResource(
                     R.plurals.n_song,
-                    playlist.playlist.remoteSongCount!!!!,
-                    playlist.playlist.remoteSongCount!!
+                    remoteCount,
+                    remoteCount
                 )
             } else {
                 pluralStringResource(

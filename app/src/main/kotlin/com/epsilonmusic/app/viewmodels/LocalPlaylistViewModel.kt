@@ -20,8 +20,10 @@ import com.epsilonmusic.app.extensions.toEnum
 import com.epsilonmusic.app.models.toMediaMetadata
 import com.epsilonmusic.app.utils.SyncUtils
 import com.epsilonmusic.app.utils.dataStore
+import com.epsilonmusic.app.utils.reportException
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -33,6 +35,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import java.text.Collator
 import java.util.Locale
 import javax.inject.Inject
@@ -97,21 +100,37 @@ constructor(
 
     init {
         viewModelScope.launch {
-            
-            playlist.first { it != null }?.playlist?.browseId?.let { browseId ->
-                syncUtils.syncPlaylist(browseId, playlistId)
+            // Defensive: any failure inside the sync trigger must NOT crash the app.
+            // The sync itself runs in SyncUtils.syncScope (which has its own
+            // CoroutineExceptionHandler), but we still wrap the trigger here so a
+            // future regression in syncUtils cannot take down the playlist screen.
+            try {
+                playlist.first { it != null }?.playlist?.browseId?.let { browseId ->
+                    syncUtils.syncPlaylist(browseId, playlistId)
+                }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                reportException(e)
             }
         }
 
         viewModelScope.launch {
-            val sortedSongs =
-                playlistSongs.first().sortedWith(compareBy({ it.map.position }, { it.map.id }))
-            database.transaction {
-                sortedSongs.forEachIndexed { index, playlistSong ->
-                    if (playlistSong.map.position != index) {
-                        update(playlistSong.map.copy(position = index))
+            try {
+                val sortedSongs =
+                    playlistSongs.first().sortedWith(compareBy({ it.map.position }, { it.map.id }))
+                database.transaction {
+                    sortedSongs.forEachIndexed { index, playlistSong ->
+                        if (playlistSong.map.position != index) {
+                            update(playlistSong.map.copy(position = index))
+                        }
                     }
                 }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                // Position normalization is best-effort; do not crash the app on failure.
+                Timber.e(e, "Failed to normalize playlist song positions")
             }
         }
     }
