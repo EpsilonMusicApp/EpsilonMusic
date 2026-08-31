@@ -1124,24 +1124,31 @@ class MusicService :
                     .setUsage(C.USAGE_MEDIA)
                     .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
                     .build(),
-                // handleAudioFocus = true
+                // handleAudioFocus = false
                 //
-                // This MUST be true. When false (the previous value), ExoPlayer does NOT
-                // request audio focus, so the system has no idea this app is playing music.
-                // The system then routes hardware volume-key presses to the default stream
-                // (STREAM_RING / in-call volume) instead of STREAM_MUSIC — which is exactly
-                // the bug the user reported: "when music is playing, pressing volume up
-                // changes the calling volume instead of the music volume."
+                // IMPORTANT: keep this `false`. The app has its own manual
+                // AudioFocusRequest management (see setupAudioFocusRequest(),
+                // requestAudioFocus(), handleAudioFocusChange() below) which
+                // predates this Builder call and does the same job — but with
+                // extra logic for ducking, wifi-lock, EQ session, etc.
                 //
-                // With handleAudioFocus = true, ExoPlayer requests AUDIOFOCUS_GAIN with
-                // USAGE_MEDIA + CONTENT_TYPE_MUSIC. The AudioManager then automatically
-                // routes volume-key presses to STREAM_MUSIC while the player holds focus,
-                // which is the correct Android behavior for media apps.
+                // A previous commit (906c2da) changed this to `true` to fix
+                // the volume-key routing issue. That fixed the volume keys but
+                // caused songs to auto-pause: when both ExoPlayer's internal
+                // focus listener AND the manual handleAudioFocusChange() fire
+                // for the same transient focus event (e.g. a notification sound,
+                // a brief audio device change, or a BT reconnection), they
+                // race each other — ExoPlayer pauses the player, the manual
+                // callback sets wasPlayingBeforeAudioFocusLoss=true, and on
+                // focus gain the 300 ms-delayed player.play() races with
+                // ExoPlayer's own resume, causing a pause/play loop.
                 //
-                // Note: this complements (does NOT replace) the manual AudioFocusRequest
-                // built in setupAudioFocusRequest() — both can coexist. ExoPlayer's
-                // built-in focus handling is what actually wires up the volume-key routing.
-                true,
+                // The volume-key routing is now handled by the
+                // `volumeControlStream = STREAM_MUSIC` set in
+                // MainActivity.onCreate() (see commit 906c2da), which routes
+                // volume-key presses to STREAM_MUSIC without needing
+                // ExoPlayer's audio focus to be engaged.
+                false,
             )
             .setSeekBackIncrementMs(5000)
             .setSeekForwardIncrementMs(5000)
@@ -1227,8 +1234,14 @@ class MusicService :
             }
 
             AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> {
+                // Duck-only: lower volume but DO NOT pause. Previously this called
+                // player.pause() via wasPlayingBeforeAudioFocusLoss path, which caused
+                // the user-reported "songs automatically pause" issue whenever a brief
+                // duck-eligible event fired (e.g., a notification sound playing, a
+                // brief system audio event). Ducking is the correct Android behavior
+                // here — pause is reserved for genuine LOSS_TRANSIENT.
                 hasAudioFocus = false
-                wasPlayingBeforeAudioFocusLoss = player.isPlaying
+                wasPlayingBeforeAudioFocusLoss = false  // do NOT auto-resume from a duck
                 if (player.isPlaying) {
                     player.volume = if (isMuted.value) 0f else (playerVolume.value * 0.2f)
                 }
@@ -2206,6 +2219,12 @@ class MusicService :
 
             if (!playWhenReady && !isPausedByVolumeMute) {
                 wasPlayingBeforeVolumeMute = false
+                // Clear the audio-focus auto-resume flag too. Previously, if the user
+                // pressed pause DURING a transient focus loss, the flag stayed true
+                // and the player would auto-resume on focus GAIN — overriding the
+                // user's explicit pause. Now: if the user pressed pause, stay paused
+                // regardless of focus state.
+                wasPlayingBeforeAudioFocusLoss = false
             }
         }
 
