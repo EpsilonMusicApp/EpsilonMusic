@@ -2015,7 +2015,7 @@ fun Lyrics(
                                     action = Intent.ACTION_SEND
                                     type = "text/plain"
                                     val songLink =
-                                        "https://share.epsilonmusic.app/watch?v=${mediaMetadata?.id}"
+                                        "https://vihaanangaria.github.io/EpsilonMusicLandingPage/watch?v=${mediaMetadata?.id}"
                                     
                                     putExtra(
                                         Intent.EXTRA_TEXT,

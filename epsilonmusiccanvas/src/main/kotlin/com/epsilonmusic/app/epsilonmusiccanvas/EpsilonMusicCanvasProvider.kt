@@ -27,7 +27,7 @@ data class epsilonmusicCanvasItem(
 )
 
 object epsilonmusicCanvasProvider {
-    private const val BASE_URL = "https://canvas.epsilonmusic.app/canvas.json"
+    private const val BASE_URL = "https://vihaanangaria.github.io/EpsilonMusicLandingPage/canvas.json"
 
     private val json = Json {
         ignoreUnknownKeys = true

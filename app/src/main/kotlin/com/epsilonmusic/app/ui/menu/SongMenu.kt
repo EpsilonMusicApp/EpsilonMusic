@@ -399,7 +399,7 @@ fun SongMenu(
                             val intent = Intent().apply {
                                 action = Intent.ACTION_SEND
                                 type = "text/plain"
-                                putExtra(Intent.EXTRA_TEXT, "https://share.epsilonmusic.app/watch?v=${song.id}")
+                                putExtra(Intent.EXTRA_TEXT, "https://vihaanangaria.github.io/EpsilonMusicLandingPage/watch?v=${song.id}")
                             }
                             context.startActivity(Intent.createChooser(intent, null))
                         }

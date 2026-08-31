@@ -31,7 +31,7 @@ object UpdateNotificationHelper {
         }
 
         
-        val apkUrl = "https://epsilonmusic.app"
+        val apkUrl = "https://vihaanangaria.github.io/EpsilonMusicLandingPage"
         val intent = Intent(Intent.ACTION_VIEW, apkUrl.toUri())
 
         val flags = PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE

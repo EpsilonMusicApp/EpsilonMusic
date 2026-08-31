@@ -114,7 +114,7 @@ fun UpdateSettings(
                         }
                     },
                     onClick = {
-                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://epsilonmusic.app"))
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://vihaanangaria.github.io/EpsilonMusicLandingPage"))
                         context.startActivity(intent)
                     }
                 ),

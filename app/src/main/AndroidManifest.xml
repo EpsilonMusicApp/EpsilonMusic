@@ -130,7 +130,7 @@
 
                 <data android:scheme="http" />
                 <data android:scheme="https" />
-                <data android:host="share.epsilonmusic.app" />
+                <data android:host="vihaanangaria.github.io/EpsilonMusicLandingPage" />
                 <data android:pathPrefix="/" />
             </intent-filter>
 

@@ -46,7 +46,7 @@ data class PlaylistEntity(
     val shareLink: String?
         get() {
             return if (browseId != null)
-                "https://share.epsilonmusic.app/playlist?list=$browseId"
+                "https://vihaanangaria.github.io/EpsilonMusicLandingPage/playlist?list=$browseId"
             else null
         }
 

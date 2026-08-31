@@ -360,7 +360,7 @@ widget/         Home-screen widget
 ./gradlew test
 
 # Run specific test class
-./gradlew test --tests "***REMOVED***.echo.MusicPlayerTest"
+./gradlew test --tests "com.epsilonmusic.app.MusicPlayerTest"
 
 # Run tests with coverage
 ./gradlew testDebugUnitTestCoverage

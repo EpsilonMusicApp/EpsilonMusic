@@ -80,7 +80,7 @@ fun DiscordExperimental(navController: NavController) {
     val (button2CustomUrl, onButton2CustomUrlChange) =
         rememberPreference(
             key = DiscordActivityButton2CustomUrlKey,
-            defaultValue = "https://epsilonmusic.app",
+            defaultValue = "https://vihaanangaria.github.io/EpsilonMusicLandingPage",
         )
 
     Scaffold { inner ->
