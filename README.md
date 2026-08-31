@@ -3,7 +3,7 @@
 
   <h1>Epsilon Music</h1>
 
-  <p><b>A modern Android music app with ad-free streaming, synced lyrics, offline playback, Supabase-powered cloud sync, and an intuitive user experience.</b></p>
+  <p><b>A modern Android music app with ad-free streaming, synced lyrics, offline playback, YouTube Music cloud sync, and an intuitive user experience.</b></p>
 
   <table style="margin: 0 auto; border-collapse: collapse; border: none;">
     <tr>
@@ -18,7 +18,7 @@
 
 ## Overview
 
-Epsilon Music delivers a seamless, premium listening experience by leveraging YouTube Music's vast library — without the ads. It adds powerful extras including offline downloads, real-time synchronized lyrics, environment-aware music recognition, Supabase-backed cross-device sync, and Discord Rich Presence integration.
+Epsilon Music delivers a seamless, premium listening experience by leveraging YouTube Music's vast library — without the ads. It adds powerful extras including offline downloads, real-time synchronized lyrics, environment-aware music recognition, YouTube Music cloud sync, and Discord Rich Presence integration.
 
 ---
 
@@ -76,7 +76,7 @@ Epsilon Music delivers a seamless, premium listening experience by leveraging Yo
 
 ### What's New
 
-> - **Supabase Cloud Sync** — Authenticate, sync your playlists, liked songs, saved albums/artists, listening history, and preferences across all your devices. Fully offline-capable — your local Room database remains the source of truth.
+> - **YouTube Music Cloud Sync** — Sign in with your YouTube Music account to sync your playlists, liked songs, saved albums, and library across devices.
 > - **Discord Rich Presence** — Show what you're listening to on your Discord profile.
 > - **Data Saver Mode (Beta)** — Automatically reduces data usage during playback for limited connections.
 > - **Settings Search Index** — Quickly find and navigate to any settings option instantly.
@@ -125,14 +125,13 @@ Epsilon Music delivers a seamless, premium listening experience by leveraging Yo
 </details>
 
 <details>
-<summary><b>Cloud Sync & Account (Supabase)</b></summary>
+<summary><b>YouTube Music Cloud Sync</b></summary>
 <br>
 
-- **Cross-Device Sync** — Playlists, liked songs, saved albums/artists, and listening history roam across all your devices.
-- **Cloud Settings** — Theme, language, sort orders, and playback preferences sync automatically.
-- **Offline-First** — The local Room database is always the source of truth. Cloud sync runs in the background when network is available.
-- **Secure Authentication** — Email/password sign-up via Supabase Auth. No passwords or tokens are stored in the app beyond the standard Supabase session.
-- **User-Uploaded Assets** — Profile avatars and playlist cover art stored in Supabase Storage with per-user RLS policies.
+- **Account Sync** — Sign in with your YouTube Music account to sync your playlists, liked songs, library, and saved albums.
+- **Two-Way Sync** — Likes, playlist changes, and library additions sync both ways between the app and YouTube Music.
+- **Cross-Device** — Log in on another device with the same Google account to pull your library.
+- **Offline-First** — The local Room database is always the source of truth. YouTube Music sync runs in the background.
 
 </details>
 
@@ -213,25 +212,9 @@ Download the latest pre-compiled APK from the [Releases Page](https://github.com
 
 </details>
 
-<details>
-<summary><b>Supabase Configuration</b></summary>
-<br>
-
-Epsilon Music uses Supabase for authentication, cloud database, storage, and cross-device sync. The Supabase project URL and anon key are pre-configured in `app/build.gradle.kts` as `BuildConfig.SUPABASE_URL` and `BuildConfig.SUPABASE_ANON_KEY`.
-
-- **Project URL**: `https://ztxkyzstgeckbsfagqco.supabase.co`
-- **Region**: `ap-northeast-2` (Seoul)
-- **Database**: PostgreSQL 17.6 with Row Level Security on all user-owned tables
-- **Storage**: `epsilon-avatars` and `epsilon-playlist-art` buckets with per-user RLS policies
-- **Auth**: Email/password (extensible to OAuth providers)
-
-The anon key is safe to ship in the APK — all access is enforced by RLS policies on the server. The service_role key is **never** embedded in the app.
-
-For full backend documentation, see [`supabase/README.md`](supabase/README.md) and [`supabase/SCHEMA.md`](supabase/SCHEMA.md).
-
-</details>
-
 ---
+
+
 
 ## Translations
 
@@ -275,7 +258,7 @@ Epsilon Music acts strictly as a specialized, third-party web browser and client
 We deeply respect the hard work of artists, musicians, and content creators. We strongly encourage all users to subscribe to [YouTube Premium](https://www.youtube.com/premium). Purchasing a Premium subscription is the best way to financially support the creators you listen to and ensure the continued growth of the platform. Epsilon Music is built as a proof-of-concept for developers and enthusiasts, not to harm creators' revenues.
 
 ### 4. No Hosting of Copyrighted Material
-We do not host, upload, distribute, or store any audio, video, or copyrighted media files on our own servers. All content accessed through this application is stored entirely on Google's/YouTube's servers and remains the property of their respective copyright owners. The app merely acts as a conduit to stream publicly accessible links. Supabase is used only for user-owned data (playlists, likes, settings) — never for hosting media content.
+We do not host, upload, distribute, or store any audio, video, or copyrighted media files on our own servers. All content accessed through this application is stored entirely on Google's/YouTube's servers and remains the property of their respective copyright owners. The app merely acts as a conduit to stream publicly accessible links. YouTube Music sync is used only for user-owned data (playlists, likes) — never for hosting media content.
 
 ### 5. User Responsibility & Legal Contact
 The software is provided "AS IS", without warranty of any kind. The developers of Epsilon Music do not encourage or condone piracy. Users are solely responsible for ensuring their usage of this app complies with their local copyright laws and the Terms of Service of the platforms they access.

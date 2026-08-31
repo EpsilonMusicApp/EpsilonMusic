@@ -52,10 +52,10 @@ Firebase is used for analytics and crash reporting. If you want to use these fea
 **Firebase services used:**
 - ✅ Firebase Analytics (GMS flavor only)
 - ✅ Firebase Crashlytics (GMS flavor only)
-- ❌ Firebase Authentication — NOT used (Supabase Auth handles all authentication)
-- ❌ Cloud Firestore — NOT used (Supabase PostgreSQL handles all database)
+- ❌ Firebase Authentication — NOT used (YouTube Music account sync handles authentication)
+- ❌ Cloud Firestore — NOT used (local Room database + YouTube Music sync)
 - ❌ Firebase Realtime Database — NOT used
-- ❌ Firebase Storage — NOT used (Supabase Storage handles all user assets)
+- ❌ Firebase Storage — NOT used
 
 **Note:** If you skip Firebase setup, the app will still build and run, but analytics and crash reporting will be disabled. To build without Firebase, simply delete `app/google-services.json` — the build system auto-detects its absence and skips the Google Services plugin.
 

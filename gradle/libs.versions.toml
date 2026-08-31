@@ -51,7 +51,6 @@ playServicesAuth = "22.0.0"
 googleApiClient = "2.9.0"
 googleDriveApi = "v3-rev20260428-2.0.0"
 browser = "1.8.0"
-supabaseKt = "3.5.0"
 
 [libraries]
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
@@ -156,12 +155,6 @@ google-api-services-drive = { module = "com.google.apis:google-api-services-driv
 androidx-browser = { group = "androidx.browser", name = "browser", version.ref = "browser" }
 
 # Supabase Kotlin SDK (auth + postgrest + storage + realtime + functions)
-supabase-bom = { module = "io.github.jan-tennert.supabase:bom", version.ref = "supabaseKt" }
-supabase-auth = { module = "io.github.jan-tennert.supabase:auth-kt" }
-supabase-postgrest = { module = "io.github.jan-tennert.supabase:postgrest-kt" }
-supabase-storage = { module = "io.github.jan-tennert.supabase:storage-kt" }
-supabase-realtime = { module = "io.github.jan-tennert.supabase:realtime-kt" }
-supabase-functions = { module = "io.github.jan-tennert.supabase:functions-kt" }
 
 [plugins]
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }

@@ -68,18 +68,6 @@ android {
         buildConfigField("String", "DISCORD_REDIRECT_SCHEME", "\"$discordRedirectScheme\"")
         manifestPlaceholders["discordRedirectScheme"] = discordRedirectScheme
 
-        // ─── Supabase configuration ───────────────────────────────────────────
-        // The anon/publishable key is safe to ship inside the Android APK — it is
-        // enforced by Row Level Security on the server. The service_role key is
-        // NEVER embedded in the app.
-        val supabaseUrl = localProperties.getProperty("SUPABASE_URL")
-            ?: System.getenv("SUPABASE_URL")
-            ?: "https://ztxkyzstgeckbsfagqco.supabase.co"
-        val supabaseAnonKey = localProperties.getProperty("SUPABASE_ANON_KEY")
-            ?: System.getenv("SUPABASE_ANON_KEY")
-            ?: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp0eGt5enN0Z2Vja2JzZmFncWNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgwODQ5NjQsImV4cCI6MjEwMzY2MDk2NH0.DPjE3fnIJBkYKIPvqo_jWXF-7vlz3qXdQeM61FMMRp0"
-        buildConfigField("String", "SUPABASE_URL", "\"$supabaseUrl\"")
-        buildConfigField("String", "SUPABASE_ANON_KEY", "\"$supabaseAnonKey\"")
         
         // Google API key for PO Token generation (YouTube streaming)
         val googleApiKey = localProperties.getProperty("GOOGLE_API_KEY")
@@ -355,28 +343,3 @@ dependencies {
     implementation(libs.ktor.client.content.negotiation)
     implementation(libs.ktor.serialization.json)
 
-    // ─── Supabase Kotlin SDK ────────────────────────────────────────────
-    // Provides auth, postgrest, storage, realtime, and functions modules.
-    // Uses Ktor (already in the project) as the HTTP engine.
-    implementation(platform(libs.supabase.bom))
-    implementation(libs.supabase.auth)
-    implementation(libs.supabase.postgrest)
-    implementation(libs.supabase.storage)
-    implementation(libs.supabase.realtime)
-    implementation(libs.supabase.functions)
-    // ────────────────────────────────────────────────────────────────────
-
-    // Protobuf for message serialization (lite version for Android)
-    implementation(libs.protobuf.javalite)
-    implementation(libs.protobuf.kotlin.lite)
-
-    coreLibraryDesugaring(libs.desugaring)
-    implementation(libs.timber)
-    implementation(libs.smoothCorner)
-    implementation(libs.lottie.compose)
-    implementation("androidx.compose.material:material-icons-extended:1.7.8")
-    implementation(libs.work.runtime.ktx)
-    implementation(libs.androidx.core.splashscreen)
-    implementation(libs.ffmpeg.kit.audio)
-
-}
