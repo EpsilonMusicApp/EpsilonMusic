@@ -247,6 +247,7 @@ Epsilon Music is community-translated. If you'd like to contribute a translation
 
 - **GitHub Issues**: [Report a bug or request a feature](https://github.com/VihaanAngaria/EpsilonMusic/issues)
 - **GitHub Discussions**: [Join the conversation](https://github.com/VihaanAngaria/EpsilonMusic/discussions)
+- **Email**: [ownerepsilon@zohomail.com](mailto:ownerepsilon@zohomail.com)
 
 ---
 

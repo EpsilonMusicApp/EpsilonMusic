@@ -24,7 +24,7 @@ We release patches for security vulnerabilities in the following versions:
 If you discover a security vulnerability in Epsilon Music, please report it responsibly:
 
 1. **Do NOT** create a public GitHub issue
-2. Email us at: [vihaanangaria@gmail.com](mailto:vihaanangaria@gmail.com)
+2. Email us at: [ownerepsilon@zohomail.com](mailto:ownerepsilon@zohomail.com)
 3. Include the following information:
    - Description of the vulnerability
    - Steps to reproduce
@@ -73,7 +73,7 @@ Epsilon Music is committed to user privacy:
 
 For security-related questions or to report vulnerabilities:
 
-- Email: [vihaanangaria@gmail.com](mailto:vihaanangaria@gmail.com)
+- Email: [ownerepsilon@zohomail.com](mailto:ownerepsilon@zohomail.com)
 - GitHub: Create a private security advisory
 
 Thank you for helping keep Epsilon Music secure!
