@@ -58,8 +58,6 @@ class App : Application(), SingletonImageLoader.Factory {
     @ApplicationScope
     lateinit var applicationScope: CoroutineScope
 
-    @Inject
-
     override fun startForegroundService(service: Intent): android.content.ComponentName? {
         return try {
             super.startForegroundService(service)
@@ -115,8 +113,6 @@ class App : Application(), SingletonImageLoader.Factory {
         applicationScope.launch {
             initializeSettings()
             observeSettingsChanges()
-        }
-
         }
     }
 

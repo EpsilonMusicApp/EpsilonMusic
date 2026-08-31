@@ -72,10 +72,8 @@ android {
         // Google API key for PO Token generation (YouTube streaming)
         val googleApiKey = localProperties.getProperty("GOOGLE_API_KEY")
             ?: System.getenv("GOOGLE_API_KEY")
-            ?: "REDACTED_POTOKEN_KEY"
+            ?: "***REMOVED***"
         buildConfigField("String", "GOOGLE_API_KEY", "\"$googleApiKey\"")
-        
-            ?: "REDACTED_INNERTUBE_KEY"
         // ────────────────────────────────────────────────────────────────────
     }
 
