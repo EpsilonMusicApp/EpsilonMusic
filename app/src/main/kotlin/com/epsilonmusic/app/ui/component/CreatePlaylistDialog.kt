@@ -36,6 +36,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.time.LocalDateTime
 import java.util.logging.Logger
+import timber.log.Timber
 
 @Composable
 fun CreatePlaylistDialog(
@@ -59,27 +60,49 @@ fun CreatePlaylistDialog(
         onDismiss = onDismiss,
         onDone = { playlistName ->
             coroutineScope.launch(Dispatchers.IO) {
-                val browseId = if (syncedPlaylist && isSignedIn) {
-                    YouTube.createPlaylist(playlistName)
-                } else if (syncedPlaylist) {
-                    Logger.getLogger("CreatePlaylistDialog").warning("Not signed in")
-                    return@launch
-                } else null
+                try {
+                    val browseId = if (syncedPlaylist && isSignedIn) {
+                        try {
+                            YouTube.createPlaylist(playlistName)
+                        } catch (e: Exception) {
+                            Timber.e(e, "YouTube.createPlaylist failed")
+                            withContext(Dispatchers.Main) {
+                                Toast.makeText(
+                                    context,
+                                    "Failed to create playlist on YouTube: ${e.message}",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            }
+                            null
+                        }
+                    } else if (syncedPlaylist) {
+                        Logger.getLogger("CreatePlaylistDialog").warning("Not signed in")
+                        return@launch
+                    } else null
 
-                val playlistEntity = PlaylistEntity(
-                    name = playlistName,
-                    browseId = browseId,
-                    bookmarkedAt = LocalDateTime.now(),
-                    isEditable = true,
-                )
-                
-                database.query {
-                    insert(playlistEntity)
-                }
+                    val playlistEntity = PlaylistEntity(
+                        name = playlistName,
+                        browseId = browseId,
+                        bookmarkedAt = LocalDateTime.now(),
+                        isEditable = true,
+                    )
 
+                    database.query {
+                        insert(playlistEntity)
+                    }
 
-                withContext(Dispatchers.Main) {
-                    onPlaylistCreated?.invoke(playlistEntity.id)
+                    withContext(Dispatchers.Main) {
+                        onPlaylistCreated?.invoke(playlistEntity.id)
+                    }
+                } catch (e: Exception) {
+                    Timber.e(e, "Failed to create playlist")
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(
+                            context,
+                            "Failed to create playlist: ${e.message}",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
                 }
             }
         },
