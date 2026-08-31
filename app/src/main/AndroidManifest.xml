@@ -62,6 +62,31 @@
         android:largeHeap="true"
         android:theme="@style/Theme.epsilonmusic"
         tools:targetApi="tiramisu">
+
+        <!-- ============================================================ -->
+        <!-- Privacy hardening: disable Firebase auto-collection by      -->
+        <!-- default. Even if a developer adds their own google-services.json, -->
+        <!-- Firebase Analytics and Crashlytics will NOT collect data      -->
+        <!-- unless the user explicitly enables them at runtime via:       -->
+        <!--   FirebaseAnalytics.getInstance().setAnalyticsCollectionEnabled(true)  -->
+        <!--   FirebaseCrashlytics.getInstance().setCrashlyticsCollectionEnabled(true) -->
+        <!-- This protects user privacy by default.                       -->
+        <!-- ============================================================ -->
+        <meta-data
+            android:name="firebase_analytics_collection_enabled"
+            android:value="false" />
+        <meta-data
+            android:name="firebase_crashlytics_collection_enabled"
+            android:value="false" />
+        <!-- Also disable automatic screen reporting (part of Analytics) -->
+        <meta-data
+            android:name="google_analytics_automatic_screen_reporting_enabled"
+            android:value="false" />
+        <!-- Disable Advertising ID collection (relevant if Analytics is ever enabled) -->
+        <meta-data
+            android:name="google_analytics_adid_collection_enabled"
+            android:value="false" />
+
         <uses-library
             android:name="org.apache.http.legacy"
             android:required="false" />

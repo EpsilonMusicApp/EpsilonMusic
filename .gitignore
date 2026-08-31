@@ -34,3 +34,23 @@ lastfm-empty/build/
 
 # Logs
 *.log
+
+# Sensitive — Firebase / Google Services config (NEVER commit)
+# Each developer must provide their own google-services.json.
+# See local.properties.template for instructions.
+app/google-services.json
+app/google-services-debug.json
+app/debug/google-services.json
+google-services.json
+
+# Sensitive — signing keys
+*.keystore
+*.jks
+!debug.keystore
+
+# Sensitive — environment files
+.env
+.env.*
+*.secret
+secrets.properties
+
