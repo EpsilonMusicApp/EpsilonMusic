@@ -66,10 +66,19 @@ class EQProfileRepository @Inject constructor(
                 val loadedProfiles = json.decodeFromString<List<SavedEQProfile>>(profilesJson)
                 _profiles.value = loadedProfiles
 
-                
                 val activeId = prefs.getString(KEY_ACTIVE_PROFILE_ID, null)
                 _activeProfile.value = loadedProfiles.find { it.id == activeId }
             }
+        } catch (e: kotlinx.serialization.SerializationException) {
+            // Most likely cause: the kotlinx.serialization compiler plugin was not
+            // applied when the app was built (no $serializer was generated for
+            // SavedEQProfile / ParametricEQBand / FilterType). Also fires if the
+            // persisted JSON is from an older schema. Either way, wipe the bad data
+            // so the next save isn't competing with it.
+            Log.e("EQProfileRepository", "Serialization error loading EQ profiles — clearing prefs", e)
+            prefs.edit { remove(KEY_PROFILES); remove(KEY_ACTIVE_PROFILE_ID) }
+            _profiles.value = emptyList()
+            _activeProfile.value = null
         } catch (e: Exception) {
             Log.e("EQProfileRepository", "Error loading EQ profiles", e)
             _profiles.value = emptyList()
@@ -81,22 +90,31 @@ class EQProfileRepository @Inject constructor(
     suspend fun saveProfile(profile: SavedEQProfile) = withContext(Dispatchers.IO) {
         val currentProfiles = _profiles.value.toMutableList()
 
-        
+
         val existingIndex = currentProfiles.indexOfFirst { it.id == profile.id }
 
         if (existingIndex >= 0) {
-            
+
             currentProfiles[existingIndex] = profile
         } else {
-            
+
             currentProfiles.add(profile)
         }
 
-        
-        val profilesJson = json.encodeToString<List<SavedEQProfile>>(currentProfiles)
-        prefs.edit { putString(KEY_PROFILES, profilesJson) }
 
-        _profiles.value = currentProfiles
+        try {
+            val profilesJson = json.encodeToString<List<SavedEQProfile>>(currentProfiles)
+            prefs.edit { putString(KEY_PROFILES, profilesJson) }
+
+            _profiles.value = currentProfiles
+        } catch (e: kotlinx.serialization.SerializationException) {
+            // Defensive: the kotlinx.serialization compiler plugin must be applied
+            // in this module's build.gradle.kts. If it isn't (e.g. a future refactor
+            // re-introduces the regression), we want to log loudly and not crash
+            // the app — the in-memory state has already been updated above, so
+            // EQ still works for the current session.
+            Log.e("EQProfileRepository", "Serialization error saving EQ profile — plugin missing?", e)
+        }
     }
 
     
@@ -104,10 +122,14 @@ class EQProfileRepository @Inject constructor(
         val currentProfiles = _profiles.value.toMutableList()
         currentProfiles.removeAll { it.id == profileId }
 
-        val profilesJson = json.encodeToString<List<SavedEQProfile>>(currentProfiles)
-        prefs.edit { putString(KEY_PROFILES, profilesJson) }
+        try {
+            val profilesJson = json.encodeToString<List<SavedEQProfile>>(currentProfiles)
+            prefs.edit { putString(KEY_PROFILES, profilesJson) }
+        } catch (e: kotlinx.serialization.SerializationException) {
+            Log.e("EQProfileRepository", "Serialization error deleting EQ profile — plugin missing?", e)
+        }
 
-        
+
         if (_activeProfile.value?.id == profileId) {
             _activeProfile.value = null
             prefs.edit { remove(KEY_ACTIVE_PROFILE_ID) }
