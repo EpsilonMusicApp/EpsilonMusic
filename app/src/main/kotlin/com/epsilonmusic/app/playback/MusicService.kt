@@ -1500,17 +1500,26 @@ class MusicService :
             
             originalQueueSize = initialStatus.items.size
             if (queue.preloadItem != null) {
-                val safeIndex = initialStatus.mediaItemIndex.coerceIn(0, (initialStatus.items.size - 1).coerceAtLeast(0))
-                player.addMediaItems(
-                    0,
-                    initialStatus.items.subList(0, safeIndex)
-                )
-                player.addMediaItems(
-                    initialStatus.items.subList(
-                        (safeIndex + 1).coerceAtMost(initialStatus.items.size),
-                        initialStatus.items.size
+                // Check if the preloadItem is actually in the queue.
+                // If it is, skip it (it's already playing). If not, insert all items.
+                val preloadMediaId = queue.preloadItem.id
+                val preloadInQueue = initialStatus.items.any { it.mediaId == preloadMediaId }
+                if (preloadInQueue) {
+                    val safeIndex = initialStatus.mediaItemIndex.coerceIn(0, (initialStatus.items.size - 1).coerceAtLeast(0))
+                    player.addMediaItems(
+                        0,
+                        initialStatus.items.subList(0, safeIndex)
                     )
-                )
+                    player.addMediaItems(
+                        initialStatus.items.subList(
+                            (safeIndex + 1).coerceAtMost(initialStatus.items.size),
+                            initialStatus.items.size
+                        )
+                    )
+                } else {
+                    // Preload item is not in the queue — add all items after the preload
+                    player.addMediaItems(initialStatus.items)
+                }
                 resyncCastQueueIfCasting()
             } else {
                 val safeIndex = initialStatus.mediaItemIndex.coerceIn(0, (initialStatus.items.size - 1).coerceAtLeast(0))

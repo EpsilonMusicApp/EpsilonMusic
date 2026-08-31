@@ -29,10 +29,29 @@ class YouTubeQueue(
                     endpoint = nextResult.endpoint
                     continuation = nextResult.continuation
                     retryCount = 0
+                    
+                    val mediaItems = nextResult.items.map { it.toMediaItem() }
+                    
+                    // Determine the correct starting index. YouTube's "selected" flag
+                    // is not always reliable — if we have a preloadItem (the song the
+                    // user tapped), find its index in the returned list. This prevents
+                    // the wrong song from playing when YouTube returns a radio queue
+                    // where the "selected" flag is missing or points to a different song.
+                    var index = nextResult.currentIndex ?: 0
+                    if (preloadItem != null) {
+                        val preloadId = preloadItem.id
+                        val foundIndex = mediaItems.indexOfFirst { it.mediaId == preloadId }
+                        if (foundIndex >= 0) {
+                            index = foundIndex
+                        }
+                    }
+                    // Safety: clamp index to valid range
+                    index = index.coerceIn(0, (mediaItems.size - 1).coerceAtLeast(0))
+                    
                     return@withContext Queue.Status(
                         title = nextResult.title,
-                        items = nextResult.items.map { it.toMediaItem() },
-                        mediaItemIndex = nextResult.currentIndex ?: 0,
+                        items = mediaItems,
+                        mediaItemIndex = index,
                     )
                 } catch (e: Exception) {
                     lastException = e
