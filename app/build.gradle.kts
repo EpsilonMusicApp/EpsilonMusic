@@ -341,3 +341,17 @@ dependencies {
     implementation(libs.ktor.client.content.negotiation)
     implementation(libs.ktor.serialization.json)
 
+
+    // Protobuf for message serialization (lite version for Android)
+    implementation(libs.protobuf.javalite)
+    implementation(libs.protobuf.kotlin.lite)
+
+    coreLibraryDesugaring(libs.desugaring)
+    implementation(libs.timber)
+    implementation(libs.smoothCorner)
+    implementation(libs.lottie.compose)
+    implementation("androidx.compose.material:material-icons-extended:1.7.8")
+    implementation(libs.work.runtime.ktx)
+    implementation(libs.androidx.core.splashscreen)
+    implementation(libs.ffmpeg.kit.audio)
+}
