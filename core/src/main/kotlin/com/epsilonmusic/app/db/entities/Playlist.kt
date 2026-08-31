@@ -37,6 +37,10 @@ data class Playlist(
         get() {
             return if (playlist.thumbnailUrl != null)
                 listOf(playlist.thumbnailUrl)
-            else songThumbnails.filterNotNull()
+            else try {
+                songThumbnails?.filterNotNull() ?: emptyList()
+            } catch (e: Exception) {
+                emptyList()
+            }
         }
 }
