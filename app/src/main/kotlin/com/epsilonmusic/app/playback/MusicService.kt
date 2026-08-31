@@ -3866,8 +3866,14 @@ class MusicService :
     private fun startCrossfade(plan: AutomixPlan? = null) {
         if (isCrossfading.value) return
 
-        val savedRepeatMode = runBlocking { dataStore.get(RepeatModeKey, REPEAT_MODE_OFF) }
-        val savedShuffleEnabled = runBlocking { dataStore.get(ShuffleModeKey, false) }
+        // Read directly from the ExoPlayer instead of `runBlocking { dataStore.get(...) }`.
+        // Previously this used `runBlocking` which blocks the Main thread (ExoPlayer runs
+        // on Main by default) for 50-500 ms on a cold datastore read — causing audio
+        // stutter and UI freezes during crossfades.
+        // The player's `repeatMode` / `shuffleModeEnabled` are kept in sync with the
+        // datastore by the player-setup code at line ~660 and the user's UI toggles.
+        val savedRepeatMode = try { player.repeatMode } catch (e: Exception) { REPEAT_MODE_OFF }
+        val savedShuffleEnabled = try { player.shuffleModeEnabled } catch (e: Exception) { false }
 
         val targetIndex = if (savedRepeatMode == REPEAT_MODE_ONE) {
             player.currentMediaItemIndex

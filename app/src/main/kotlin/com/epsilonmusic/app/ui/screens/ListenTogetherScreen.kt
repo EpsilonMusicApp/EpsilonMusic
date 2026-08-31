@@ -17,6 +17,8 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -220,10 +222,16 @@ fun ListenTogetherScreen(
     val lazyListState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
     val bringIntoViewRequester = remember { BringIntoViewRequester() }
-    
+
     val backStackEntry by navController.currentBackStackEntryAsState()
-    val scrollToTop = backStackEntry?.savedStateHandle?.getStateFlow("scrollToTop", false)?.collectAsState()
-    
+    // `remember` the StateFlow reference itself so we don't re-subscribe on every recomposition.
+    // Previously `getStateFlow(...).collectAsState()` was called on every recomposition, which
+    // created a fresh State wrapper + subscription each time.
+    val scrollToTopStateFlow = remember(backStackEntry) {
+        backStackEntry?.savedStateHandle?.getStateFlow("scrollToTop", false)
+    }
+    val scrollToTop = scrollToTopStateFlow?.collectAsState()
+
     LaunchedEffect(scrollToTop?.value) {
         if (scrollToTop?.value == true) {
             lazyListState.animateScrollToItem(0)
@@ -246,7 +254,7 @@ fun ListenTogetherScreen(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         if (connectionState == ConnectionState.CONNECTED && !isInRoom) {
-            item {
+            item(key = "background_disconnect_note") {
                 Text(
                     text = stringResource(R.string.listen_together_background_disconnect_note),
                     style = MaterialTheme.typography.bodySmall,
@@ -258,9 +266,9 @@ fun ListenTogetherScreen(
         }
 
         if (isInRoom) {
-            
+
             roomState?.let { room ->
-                item {
+                item(key = "room_status") {
                     RoomStatusCard(
                         roomCode = room.roomCode,
                         isHost = isHost,
@@ -273,10 +281,16 @@ fun ListenTogetherScreen(
                     )
                 }
 
-                
-                val connectedUsers = room.users.filter { it.isConnected }
+
+                // Wrap the filtered list in `remember + derivedStateOf` so it is only
+                // recomputed when `room.users` actually changes. Without this, every
+                // recomposition (heartbeat, sync event, etc.) would allocate a new
+                // ArrayList even when the user list hasn't changed.
+                val connectedUsers = remember(room.users) {
+                    room.users.filter { it.isConnected }
+                }
                 val currentUserIdValue = userId ?: ""
-                item {
+                item(key = "connected_users") {
                     ConnectedUsersSection(
                         users = connectedUsers,
                         isHost = isHost,
@@ -290,9 +304,9 @@ fun ListenTogetherScreen(
                     )
                 }
 
-                
+
                 if (isHost && pendingJoinRequests.isNotEmpty()) {
-                    item {
+                    item(key = "pending_join_requests") {
                         PendingJoinRequestsSection(
                             requests = pendingJoinRequests,
                             onApprove = { listenTogetherManager.approveJoin(it) },
@@ -301,9 +315,9 @@ fun ListenTogetherScreen(
                     }
                 }
 
-                
+
                 if (isHost && pendingSuggestions.isNotEmpty()) {
-                    item {
+                    item(key = "pending_suggestions") {
                         PendingSuggestionsSection(
                             suggestions = pendingSuggestions,
                             onApprove = { listenTogetherManager.approveSuggestion(it) },
@@ -312,8 +326,8 @@ fun ListenTogetherScreen(
                     }
                 }
 
-                
-                item {
+
+                item(key = "leave_room_btn") {
                     Button(
                         onClick = { listenTogetherManager.leaveRoom() },
                         modifier = Modifier.fillMaxWidth(),
@@ -336,8 +350,8 @@ fun ListenTogetherScreen(
                 }
             }
         } else {
-            
-            item {
+
+            item(key = "join_create_section") {
                 JoinCreateRoomSection(
                     usernameInput = usernameInput,
                     onUsernameChange = { usernameInput = it },
@@ -415,7 +429,7 @@ fun ListenTogetherScreen(
         }
 
         if (isInRoom && isHost) {
-            item {
+            item(key = "participant_control_card") {
                 ParticipantControlCard(
                     allowParticipantControl = roomState?.allowParticipantControl == true,
                     onAllowParticipantControlChange = { enabled ->
@@ -424,15 +438,15 @@ fun ListenTogetherScreen(
                 )
             }
         }
-        
-        item {
+
+        item(key = "settings_link") {
             SettingsLinkCard(
                 onClick = { navController.navigate("settings/integrations/listen_together") }
             )
         }
-        
+
         if (!isInRoom) {
-            item {
+            item(key = "info_card") {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(24.dp),
@@ -817,13 +831,18 @@ private fun ConnectedUsersSection(
             )
             Spacer(modifier = Modifier.height(12.dp))
 
-            Row(
+            // Use LazyRow so only the visible UserAvatars are composed. Previously this
+            // was a `Row { users.forEach { UserAvatar(...) } }` which eagerly composed
+            // every avatar — for a 30-user room this is 6x the necessary work.
+            LazyRow(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .horizontalScroll(rememberScrollState()),
+                    .fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                users.forEach { user ->
+                items(
+                    items = users,
+                    key = { it.userId }
+                ) { user ->
                     UserAvatar(
                         user = user,
                         isCurrentUser = user.userId == currentUserId,

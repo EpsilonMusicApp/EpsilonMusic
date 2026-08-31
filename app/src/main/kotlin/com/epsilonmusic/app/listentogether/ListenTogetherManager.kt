@@ -45,15 +45,18 @@ class ListenTogetherManager @Inject constructor(
 ) {
     companion object {
         private const val TAG = "ListenTogetherManager"
-        
-        
+
+
         private const val SYNC_DEBOUNCE_THRESHOLD_MS = 1000L
-        
-        
+
+
         private const val POSITION_TOLERANCE_MS = 2000L
-        
-        
+
+
         private const val PLAYBACK_POSITION_TOLERANCE_MS = 3000L
+
+        /** Maximum number of chat messages retained in memory at any time. */
+        private const val MAX_CHAT_MESSAGES = 200
     }
 
     private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
@@ -80,15 +83,23 @@ class ListenTogetherManager @Inject constructor(
     
     @Volatile
     private var isSyncing = false
-    
-    
+
+
+    // The fields below are written on Dispatchers.Main (from event handlers) and read
+    // on Dispatchers.IO (from syncToTrack, applyPendingSyncIfReady). Without @Volatile,
+    // the IO coroutine may see stale values, miss a generation bump, and apply a stale
+    // track — leading to subtle "guest applied the wrong track" bugs.
+    @Volatile
     private var lastSyncedIsPlaying: Boolean? = null
+    @Volatile
     private var lastSyncedTrackId: String? = null
-    
-    
+
+
+    @Volatile
     private var lastSyncActionTime: Long = 0L
-    
-    
+
+
+    @Volatile
     private var bufferingTrackId: String? = null
     
     
@@ -96,12 +107,15 @@ class ListenTogetherManager @Inject constructor(
     
     
     
+    @Volatile
     private var currentTrackGeneration: Int = 0
 
-    
+
+    @Volatile
     private var pendingSyncState: SyncStatePayload? = null
 
-    
+
+    @Volatile
     private var bufferCompleteReceivedForTrack: String? = null
 
     
@@ -695,7 +709,11 @@ class ListenTogetherManager @Inject constructor(
 
             is ListenTogetherEvent.ChatMessageReceived -> {
                 Timber.tag(TAG).d("Chat message received from ${event.payload.username}")
-                _chatMessages.value = _chatMessages.value + event.payload
+                // Cap chat history at MAX_CHAT_MESSAGES to prevent unbounded growth.
+                // Before this fix, `_chatMessages.value + event.payload` was O(n) on every
+                // new message AND the list grew forever (Singleton never destroyed).
+                // After 1000 messages in an active room, every append was O(1000).
+                _chatMessages.value = (_chatMessages.value + event.payload).takeLast(MAX_CHAT_MESSAGES)
             }
 
             is ListenTogetherEvent.RoomSettingsChanged -> {
@@ -1477,10 +1495,10 @@ class ListenTogetherManager @Inject constructor(
     
     private fun sendTrackChangeInternal(metadata: MediaMetadata) {
         if (!canControlMusic) return
-        
-        
+
+
         val durationMs = if (metadata.duration > 0) metadata.duration.toLong() * 1000 else 180000L
-        
+
         val trackInfo = TrackInfo(
             id = metadata.id,
             title = metadata.title,
@@ -1490,29 +1508,27 @@ class ListenTogetherManager @Inject constructor(
             thumbnail = metadata.thumbnailUrl,
             suggestedBy = metadata.suggestedBy
         )
-        
+
         Timber.tag(TAG).d("Sending track change: ${trackInfo.title}, duration: $durationMs")
-        
-        
-        val currentQueue = try {
-            playerConnection?.queueWindows?.value?.map { it.toTrackInfo() }
-        } catch (e: Exception) {
-            Timber.tag(TAG).e(e, "Failed to get current queue")
-            null
-        }
+
+        // Queue distribution is handled by `startQueueSyncObservation` (debounced 500 ms),
+        // so we don't send the entire queue with every track change. Previously this code
+        // sent the full queue on every track change AND again after 500 ms via SYNC_QUEUE,
+        // doubling the wire size of every track skip — especially bad for 50-song queues
+        // because each TrackInfo carries a thumbnail URL.
         val currentTitle = try {
             playerConnection?.queueTitle?.value
         } catch (e: Exception) {
             Timber.tag(TAG).e(e, "Failed to get current title")
             null
         }
-        
+
         sendPlaybackActionWithSync {
             client.sendPlaybackAction(
                 PlaybackActions.CHANGE_TRACK,
                 queueTitle = currentTitle,
                 trackInfo = trackInfo,
-                queue = currentQueue
+                queue = null
             )
         }
     }
@@ -1653,17 +1669,26 @@ class ListenTogetherManager @Inject constructor(
         if (heartbeatJob?.isActive == true) return
         heartbeatJob = scope.launch {
             while (heartbeatJob?.isActive == true && isInRoom && isHost) {
-                delay(10000L) 
+                delay(10000L)
                 playerConnection?.player?.let { player ->
                     if (player.playWhenReady && player.playbackState == Player.STATE_READY) {
                         val pos = player.currentPosition
-                        Timber.tag(TAG).d("Host heartbeat: sending PLAY at pos $pos")
+                        // Skip sending if no guests are connected — no one to sync with.
+                        // This avoids every client doing a recomposition + ExoPlayer seek
+                        // check every 10 s when nothing has changed.
+                        val connectedGuests = roomState.value?.users
+                            ?.count { it.isConnected && !it.isHost }
+                            ?: 0
+                        if (connectedGuests == 0) {
+                            return@let
+                        }
+                        Timber.tag(TAG).d("Host heartbeat: sending PLAY at pos $pos ($connectedGuests guests)")
                         client.sendPlaybackAction(PlaybackActions.PLAY, position = pos)
                     }
                 }
             }
         }
-        Timber.tag(TAG).d("Host heartbeat started (10s interval)")
+        Timber.tag(TAG).d("Host heartbeat started (10s interval, skipped when no guests)")
     }
 
     private fun stopHeartbeat() {

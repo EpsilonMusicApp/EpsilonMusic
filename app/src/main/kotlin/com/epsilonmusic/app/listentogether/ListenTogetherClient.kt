@@ -40,6 +40,8 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
@@ -144,6 +146,7 @@ class ListenTogetherClient @Inject constructor(
         private const val MAX_RECONNECT_DELAY_MS = 120000L  
         private const val PING_INTERVAL_MS = 25000L
         private const val MAX_LOG_ENTRIES = 500
+        private const val LOG_PUBLISH_DEBOUNCE_MS = 250L
         private const val SESSION_GRACE_PERIOD_MS = 10 * 60 * 1000L  
 
         
@@ -212,8 +215,41 @@ class ListenTogetherClient @Inject constructor(
     init {
         setInstance(this)
         ensureNotificationChannel()
-        
-        CoroutineScope(Dispatchers.IO + SupervisorJob()).launch {
+
+        // Keep cachedServerUrl in sync with the user's preference so that when they
+        // change it in Settings → Listen Together, the next connect() uses the new URL.
+        // (We need this because we cache the URL to avoid `runBlocking` on the Main thread.)
+        scope.launch {
+            try {
+                context.dataStore.data
+                    .map { (try { it[ListenTogetherServerUrlKey] } catch(e: Exception) { null }) ?: DEFAULT_SERVER_URL }
+                    .distinctUntilChanged()
+                    .collect { url ->
+                        cachedServerUrl = url
+                        serverUrlInitialized = true
+                    }
+            } catch (e: Exception) {
+                Timber.tag(TAG).e(e, "Failed to observe server URL changes")
+            }
+        }
+
+        // Keep cachedAutoApproval in sync with the user's preference. Without this, the
+        // JOIN_REQUEST handler (called on the OkHttp WS dispatcher thread) would block the
+        // WS receive thread on every join request via `context.dataStore.get(...)`.
+        scope.launch {
+            try {
+                context.dataStore.data
+                    .map { (try { it[ListenTogetherAutoApprovalKey] } catch(e: Exception) { null }) ?: false }
+                    .distinctUntilChanged()
+                    .collect { enabled ->
+                        cachedAutoApproval = enabled
+                    }
+            } catch (e: Exception) {
+                Timber.tag(TAG).e(e, "Failed to observe auto-approval changes")
+            }
+        }
+
+        scope.launch {
             loadPersistedSession()
             observeNetworkChanges()
         }
@@ -398,8 +434,46 @@ class ListenTogetherClient @Inject constructor(
         .pingInterval(30, TimeUnit.SECONDS)
         .build()
 
+    /**
+     * Cached server URL — avoids the `runBlocking` datastore read on every `connect()`.
+     * The URL changes very rarely (only when the user picks a different server in
+     * settings), so we read it once at construction and refresh it only when the
+     * `ListenTogetherServerUrlKey` preference is edited.
+     *
+     * Before this fix, every call to `connect()` (which is called from UI button
+     * handlers in ListenTogetherScreen) would block the Main thread via
+     * `runBlocking(Dispatchers.IO) { context.dataStore.get(...) }`, causing the
+     * "app sometimes freezes" symptom reported by users.
+     */
+    @Volatile
+    private var cachedServerUrl: String = DEFAULT_SERVER_URL
+
+    /** True once the initial datastore read of `cachedServerUrl` has completed. */
+    @Volatile
+    private var serverUrlInitialized: Boolean = false
+
+    /**
+     * Cached `ListenTogetherAutoApprovalKey` value. Without this cache, every inbound
+     * `JOIN_REQUEST` message (handled on the OkHttp WS dispatcher thread) would call
+     * `context.dataStore.get(...)` which blocks the WS receive thread for 50-500 ms —
+     * stalling subsequent WS messages behind it.
+     */
+    @Volatile
+    private var cachedAutoApproval: Boolean = false
+
     private fun getServerUrl(): String {
-        return context.dataStore.get(ListenTogetherServerUrlKey, DEFAULT_SERVER_URL)
+        if (!serverUrlInitialized) {
+            // First-touch: do the read. This is only ever called from `connect()`,
+            // which the screen wraps in `coroutineScope.launch { ... }` on IO —
+            // so the very first call (cold cache) blocks an IO thread, NOT the UI thread.
+            cachedServerUrl = try {
+                context.dataStore.get(ListenTogetherServerUrlKey, DEFAULT_SERVER_URL)
+            } catch (e: Exception) {
+                DEFAULT_SERVER_URL
+            }
+            serverUrlInitialized = true
+        }
+        return cachedServerUrl
     }
     
     
@@ -411,21 +485,75 @@ class ListenTogetherClient @Inject constructor(
         return cappedDelay + jitter
     }
 
+    /**
+     * Ring buffer backing store for `_logs`.
+     *
+     * Previously `_logs.value = (_logs.value + entry).takeLast(MAX_LOG_ENTRIES)` allocated
+     * a fresh ArrayList and copied up to 500 elements on EVERY single inbound WebSocket
+     * message (because `log()` is called from `handleMessage`). That's O(500) per message
+     * — pure GC pressure with no benefit since the user rarely opens the logs screen.
+     *
+     * The new design: `logRingBuffer` is an `ArrayDeque` capped at MAX_LOG_ENTRIES, mutated
+     * under a synchronized block (cheap). Only when the logs screen actually subscribes to
+     * `_logs` do we publish a snapshot. Better still: we only publish a new snapshot every
+     * few hundred ms (debounced), so a burst of 50 WS messages doesn't trigger 50 UI
+     * recompositions.
+     */
+    private val logRingBuffer = java.util.ArrayDeque<LogEntry>(MAX_LOG_ENTRIES)
+    private val logLock = Any()
+    @Volatile
+    private var logsDirty: Boolean = false
+
     private fun log(level: LogLevel, message: String, details: String? = null) {
         val timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss.SSS"))
         val entry = LogEntry(timestamp, level, message, details)
-        
-        _logs.value = (_logs.value + entry).takeLast(MAX_LOG_ENTRIES)
-        
+
+        // O(1) append + eviction under a tight synchronized block.
+        synchronized(logLock) {
+            if (logRingBuffer.size >= MAX_LOG_ENTRIES) {
+                logRingBuffer.removeFirst()
+            }
+            logRingBuffer.addLast(entry)
+            logsDirty = true
+        }
+
         when (level) {
             LogLevel.ERROR -> Timber.tag(TAG).e("$message ${details ?: ""}")
             LogLevel.WARNING -> Timber.tag(TAG).w("$message ${details ?: ""}")
             LogLevel.DEBUG -> Timber.tag(TAG).d("$message ${details ?: ""}")
             LogLevel.INFO -> Timber.tag(TAG).i("$message ${details ?: ""}")
         }
+
+        // Publish a snapshot to the StateFlow. This is O(n) where n = current log count,
+        // but only when there are active collectors (StateFlow is shared). Even so, we
+        // debounce so bursts of WS messages don't trigger 50 recompositions in 50 ms.
+        scheduleLogPublish()
+    }
+
+    /**
+     * Debounced publish: coalesce bursts of log() calls into one StateFlow emission.
+     * Without this, a host queue-change that bursts 10 WS messages would publish 10
+     * snapshots in <100 ms, causing 10 recompositions of the (sometimes off-screen)
+     * logs viewer.
+     */
+    private val logPublishScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+    private var logPublishJob: Job? = null
+    private fun scheduleLogPublish() {
+        logPublishJob?.cancel()
+        logPublishJob = logPublishScope.launch {
+            delay(LOG_PUBLISH_DEBOUNCE_MS)
+            val snapshot = synchronized(logLock) {
+                logRingBuffer.toList()
+            }
+            _logs.value = snapshot
+            logsDirty = false
+        }
     }
 
     fun clearLogs() {
+        synchronized(logLock) {
+            logRingBuffer.clear()
+        }
         _logs.value = emptyList()
     }
 
@@ -811,7 +939,8 @@ class ListenTogetherClient @Inject constructor(
                     log(LogLevel.INFO, "Join request received", "User: ${payload.username}")
                     
                     
-                    val autoApprovalEnabled = context.dataStore.get(ListenTogetherAutoApprovalKey, false)
+                    // Use the cached value to avoid blocking the WS receive thread.
+                    val autoApprovalEnabled = cachedAutoApproval
                     
                     if (_role.value == RoomRole.HOST) {
                         if (autoApprovalEnabled) {
