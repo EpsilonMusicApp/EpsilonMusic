@@ -445,9 +445,3 @@ If you have questions about contributing:
 3. Contact maintainers directly
 
 Thank you for contributing to Epsilon Music!
-
----
-<div align="center">
-    <img src="assets/LMEB.gif"/>
-  </a>
-</div>
