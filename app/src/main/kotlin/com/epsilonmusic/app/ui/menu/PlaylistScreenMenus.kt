@@ -194,7 +194,7 @@ fun LocalPlaylistMenu(
                 },
                 onClick = {
                     val shareText = if (isYouTubePlaylist) {
-                        "https://vihaanangaria.github.io/EpsilonMusicLandingPage/playlist?list=${playlist.playlist.browseId}"
+                        "https://epsilonmusic.ct.ws/playlist?list=${playlist.playlist.browseId}"
                     } else {
                         songs.joinToString("\n") { it.song.song.title }
                     }

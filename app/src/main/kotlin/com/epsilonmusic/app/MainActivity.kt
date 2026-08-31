@@ -576,7 +576,7 @@ class MainActivity : ComponentActivity() {
                 confirmButton = {
                     Button(onClick = {
                         showUpdateDialog = false
-                        val intent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse("https://vihaanangaria.github.io/EpsilonMusicLandingPage"))
+                        val intent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse("https://epsilonmusic.ct.ws"))
                         context.startActivity(intent)
                     }) {
                         Text("Update")
@@ -1497,7 +1497,7 @@ class MainActivity : ComponentActivity() {
             else -> {
                 val videoId = when {
                     path == "watch" -> uri.getQueryParameter("v")
-                    uri.host == "youtu.be" || uri.host == "vihaanangaria.github.io/EpsilonMusicLandingPage" -> uri.pathSegments.firstOrNull()
+                    uri.host == "youtu.be" || uri.host == "epsilonmusic.ct.ws" -> uri.pathSegments.firstOrNull()
                     else -> null
                 }
 

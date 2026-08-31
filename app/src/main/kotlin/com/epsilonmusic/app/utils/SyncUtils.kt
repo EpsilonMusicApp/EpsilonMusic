@@ -138,19 +138,45 @@ class SyncUtils @Inject constructor(
 
     private suspend fun processOperation(operation: SyncOperation) {
         when (operation) {
-            is SyncOperation.FullSync -> executeFullSync()
-            is SyncOperation.LikedSongs -> executeSyncLikedSongs()
-            is SyncOperation.LibrarySongs -> executeSyncLibrarySongs()
-            is SyncOperation.UploadedSongs -> executeSyncUploadedSongs()
-            is SyncOperation.LikedAlbums -> executeSyncLikedAlbums()
-            is SyncOperation.UploadedAlbums -> executeSyncUploadedAlbums()
-            is SyncOperation.ArtistsSubscriptions -> executeSyncArtistsSubscriptions()
-            is SyncOperation.SavedPlaylists -> executeSyncSavedPlaylists()
-            is SyncOperation.AutoSyncPlaylists -> executeSyncAutoSyncPlaylists()
-            is SyncOperation.SinglePlaylist -> executeSyncPlaylist(operation.browseId, operation.playlistId)
-            is SyncOperation.LikeSong -> executeLikeSong(operation.song)
-            is SyncOperation.CleanupDuplicates -> executeCleanupDuplicatePlaylists()
-            is SyncOperation.ClearAllSynced -> executeClearAllSyncedContent()
+            is SyncOperation.FullSync -> {
+                try { executeFullSync() } catch (e: Exception) { Timber.e(e, "FullSync failed") }
+            }
+            is SyncOperation.LikedSongs -> {
+                try { executeSyncLikedSongs() } catch (e: Exception) { Timber.e(e, "LikedSongs sync failed") }
+            }
+            is SyncOperation.LibrarySongs -> {
+                try { executeSyncLibrarySongs() } catch (e: Exception) { Timber.e(e, "LibrarySongs sync failed") }
+            }
+            is SyncOperation.UploadedSongs -> {
+                try { executeSyncUploadedSongs() } catch (e: Exception) { Timber.e(e, "UploadedSongs sync failed") }
+            }
+            is SyncOperation.LikedAlbums -> {
+                try { executeSyncLikedAlbums() } catch (e: Exception) { Timber.e(e, "LikedAlbums sync failed") }
+            }
+            is SyncOperation.UploadedAlbums -> {
+                try { executeSyncUploadedAlbums() } catch (e: Exception) { Timber.e(e, "UploadedAlbums sync failed") }
+            }
+            is SyncOperation.ArtistsSubscriptions -> {
+                try { executeSyncArtistsSubscriptions() } catch (e: Exception) { Timber.e(e, "ArtistsSubscriptions sync failed") }
+            }
+            is SyncOperation.SavedPlaylists -> {
+                try { executeSyncSavedPlaylists() } catch (e: Exception) { Timber.e(e, "SavedPlaylists sync failed") }
+            }
+            is SyncOperation.AutoSyncPlaylists -> {
+                try { executeSyncAutoSyncPlaylists() } catch (e: Exception) { Timber.e(e, "AutoSyncPlaylists sync failed") }
+            }
+            is SyncOperation.SinglePlaylist -> {
+                try { executeSyncPlaylist(operation.browseId, operation.playlistId) } catch (e: Exception) { Timber.e(e, "SinglePlaylist sync failed") }
+            }
+            is SyncOperation.LikeSong -> {
+                try { executeLikeSong(operation.song) } catch (e: Exception) { Timber.e(e, "LikeSong sync failed") }
+            }
+            is SyncOperation.CleanupDuplicates -> {
+                try { executeCleanupDuplicatePlaylists() } catch (e: Exception) { Timber.e(e, "CleanupDuplicates failed") }
+            }
+            is SyncOperation.ClearAllSynced -> {
+                try { executeClearAllSyncedContent() } catch (e: Exception) { Timber.e(e, "ClearAllSynced failed") }
+            }
         }
     }
 

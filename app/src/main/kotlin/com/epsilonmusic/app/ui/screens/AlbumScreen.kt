@@ -931,7 +931,7 @@ fun AlbumScreen(
                                     type = "text/plain"
                                     putExtra(
                                         android.content.Intent.EXTRA_TEXT,
-                                        "https://vihaanangaria.github.io/EpsilonMusicLandingPage/playlist?list=${albumWithSongs.album.playlistId}"
+                                        "https://epsilonmusic.ct.ws/playlist?list=${albumWithSongs.album.playlistId}"
                                     )
                                 }
                                 context.startActivity(

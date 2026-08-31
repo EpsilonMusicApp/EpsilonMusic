@@ -298,7 +298,7 @@ fun QueueMenu(
                                 type = "text/plain"
                                 putExtra(
                                     Intent.EXTRA_TEXT,
-                                    "https://vihaanangaria.github.io/EpsilonMusicLandingPage/watch?v=${mediaMetadata.id}"
+                                    "https://epsilonmusic.ct.ws/watch?v=${mediaMetadata.id}"
                                 )
                             }
                             context.startActivity(Intent.createChooser(intent, null))

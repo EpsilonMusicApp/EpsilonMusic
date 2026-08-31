@@ -31,7 +31,7 @@ object UpdateNotificationHelper {
         }
 
         
-        val apkUrl = "https://vihaanangaria.github.io/EpsilonMusicLandingPage"
+        val apkUrl = "https://epsilonmusic.ct.ws"
         val intent = Intent(Intent.ACTION_VIEW, apkUrl.toUri())
 
         val flags = PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
@@ -39,8 +39,8 @@ object UpdateNotificationHelper {
 
         val notif = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_launcher_nobg)
-            .setContentTitle(context.getString(R.string.update_available_title))
-            .setContentText(versionName)
+            .setContentTitle("Update Available — Epsilon Music $versionName")
+            .setContentText("Bugs are fixed and new features are introduced. Update now!")
             .setContentIntent(pending)
             .setAutoCancel(true)
             .build()
