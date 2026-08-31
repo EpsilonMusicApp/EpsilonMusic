@@ -68,69 +68,30 @@ fun WelcomeDialog(
 
                 WelcomeSectionCard(title = "Follow Developer") {
                     WelcomeActionRow(
-                        icon = painterResource(R.drawable.ic_instagram_new),
-                        title = "Instagram",
-                        subtitle = "@***REMOVED***",
-                        onClick = { uriHandler.openUri("https://instagram.com/***REMOVED***") }
-                    )
-                    WelcomeDivider()
-                    WelcomeActionRow(
-                        icon = painterResource(R.drawable.ic_x_new),
-                        title = "X (Twitter)",
-                        subtitle = "@xad1tya",
-                        onClick = { uriHandler.openUri("https://x.com/xad1tya") }
-                    )
-                    WelcomeDivider()
-                    WelcomeActionRow(
                         icon = painterResource(R.drawable.github),
                         title = "GitHub",
-                        subtitle = "***REMOVED***",
-                        onClick = { uriHandler.openUri("https://github.com/***REMOVED***") }
+                        subtitle = "VihaanAngaria",
+                        onClick = { uriHandler.openUri("https://github.com/VihaanAngaria") }
+                    )
+                    WelcomeDivider()
+                    WelcomeActionRow(
+                        icon = painterResource(R.drawable.coffee),
+                        title = "Buy Me a Coffee",
+                        subtitle = "buymeacoffee.com/vihaanangag",
+                        onClick = { uriHandler.openUri("https://buymeacoffee.com/vihaanangag") }
                     )
                 }
 
                 WelcomeSectionCard(title = "Support Epsilon") {
                     WelcomeActionRow(
-                        icon = painterResource(R.drawable.coffee),
-                        title = "Buy Me a Coffee",
-                        subtitle = "buymeacoffee.com/***REMOVED***",
-                        onClick = { uriHandler.openUri("https://buymeacoffee.com/***REMOVED***") }
-                    )
-                    WelcomeDivider()
-                    WelcomeActionRow(
-                        icon = painterResource(R.drawable.ic_patreon_new),
-                        title = "Patreon",
-                        subtitle = "patreon.com/cw/***REMOVED***",
-                        onClick = { uriHandler.openUri("https://www.patreon.com/cw/***REMOVED***") }
-                    )
-                    WelcomeDivider()
-                    WelcomeActionRow(
-                        icon = painterResource(R.drawable.upi_new),
-                        title = "UPI",
-                        subtitle = "***REMOVED***",
-                        onClick = { uriHandler.openUri("https://intradeus.github.io/http-protocol-redirector/?r=upi://pay?pa=***REMOVED***&pn=***REMOVED***&am=&tn=Thank%20You%20so%20much%20for%20this%20support") }
+                        icon = painterResource(R.drawable.star),
+                        title = "Star on GitHub",
+                        subtitle = "github.com/VihaanAngaria/EpsilonMusic",
+                        onClick = { uriHandler.openUri("https://github.com/VihaanAngaria/EpsilonMusic") }
                     )
                 }
 
                 Spacer(modifier = Modifier.height(4.dp))
-
-                Button(
-                    onClick = { uriHandler.openUri("https://github.com/VihaanAngaria/EpsilonMusic") },
-                    modifier = Modifier.fillMaxWidth().height(50.dp),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                        contentColor = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.star),
-                        contentDescription = null,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Star the Repo", fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
-                }
 
                 Button(
                     onClick = onDismissRequest,

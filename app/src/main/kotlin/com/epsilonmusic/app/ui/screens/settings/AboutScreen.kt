@@ -118,24 +118,10 @@ highlightKey: String? = null) {
             item {
                 AboutSectionCard(title = "Developer") {
                     AboutActionRow(
-                        icon = painterResource(R.drawable.website),
-                        title = "Website",
-                        subtitle = "***REMOVED***.cyou",
-                        onClick = { uriHandler.openUri("https://***REMOVED***.cyou") },
-                    )
-                    AboutDivider()
-                    AboutActionRow(
-                        icon = painterResource(R.drawable.ic_instagram_new),
-                        title = "Instagram",
-                        subtitle = "@***REMOVED***",
-                        onClick = { uriHandler.openUri("https://instagram.com/***REMOVED***") },
-                    )
-                    AboutDivider()
-                    AboutActionRow(
-                        icon = painterResource(R.drawable.ic_x_new),
-                        title = "X (Twitter)",
-                        subtitle = "@xad1tya",
-                        onClick = { uriHandler.openUri("https://x.com/xad1tya") },
+                        icon = painterResource(R.drawable.github),
+                        title = "GitHub",
+                        subtitle = "VihaanAngaria",
+                        onClick = { uriHandler.openUri("https://github.com/VihaanAngaria") },
                     )
                 }
             }
@@ -145,22 +131,15 @@ highlightKey: String? = null) {
                     AboutActionRow(
                         icon = painterResource(R.drawable.coffee),
                         title = "Buy Me a Coffee",
-                        subtitle = "buymeacoffee.com/***REMOVED***",
-                        onClick = { uriHandler.openUri("https://buymeacoffee.com/***REMOVED***") },
+                        subtitle = "buymeacoffee.com/vihaanangag",
+                        onClick = { uriHandler.openUri("https://buymeacoffee.com/vihaanangag") },
                     )
                     AboutDivider()
                     AboutActionRow(
-                        icon = painterResource(R.drawable.ic_patreon_new),
-                        title = "Patreon",
-                        subtitle = "patreon.com/cw/***REMOVED***",
-                        onClick = { uriHandler.openUri("https://www.patreon.com/cw/***REMOVED***") },
-                    )
-                    AboutDivider()
-                    AboutActionRow(
-                        icon = painterResource(R.drawable.upi_new),
-                        title = "UPI",
-                        subtitle = "***REMOVED***",
-                        onClick = { uriHandler.openUri("https://intradeus.github.io/http-protocol-redirector/?r=upi://pay?pa=***REMOVED***&pn=***REMOVED***&am=&tn=Thank%20You%20so%20much%20for%20this%20support") },
+                        icon = painterResource(R.drawable.star),
+                        title = "Star on GitHub",
+                        subtitle = "VihaanAngaria/EpsilonMusic",
+                        onClick = { uriHandler.openUri("https://github.com/VihaanAngaria/EpsilonMusic") },
                     )
                 }
             }
