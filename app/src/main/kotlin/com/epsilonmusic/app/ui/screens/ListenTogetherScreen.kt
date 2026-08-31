@@ -100,7 +100,6 @@ import com.epsilonmusic.app.ui.component.ListDialog
 import com.epsilonmusic.app.ui.component.Material3SettingsGroup
 import com.epsilonmusic.app.ui.component.Material3SettingsItem
 import com.epsilonmusic.app.ui.component.IconButton
-import com.epsilonmusic.app.ui.component.IconButton
 import com.epsilonmusic.app.ui.utils.backToMain
 import com.epsilonmusic.app.utils.rememberPreference
 import kotlinx.coroutines.launch
@@ -286,11 +285,18 @@ fun ListenTogetherScreen(
                 // recomputed when `room.users` actually changes. Without this, every
                 // recomposition (heartbeat, sync event, etc.) would allocate a new
                 // ArrayList even when the user list hasn't changed.
-                val connectedUsers = remember(room.users) {
-                    room.users.filter { it.isConnected }
-                }
+                //
+                // NOTE: `remember()` is a @Composable function, so it CANNOT be called
+                // directly inside a LazyListScope lambda (which is non-composable). It
+                // MUST live inside the `item { }` content lambda. Calling it at the
+                // LazyListScope level caused the build to fail with:
+                //   "@Composable invocations can only happen from the context of a
+                //    @Composable function"
                 val currentUserIdValue = userId ?: ""
                 item(key = "connected_users") {
+                    val connectedUsers = remember(room.users) {
+                        room.users.filter { it.isConnected }
+                    }
                     ConnectedUsersSection(
                         users = connectedUsers,
                         isHost = isHost,

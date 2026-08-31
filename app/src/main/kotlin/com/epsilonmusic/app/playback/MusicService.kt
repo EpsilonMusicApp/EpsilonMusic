@@ -464,6 +464,8 @@ class MusicService :
     // Cached playback preferences kept in sync with DataStore.
     private var cachedRepeatMode: Int = REPEAT_MODE_OFF
     private var cachedShuffleEnabled: Boolean = false
+    @Volatile
+    private var cachedShufflePlaylistFirst: Boolean = false
     private var cachedPreloadEnabled: Boolean = true
     private var cachedPreloadLimit: Int = 1
     private var cachedPreloadLyrics: Boolean = true
@@ -958,6 +960,14 @@ class MusicService :
             .map { (try { it[ShuffleModeKey] } catch(e: Exception) { null }) ?: false }
             .distinctUntilChanged()
             .collect(scope) { cachedShuffleEnabled = it }
+
+        // Cache ShufflePlaylistFirstKey so that the 7+ sites that need this value
+        // (applyShuffleOrder calls in startCrossfade, prepareNext, automix lookahead, etc.)
+        // can read it without `runBlocking { dataStore.get(...) }` on the Main thread.
+        dataStore.data
+            .map { (try { it[ShufflePlaylistFirstKey] } catch(e: Exception) { null }) ?: false }
+            .distinctUntilChanged()
+            .collect(scope) { cachedShufflePlaylistFirst = it }
 
         dataStore.data
             .map { 
@@ -1535,7 +1545,7 @@ class MusicService :
 
             
             if (player.shuffleModeEnabled) {
-                val shufflePlaylistFirst = dataStore.get(ShufflePlaylistFirstKey, false)
+                val shufflePlaylistFirst = cachedShufflePlaylistFirst
                 applyShuffleOrder(player.currentMediaItemIndex, player.mediaItemCount, shufflePlaylistFirst)
             }
         }
@@ -1596,7 +1606,7 @@ class MusicService :
 
                     player.addMediaItems(currentIndex + 1, radioItems)
                     if (player.shuffleModeEnabled) {
-                        val shufflePlaylistFirst = dataStore.get(ShufflePlaylistFirstKey, false)
+                        val shufflePlaylistFirst = cachedShufflePlaylistFirst
                         applyShuffleOrder(player.currentMediaItemIndex, player.mediaItemCount, shufflePlaylistFirst)
                     }
                 }
@@ -1626,7 +1636,7 @@ class MusicService :
                                 }
                                 player.addMediaItems(currentIndex + 1, radioItems)
                                 if (player.shuffleModeEnabled) {
-                                    val shufflePlaylistFirst = dataStore.get(ShufflePlaylistFirstKey, false)
+                                    val shufflePlaylistFirst = cachedShufflePlaylistFirst
                                     applyShuffleOrder(player.currentMediaItemIndex, player.mediaItemCount, shufflePlaylistFirst)
                                 }
                             }
@@ -1865,7 +1875,7 @@ class MusicService :
         }
 
         if (player.shuffleModeEnabled) {
-            val shufflePlaylistFirst = dataStore.get(ShufflePlaylistFirstKey, false)
+            val shufflePlaylistFirst = cachedShufflePlaylistFirst
             applyShuffleOrder(player.currentMediaItemIndex, player.mediaItemCount, shufflePlaylistFirst)
         }
         player.prepare()
@@ -2114,7 +2124,7 @@ class MusicService :
                 if (player.playbackState != STATE_IDLE && mediaItems.isNotEmpty()) {
                     player.addMediaItems(mediaItems)
                     if (player.shuffleModeEnabled) {
-                        val shufflePlaylistFirst = dataStore.get(ShufflePlaylistFirstKey, false)
+                        val shufflePlaylistFirst = cachedShufflePlaylistFirst
                         applyShuffleOrder(player.currentMediaItemIndex, player.mediaItemCount, shufflePlaylistFirst)
                     }
                 }
@@ -2271,7 +2281,7 @@ class MusicService :
             
             if (player.mediaItemCount == 0) return
 
-            val shufflePlaylistFirst = dataStore.get(ShufflePlaylistFirstKey, false)
+            val shufflePlaylistFirst = cachedShufflePlaylistFirst
             val currentIndex = player.currentMediaItemIndex
             val totalCount = player.mediaItemCount
 
@@ -3921,7 +3931,7 @@ class MusicService :
         performCrossfadeSwap()
 
         if (savedShuffleEnabled) {
-            val shufflePlaylistFirst = dataStore.get(ShufflePlaylistFirstKey, false)
+            val shufflePlaylistFirst = cachedShufflePlaylistFirst
             applyShuffleOrder(player.currentMediaItemIndex, player.mediaItemCount, shufflePlaylistFirst)
         }
     }
