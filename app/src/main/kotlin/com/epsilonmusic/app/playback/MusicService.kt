@@ -1124,7 +1124,24 @@ class MusicService :
                     .setUsage(C.USAGE_MEDIA)
                     .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
                     .build(),
-                false,
+                // handleAudioFocus = true
+                //
+                // This MUST be true. When false (the previous value), ExoPlayer does NOT
+                // request audio focus, so the system has no idea this app is playing music.
+                // The system then routes hardware volume-key presses to the default stream
+                // (STREAM_RING / in-call volume) instead of STREAM_MUSIC — which is exactly
+                // the bug the user reported: "when music is playing, pressing volume up
+                // changes the calling volume instead of the music volume."
+                //
+                // With handleAudioFocus = true, ExoPlayer requests AUDIOFOCUS_GAIN with
+                // USAGE_MEDIA + CONTENT_TYPE_MUSIC. The AudioManager then automatically
+                // routes volume-key presses to STREAM_MUSIC while the player holds focus,
+                // which is the correct Android behavior for media apps.
+                //
+                // Note: this complements (does NOT replace) the manual AudioFocusRequest
+                // built in setupAudioFocusRequest() — both can coexist. ExoPlayer's
+                // built-in focus handling is what actually wires up the volume-key routing.
+                true,
             )
             .setSeekBackIncrementMs(5000)
             .setSeekForwardIncrementMs(5000)

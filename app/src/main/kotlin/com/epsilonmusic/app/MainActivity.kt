@@ -365,6 +365,16 @@ class MainActivity : ComponentActivity() {
         window.decorView.layoutDirection = View.LAYOUT_DIRECTION_LTR
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
+        // Defense-in-depth for volume-key routing on older Android:
+        // ExoPlayer's setAudioAttributes(attrs, handleAudioFocus = true) is the primary
+        // mechanism and works on all supported versions, but on API < 26 setting the
+        // Activity's volumeControlStream to STREAM_MUSIC is the legacy equivalent and
+        // catches cases where the MediaSession isn't yet established (e.g., before the
+        // service binds). Without this, volume presses before the first track starts
+        // could still adjust the ringer/call volume.
+        @Suppress("DEPRECATION")
+        volumeControlStream = android.media.AudioManager.STREAM_MUSIC
+
         
         listenTogetherManager.initialize()
 
