@@ -30,8 +30,10 @@ object UpdateNotificationHelper {
             nm.createNotificationChannel(channel)
         }
 
-        
-        val apkUrl = "https://epsilonmusic.ct.ws"
+        // Point the notification to the GitHub releases page so users can download
+        // the latest APK directly. Previously this pointed to epsilonmusic.ct.ws
+        // which may not always host the latest APK.
+        val apkUrl = "https://github.com/VihaanAngaria/EpsilonMusic/releases/latest"
         val intent = Intent(Intent.ACTION_VIEW, apkUrl.toUri())
 
         val flags = PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
