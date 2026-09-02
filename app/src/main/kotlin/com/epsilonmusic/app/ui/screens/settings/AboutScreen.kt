@@ -127,6 +127,24 @@ highlightKey: String? = null) {
             }
 
             item {
+                AboutSectionCard(title = "Connect") {
+                    AboutActionRow(
+                        icon = painterResource(R.drawable.ic_telegram_new),
+                        title = "Telegram",
+                        subtitle = "@epsilonmusicapp",
+                        onClick = { uriHandler.openUri("https://t.me/epsilonmusicapp") },
+                    )
+                    AboutDivider()
+                    AboutActionRow(
+                        icon = painterResource(R.drawable.ic_instagram_new),
+                        title = "Instagram",
+                        subtitle = "@epsilonmusic.app",
+                        onClick = { uriHandler.openUri("https://instagram.com/epsilonmusic.app") },
+                    )
+                }
+            }
+
+            item {
                 AboutSectionCard(title = "Support") {
                     AboutActionRow(
                         icon = painterResource(R.drawable.coffee),

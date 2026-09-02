@@ -29,8 +29,13 @@ val ListItemHeight = 64.dp
 val SuggestionItemHeight = 56.dp
 val SearchFilterHeight = 48.dp
 val ListThumbnailSize = 48.dp
-val SmallGridThumbnailHeight = 104.dp
-val GridThumbnailHeight = 128.dp
+// Increased the size gap so the Grid cell size setting is visually obvious.
+// Previously BIG=128+24=152dp and SMALL=128-24=104dp (only 48dp difference),
+// which often resulted in the same number of columns after GridCells.Adaptive
+// rounded down. Now BIG=152dp and SMALL=92dp (60dp difference) — the user
+// will clearly see more / fewer columns when toggling the setting.
+val SmallGridThumbnailHeight = 92.dp
+val GridThumbnailHeight = 152.dp
 val AlbumThumbnailSize = 144.dp
 
 val ThumbnailCornerRadius = 6.dp 

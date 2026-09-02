@@ -307,7 +307,7 @@ fun BottomSheetPlayer(
         defaultValue = true
     )
     val showCodecOnPlayer by rememberPreference(com.epsilonmusic.app.constants.ShowCodecOnPlayerKey, false)
-    val hidePlayerSlider by rememberPreference(com.epsilonmusic.app.constants.HidePlayerSliderKey, false)
+    val hidePlayerSlider by rememberPreference(com.epsilonmusic.app.constants.HidePlayerSliderKey, true)
     val (hidePlayerThumbnail, onHidePlayerThumbnailChange) = rememberPreference(HidePlayerThumbnailKey, false)
     val cropAlbumArt by rememberPreference(CropAlbumArtKey, false)
     val mediaMetadata by playerConnection.mediaMetadata.collectAsState()
@@ -315,7 +315,7 @@ fun BottomSheetPlayer(
 
     val playerBackgroundPref by rememberEnumPreference(
         key = PlayerBackgroundStyleKey,
-        defaultValue = PlayerBackgroundStyle.GRADIENT
+        defaultValue = PlayerBackgroundStyle.GLOW_ANIMATED
     )
     val playerBackground = if (isLocalMedia) PlayerBackgroundStyle.DEFAULT else playerBackgroundPref
     val playerButtonsStyle by rememberEnumPreference(

@@ -95,8 +95,8 @@ fun SettingDialoge(
                 items = buildList {
                     add(
                         Material3SettingsItem(
-                            title = { Text(if (isLoggedIn) accountName else "Anonymous") },
-                            description = { Text(if (isLoggedIn) accountEmail.ifEmpty { "Logged In" } else "Not Logged In") },
+                            title = { Text(if (isLoggedIn) accountName else "Login with YouTube") },
+                            description = { Text(if (isLoggedIn) accountEmail.ifEmpty { "Logged In" } else "Tap to sign in with your YouTube account") },
                             icon = painterResource(R.drawable.account),
                             trailingContent = if (isLoggedIn && !accountImageUrl.isNullOrBlank()) {
                                 {
@@ -112,7 +112,7 @@ fun SettingDialoge(
                             } else null,
                             onClick = {
                                 onDismissRequest()
-                                if (isLoggedIn) onNavigate("settings/account") else onNavigate("login") 
+                                if (isLoggedIn) onNavigate("settings/account") else onNavigate("login")
                             }
                         )
                     )

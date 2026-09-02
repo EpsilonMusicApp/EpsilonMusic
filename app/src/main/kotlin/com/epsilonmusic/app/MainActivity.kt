@@ -638,7 +638,7 @@ class MainActivity : ComponentActivity() {
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val (previousTab, setPreviousTab) = rememberSaveable { mutableStateOf("home") }
 
-                val (listenTogetherInTopBar) = rememberPreference(ListenTogetherInTopBarKey, defaultValue = true)
+                val (listenTogetherInTopBar) = rememberPreference(ListenTogetherInTopBarKey, defaultValue = false)
                 val navigationItems = remember(listenTogetherInTopBar) { 
                     if (listenTogetherInTopBar) {
                         Screens.MainScreens.filter { it != Screens.ListenTogether }
@@ -887,6 +887,11 @@ class MainActivity : ComponentActivity() {
                 val (lastOpenedVersionCode, setLastOpenedVersionCode) = rememberPreference(com.epsilonmusic.app.constants.LastOpenedVersionCodeKey, -1)
                 var showWelcomeDialog by remember { mutableStateOf(false) }
 
+                // Animated logo splash — shows on cold start only.
+                // Uses rememberSaveable so it doesn't re-trigger on configuration changes
+                // (rotation, dark mode toggle, etc.), only on a fresh process start.
+                var showLogoSplash by rememberSaveable { mutableStateOf(true) }
+
                 LaunchedEffect(lastOpenedVersionCode) {
                     if (lastOpenedVersionCode < BuildConfig.VERSION_CODE) {
                         showWelcomeDialog = true
@@ -1027,12 +1032,6 @@ class MainActivity : ComponentActivity() {
                                                     )
                                                 }
                                             }
-                                            IconButton(onClick = { navController.navigate("stats") }) {
-                                                Icon(
-                                                    painter = painterResource(R.drawable.stats),
-                                                    contentDescription = stringResource(R.string.stats)
-                                                )
-                                            }
                                             if (listenTogetherInTopBar) {
                                                 IconButton(onClick = { navController.navigate("listen_together_from_topbar") }) {
                                                     Icon(
@@ -1164,18 +1163,9 @@ class MainActivity : ComponentActivity() {
                                             FloatingNavigationToolbar(
                                                 items = navigationItems,
                                                 pureBlack = pureBlack,
-                                                onShuffleClick = onShuffleClick,
-                                                shuffleIconRes = R.drawable.shuffle,
-                                                shuffleContentDescription = stringResource(R.string.shuffle),
-                                                onMusicRecognitionClick = onMusicRecognitionClick,
-                                                musicRecognitionContentDescription = stringResource(R.string.recognition),
-                                                onAiHubClick = { 
-                                                    navController.navigate("settings/ai") {
-                                                        launchSingleTop = true
-                                                    }
-                                                },
-                                                aiHubIconRes = R.drawable.sparks,
-                                                aiHubContentDescription = stringResource(R.string.ai_lyrics_translation),
+                                                // Removed the three-dot overflow menu (onShuffleClick,
+                                                // onMusicRecognitionClick, onAiHubClick) per user request.
+                                                // The nav bar now shows only the navigation items, centered.
                                                 isSelected = { screen ->
                                                     currentRoute == screen.route || currentRoute?.startsWith("${screen.route}/") == true
                                                 },
@@ -1437,6 +1427,14 @@ class MainActivity : ComponentActivity() {
                                 showWelcomeDialog = false
                                 setLastOpenedVersionCode(BuildConfig.VERSION_CODE)
                             }
+                        )
+                    }
+
+                    // Animated logo splash overlay — shows on cold start, auto-dismisses
+                    // after ~1.5s. Rendered last so it sits on top of everything.
+                    if (showLogoSplash) {
+                        com.epsilonmusic.app.ui.component.AnimatedLogoSplash(
+                            onAnimationEnd = { showLogoSplash = false }
                         )
                     }
 

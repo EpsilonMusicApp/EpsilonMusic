@@ -125,7 +125,7 @@ fun ListenTogetherScreen(
     val pendingJoinRequests by listenTogetherManager.pendingJoinRequests.collectAsState()
     val pendingSuggestions by listenTogetherManager.pendingSuggestions.collectAsState()
 
-    val (listenTogetherInTopBar) = rememberPreference(ListenTogetherInTopBarKey, defaultValue = true)
+    val (listenTogetherInTopBar) = rememberPreference(ListenTogetherInTopBarKey, defaultValue = false)
     val shouldShowTopBar = showTopBar || listenTogetherInTopBar
     
     var savedUsername by rememberPreference(ListenTogetherUsernameKey, "")
