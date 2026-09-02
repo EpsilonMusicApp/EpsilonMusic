@@ -936,6 +936,9 @@ class MainActivity : ComponentActivity() {
                     else -> ""
                 }
 
+                val isLibraryRoute = navBackStackEntry?.destination?.route == Screens.Library.route
+                val isHomeRoute = navBackStackEntry?.destination?.route == Screens.Home.route
+
 
 
                 val pauseListenHistory by rememberPreference(PauseListenHistoryKey, defaultValue = false)
@@ -1017,10 +1020,22 @@ class MainActivity : ComponentActivity() {
                                         title = {
                                             Text(
                                                 text = currentTitle,
-                                                style = MaterialTheme.typography.titleLarge.copy(
-                                                    fontWeight = FontWeight.Bold,
-                                                    fontSize = 24.sp
-                                                ),
+                                                // Apply Inter-inspired styling to the Home title:
+                                                // font-weight: 600 (SemiBold), font-size: 20sp,
+                                                // letter-spacing: -0.02em.
+                                                // Matches the user's CSS spec for .epsilon-title.
+                                                style = if (isHomeRoute) {
+                                                    MaterialTheme.typography.titleLarge.copy(
+                                                        fontWeight = FontWeight.SemiBold,
+                                                        fontSize = 20.sp,
+                                                        letterSpacing = (-0.02).sp
+                                                    )
+                                                } else {
+                                                    MaterialTheme.typography.titleLarge.copy(
+                                                        fontWeight = FontWeight.Bold,
+                                                        fontSize = 24.sp
+                                                    )
+                                                },
                                             )
                                         },
                                         actions = {
@@ -1029,6 +1044,15 @@ class MainActivity : ComponentActivity() {
                                                     Icon(
                                                         painter = painterResource(R.drawable.music_history),
                                                         contentDescription = stringResource(R.string.history)
+                                                    )
+                                                }
+                                            }
+                                            // Stats button — only on the Library tab
+                                            if (isLibraryRoute) {
+                                                IconButton(onClick = { navController.navigate("stats") }) {
+                                                    Icon(
+                                                        painter = painterResource(R.drawable.stats),
+                                                        contentDescription = stringResource(R.string.stats)
                                                     )
                                                 }
                                             }

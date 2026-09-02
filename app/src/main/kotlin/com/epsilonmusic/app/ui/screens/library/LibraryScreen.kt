@@ -172,7 +172,9 @@ fun LibraryScreen(navController: NavController) {
                             text = { Text("Import from Spotify") },
                             onClick = {
                                 showImportMenu = false
-                                navController.navigate("settings/spotify_import")
+                                // Navigate to Backup & Restore where the full Spotify import
+                                // flow lives (authenticate, select playlists, import).
+                                navController.navigate("settings/backup_restore?highlightKey=spotify_import")
                             }
                         )
                         androidx.compose.material3.DropdownMenuItem(
