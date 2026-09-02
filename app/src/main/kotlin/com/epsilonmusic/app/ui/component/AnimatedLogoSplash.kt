@@ -3,7 +3,6 @@ package com.epsilonmusic.app.ui.component
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
@@ -26,16 +25,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.drawscope.rotate
-import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -46,15 +45,6 @@ import kotlinx.coroutines.delay
  *
  * The music-note logo is "drawn" stroke-by-stroke using a PathEffect
  * dash animation, then fills in, holds briefly, and fades out.
- *
- * Animation timeline (total ~2.0s):
- *   0.0s – 1.2s : path draws from start to end (stroke reveal)
- *   1.2s – 1.5s : fill fades in
- *   1.5s – 1.8s : hold
- *   1.8s – 2.0s : fade out everything
- *
- * The path is the music-note shape from @drawable/music_note.xml
- * (viewport 960x960), scaled to fit the canvas.
  */
 @Composable
 fun AnimatedLogoSplash(
@@ -66,7 +56,7 @@ fun AnimatedLogoSplash(
     var textAlpha by remember { mutableStateOf(0f) }
 
     LaunchedEffect(Unit) {
-        // Phase 1: draw the path (0 → 1) over 1200ms
+        // Phase 1: draw the path (0 -> 1) over 1200ms
         val drawDuration = 1200L
         val drawSteps = 60
         for (i in 0..drawSteps) {
@@ -75,7 +65,7 @@ fun AnimatedLogoSplash(
         }
         drawProgress = 1f
 
-        // Phase 2: fade in the fill + text (200ms)
+        // Phase 2: fade in the fill + text (250ms)
         delay(50)
         textAlpha = 1f
         val fillDuration = 250L
@@ -122,31 +112,21 @@ fun AnimatedLogoSplash(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // Drawing animation canvas
+            // Glow halo behind the logo (subtle pulse)
+            val infiniteTransition = rememberInfiniteTransition(label = "glowPulse")
+            val glowAlpha by infiniteTransition.animateFloat(
+                initialValue = 0.15f,
+                targetValue = 0.35f,
+                animationSpec = infiniteRepeatable(
+                    animation = tween(1000, easing = LinearEasing),
+                    repeatMode = RepeatMode.Reverse
+                ),
+                label = "glowAlpha"
+            )
+
             Box(
                 contentAlignment = Alignment.Center
             ) {
-                // Glow halo behind the logo (subtle pulse)
-                val infiniteTransition = rememberInfiniteTransition(label = "glowPulse")
-                val glowAlpha by infiniteTransition.animateFloat(
-                    initialValue = 0.15f,
-                    targetValue = 0.35f,
-                    animationSpec = infiniteRepeatable(
-                        animation = tween(1000, easing = LinearEasing),
-                        repeatMode = RepeatMode.Reverse
-                    ),
-                    label = "glowAlpha"
-                )
-                val glowRotation by infiniteTransition.animateFloat(
-                    initialValue = 0f,
-                    targetValue = 360f,
-                    animationSpec = infiniteRepeatable(
-                        animation = tween(6000, easing = LinearEasing),
-                        repeatMode = RepeatMode.Restart
-                    ),
-                    label = "glowRotation"
-                )
-
                 Box(
                     modifier = Modifier
                         .fillMaxSize(0.6f)
@@ -163,82 +143,15 @@ fun AnimatedLogoSplash(
                         )
                 )
 
-                // The drawn music note
+                // The drawn music note — using DrawScope.scale to fit the path
                 Canvas(
                     modifier = Modifier.padding(16.dp)
                 ) {
-                    val canvasSize = size.minDimension
-                    val scale = canvasSize / 960f
-
-                    // Build the music-note path (from music_note.xml)
-                    val notePath = Path().apply {
-                        // M400,840 Q334,840 287,793 Q240,746 240,680
-                        // Q240,614 287,567 Q334,520 400,520
-                        // Q423,520 442.5,525.5 Q462,531 480,542
-                        // L480,120 L720,120 L720,280 L560,280
-                        // L560,680 Q560,746 513,793 Q466,840 400,840 Z
-                        moveTo(400f, 840f)
-                        quadTo(334f, 840f, 287f, 793f)
-                        quadTo(240f, 746f, 240f, 680f)
-                        quadTo(240f, 614f, 287f, 567f)
-                        quadTo(334f, 520f, 400f, 520f)
-                        quadTo(423f, 520f, 442.5f, 525.5f)
-                        quadTo(462f, 531f, 480f, 542f)
-                        lineTo(480f, 120f)
-                        lineTo(720f, 120f)
-                        lineTo(720f, 280f)
-                        lineTo(560f, 280f)
-                        lineTo(560f, 680f)
-                        quadTo(560f, 746f, 513f, 793f)
-                        quadTo(466f, 840f, 400f, 840f)
-                        close()
-                    }
-
-                    // Scale the path to fit the canvas
-                    notePath.transform { matrix ->
-                        matrix.scale(scale, scale)
-                        notePath
-                    }
-
-                    // Phase 1: stroke draw animation
-                    // PathEffect.dashPathEffect with a large dash and a gap that shrinks
-                    // as drawProgress goes from 0 to 1 — this "reveals" the path.
-                    val pathLength = 3000f // approximate perimeter of the music note
-                    val revealedLength = pathLength * drawProgress
-                    val dashEffect = PathEffect.dashPathEffect(
-                        intervals = floatArrayOf(revealedLength, pathLength),
-                        phase = 0f
+                    drawMusicNote(
+                        drawProgress = drawProgress,
+                        fillAlpha = fillAlpha,
+                        color = primaryColor
                     )
-
-                    if (drawProgress < 1f) {
-                        // Still drawing — show stroke only
-                        drawPath(
-                            path = notePath,
-                            color = primaryColor,
-                            style = Stroke(
-                                width = 8f * scale,
-                                cap = StrokeCap.Round,
-                                join = StrokeJoin.Round,
-                                pathEffect = dashEffect
-                            )
-                        )
-                    } else {
-                        // Drawing complete — show filled note with stroke
-                        drawPath(
-                            path = notePath,
-                            color = primaryColor.copy(alpha = fillAlpha),
-                            style = androidx.compose.ui.graphics.drawscope.Fill
-                        )
-                        drawPath(
-                            path = notePath,
-                            color = primaryColor,
-                            style = Stroke(
-                                width = 4f * scale,
-                                cap = StrokeCap.Round,
-                                join = StrokeJoin.Round
-                            )
-                        )
-                    }
                 }
             }
 
@@ -254,6 +167,79 @@ fun AnimatedLogoSplash(
                 modifier = Modifier
                     .alpha(textAlpha)
                     .padding(top = 24.dp)
+            )
+        }
+    }
+}
+
+/**
+ * Draws the music-note logo with a stroke-reveal animation.
+ * The path coordinates are from @drawable/music_note.xml (viewport 960x960).
+ * The drawing is scaled to fit the DrawScope using [DrawScope.scale].
+ */
+private fun DrawScope.drawMusicNote(
+    drawProgress: Float,
+    fillAlpha: Float,
+    color: Color
+) {
+    val canvasSize = size.minDimension
+    val scale = canvasSize / 960f
+
+    // Build the music-note path at original viewport coordinates (960x960)
+    val notePath = Path().apply {
+        moveTo(400f, 840f)
+        quadTo(334f, 840f, 287f, 793f)
+        quadTo(240f, 746f, 240f, 680f)
+        quadTo(240f, 614f, 287f, 567f)
+        quadTo(334f, 520f, 400f, 520f)
+        quadTo(423f, 520f, 442.5f, 525.5f)
+        quadTo(462f, 531f, 480f, 542f)
+        lineTo(480f, 120f)
+        lineTo(720f, 120f)
+        lineTo(720f, 280f)
+        lineTo(560f, 280f)
+        lineTo(560f, 680f)
+        quadTo(560f, 746f, 513f, 793f)
+        quadTo(466f, 840f, 400f, 840f)
+        close()
+    }
+
+    // Use DrawScope.scale to fit the 960x960 path into the canvas.
+    // The pivot is (0, 0) so the path scales from the top-left corner.
+    scale(scale, scale, pivot = Offset.Zero) {
+        if (drawProgress < 1f) {
+            // Phase 1: stroke draw animation using dashPathEffect
+            val pathLength = 3000f
+            val revealedLength = pathLength * drawProgress
+            val dashEffect = PathEffect.dashPathEffect(
+                intervals = floatArrayOf(revealedLength, pathLength),
+                phase = 0f
+            )
+            drawPath(
+                path = notePath,
+                color = color,
+                style = Stroke(
+                    width = 8f,
+                    cap = StrokeCap.Round,
+                    join = StrokeJoin.Round,
+                    pathEffect = dashEffect
+                )
+            )
+        } else {
+            // Phase 2+: filled note with stroke outline
+            drawPath(
+                path = notePath,
+                color = color.copy(alpha = fillAlpha),
+                style = Fill
+            )
+            drawPath(
+                path = notePath,
+                color = color,
+                style = Stroke(
+                    width = 4f,
+                    cap = StrokeCap.Round,
+                    join = StrokeJoin.Round
+                )
             )
         }
     }
