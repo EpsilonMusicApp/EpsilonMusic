@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -28,7 +29,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.PathMeasure
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.DrawScope
@@ -43,8 +44,8 @@ import kotlinx.coroutines.delay
 /**
  * Aesthetic drawing animation splash shown on cold start.
  *
- * The music-note logo is "drawn" stroke-by-stroke using a PathEffect
- * dash animation, then fills in, holds briefly, and fades out.
+ * The music-note logo is "drawn" stroke-by-stroke using PathMeasure
+ * to extract a partial path, then fills in, holds briefly, and fades out.
  */
 @Composable
 fun AnimatedLogoSplash(
@@ -125,11 +126,13 @@ fun AnimatedLogoSplash(
             )
 
             Box(
-                contentAlignment = Alignment.Center
+                contentAlignment = Alignment.Center,
+                modifier = Modifier.size(180.dp)
             ) {
+                // Glow background
                 Box(
                     modifier = Modifier
-                        .fillMaxSize(0.6f)
+                        .fillMaxSize()
                         .background(
                             Brush.sweepGradient(
                                 listOf(
@@ -143,9 +146,11 @@ fun AnimatedLogoSplash(
                         )
                 )
 
-                // The drawn music note — using DrawScope.scale to fit the path
+                // The drawn music note
                 Canvas(
-                    modifier = Modifier.padding(16.dp)
+                    modifier = Modifier
+                        .size(120.dp)
+                        .padding(8.dp)
                 ) {
                     drawMusicNote(
                         drawProgress = drawProgress,
@@ -174,8 +179,7 @@ fun AnimatedLogoSplash(
 
 /**
  * Draws the music-note logo with a stroke-reveal animation.
- * The path coordinates are from @drawable/music_note.xml (viewport 960x960).
- * The drawing is scaled to fit the DrawScope using [DrawScope.scale].
+ * Uses PathMeasure to extract a partial path for the drawing effect.
  */
 private fun DrawScope.drawMusicNote(
     drawProgress: Float,
@@ -183,10 +187,10 @@ private fun DrawScope.drawMusicNote(
     color: Color
 ) {
     val canvasSize = size.minDimension
-    val scale = canvasSize / 960f
+    val scaleFactor = canvasSize / 960f
 
-    // Build the music-note path at original viewport coordinates (960x960)
-    val notePath = Path().apply {
+    // Build the full music-note path at original viewport coordinates (960x960)
+    val fullPath = Path().apply {
         moveTo(400f, 840f)
         quadTo(334f, 840f, 287f, 793f)
         quadTo(240f, 746f, 240f, 680f)
@@ -204,39 +208,38 @@ private fun DrawScope.drawMusicNote(
         close()
     }
 
-    // Use DrawScope.scale to fit the 960x960 path into the canvas.
-    // The pivot is (0, 0) so the path scales from the top-left corner.
-    scale(scale, scale, pivot = Offset.Zero) {
+    // Measure the path and extract a partial segment for the drawing animation
+    val pathMeasure = PathMeasure(fullPath, false)
+    val totalLength = pathMeasure.length
+    val drawLength = totalLength * drawProgress
+    val partialPath = Path()
+    pathMeasure.getSegment(0f, drawLength, partialPath, true)
+
+    // Scale the drawing to fit the canvas
+    scale(scaleFactor, scaleFactor, pivot = Offset.Zero) {
         if (drawProgress < 1f) {
-            // Phase 1: stroke draw animation using dashPathEffect
-            val pathLength = 3000f
-            val revealedLength = pathLength * drawProgress
-            val dashEffect = PathEffect.dashPathEffect(
-                intervals = floatArrayOf(revealedLength, pathLength),
-                phase = 0f
-            )
+            // Phase 1: draw the partial stroke
             drawPath(
-                path = notePath,
+                path = partialPath,
                 color = color,
                 style = Stroke(
-                    width = 8f,
+                    width = 12f,
                     cap = StrokeCap.Round,
-                    join = StrokeJoin.Round,
-                    pathEffect = dashEffect
+                    join = StrokeJoin.Round
                 )
             )
         } else {
             // Phase 2+: filled note with stroke outline
             drawPath(
-                path = notePath,
+                path = fullPath,
                 color = color.copy(alpha = fillAlpha),
                 style = Fill
             )
             drawPath(
-                path = notePath,
+                path = fullPath,
                 color = color,
                 style = Stroke(
-                    width = 4f,
+                    width = 6f,
                     cap = StrokeCap.Round,
                     join = StrokeJoin.Round
                 )
