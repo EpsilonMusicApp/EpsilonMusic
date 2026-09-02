@@ -38,6 +38,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.Density
@@ -170,6 +171,13 @@ fun LibraryScreen(navController: NavController) {
                     ) {
                         androidx.compose.material3.DropdownMenuItem(
                             text = { Text("Import from Spotify") },
+                            leadingIcon = {
+                                Icon(
+                                    painter = painterResource(R.drawable.ic_spotify),
+                                    contentDescription = "Spotify",
+                                    tint = Color(0xFF1DB954) // Spotify green
+                                )
+                            },
                             onClick = {
                                 showImportMenu = false
                                 // Navigate to Backup & Restore where the full Spotify import

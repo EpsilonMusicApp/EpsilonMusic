@@ -210,6 +210,7 @@ import com.epsilonmusic.app.ui.screens.settings.DarkMode
 import com.epsilonmusic.app.ui.screens.settings.NavigationTab
 import com.epsilonmusic.app.ui.theme.ColorSaver
 import com.epsilonmusic.app.ui.theme.DefaultThemeColor
+import com.epsilonmusic.app.ui.theme.InterFontFamily
 import com.epsilonmusic.app.ui.theme.epsilonmusicTheme
 import com.epsilonmusic.app.ui.theme.extractThemeColor
 import com.epsilonmusic.app.ui.utils.appBarScrollBehavior
@@ -887,11 +888,6 @@ class MainActivity : ComponentActivity() {
                 val (lastOpenedVersionCode, setLastOpenedVersionCode) = rememberPreference(com.epsilonmusic.app.constants.LastOpenedVersionCodeKey, -1)
                 var showWelcomeDialog by remember { mutableStateOf(false) }
 
-                // Animated logo splash — shows on cold start only.
-                // Uses rememberSaveable so it doesn't re-trigger on configuration changes
-                // (rotation, dark mode toggle, etc.), only on a fresh process start.
-                var showLogoSplash by rememberSaveable { mutableStateOf(true) }
-
                 LaunchedEffect(lastOpenedVersionCode) {
                     if (lastOpenedVersionCode < BuildConfig.VERSION_CODE) {
                         showWelcomeDialog = true
@@ -1020,12 +1016,12 @@ class MainActivity : ComponentActivity() {
                                         title = {
                                             Text(
                                                 text = currentTitle,
-                                                // Apply Inter-inspired styling to the Home title:
-                                                // font-weight: 600 (SemiBold), font-size: 20sp,
-                                                // letter-spacing: -0.02em.
-                                                // Matches the user's CSS spec for .epsilon-title.
+                                                // Home title uses Inter (closest free equivalent
+                                                // to ChatGPT's Söhne): SemiBold, 20sp, tight tracking
+                                                // for a premium look. Other tabs keep bold 24sp.
                                                 style = if (isHomeRoute) {
                                                     MaterialTheme.typography.titleLarge.copy(
+                                                        fontFamily = InterFontFamily,
                                                         fontWeight = FontWeight.SemiBold,
                                                         fontSize = 20.sp,
                                                         letterSpacing = (-0.02).sp
@@ -1451,14 +1447,6 @@ class MainActivity : ComponentActivity() {
                                 showWelcomeDialog = false
                                 setLastOpenedVersionCode(BuildConfig.VERSION_CODE)
                             }
-                        )
-                    }
-
-                    // Animated logo splash overlay — shows on cold start, auto-dismisses
-                    // after ~1.5s. Rendered last so it sits on top of everything.
-                    if (showLogoSplash) {
-                        com.epsilonmusic.app.ui.component.AnimatedLogoSplash(
-                            onAnimationEnd = { showLogoSplash = false }
                         )
                     }
 
