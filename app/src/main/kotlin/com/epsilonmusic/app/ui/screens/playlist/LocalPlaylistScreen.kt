@@ -1002,27 +1002,37 @@ fun LocalPlaylistHeader(
 
                 else -> {
                     val bytes = uriToByteArray(context, uri)
-                    YouTube.uploadCustomThumbnailLink(
-                        playlist.playlist.browseId ?: "",
-                        bytes!!
-                    ).onSuccess { newThumbnailUrl ->
-                        overrideThumbnail.value = newThumbnailUrl
-                        isCustomThumbnail = true
-
-                        
-                        database.query {
-                            update(playlist.playlist.copy(thumbnailUrl = newThumbnailUrl))
-                        }
-                    }.onFailure {
-                        if (it is ClientRequestException) {
-                            snackbarHostState.showSnackbar("Applied locally (${it.response.status.value} ${it.response.status.description})")
-                        }
-                        reportException(it)
-                        
+                    if (bytes == null) {
+                        // Cropped image unreadable (cache eviction / provider revoked):
+                        // fall back to applying the local uri directly.
                         overrideThumbnail.value = uri.toString()
                         isCustomThumbnail = true
                         database.query {
                             update(playlist.playlist.copy(thumbnailUrl = uri.toString()))
+                        }
+                    } else {
+                        YouTube.uploadCustomThumbnailLink(
+                            playlist.playlist.browseId ?: "",
+                            bytes
+                        ).onSuccess { newThumbnailUrl ->
+                            overrideThumbnail.value = newThumbnailUrl
+                            isCustomThumbnail = true
+
+                            
+                            database.query {
+                                update(playlist.playlist.copy(thumbnailUrl = newThumbnailUrl))
+                            }
+                        }.onFailure {
+                            if (it is ClientRequestException) {
+                                snackbarHostState.showSnackbar("Applied locally (${it.response.status.value} ${it.response.status.description})")
+                            }
+                            reportException(it)
+                            
+                            overrideThumbnail.value = uri.toString()
+                            isCustomThumbnail = true
+                            database.query {
+                                update(playlist.playlist.copy(thumbnailUrl = uri.toString()))
+                            }
                         }
                     }
                 }
@@ -1526,6 +1536,8 @@ fun uriToByteArray(context: Context, uri: Uri): ByteArray? {
     return try {
         context.contentResolver.openInputStream(uri)?.use { it.readBytes() }
     } catch (_: SecurityException) {
+        null
+    } catch (_: java.io.IOException) {
         null
     }
 }

@@ -197,26 +197,30 @@ fun StorageSettings(
     var downloadCacheSize by remember {
         mutableLongStateOf(tryOrNull { downloadCache.cacheSpace } ?: 0)
     }
+    val imageCacheLimitBytes = maxImageCacheSize * 1024 * 1024L
     val imageCacheProgress by animateFloatAsState(
-        targetValue = (imageCacheSize.toFloat() / (maxImageCacheSize * 1024 * 1024L)).coerceIn(
-            0f,
-            1f
-        ),
+        targetValue = (if (imageCacheLimitBytes > 0) imageCacheSize.toFloat() / imageCacheLimitBytes else 0f)
+            .coerceIn(0f, 1f),
         label = "imageCacheProgress",
     )
+    val playerCacheLimitBytes = if (maxSongCacheSize > 0) maxSongCacheSize * 1024 * 1024L else 0L
     val playerCacheProgress by animateFloatAsState(
-        targetValue = (playerCacheSize.toFloat() / (maxSongCacheSize * 1024 * 1024L)).coerceIn(
-            0f,
-            1f
-        ),
+        targetValue = (if (playerCacheLimitBytes > 0) playerCacheSize.toFloat() / playerCacheLimitBytes else 0f)
+            .coerceIn(0f, 1f),
         label = "playerCacheProgress",
     )
 
+    var lastImageCacheSize by remember { mutableStateOf(maxImageCacheSize) }
     LaunchedEffect(maxImageCacheSize) {
-        SingletonImageLoader.reset()
-        if (maxImageCacheSize == 0) {
-            coroutineScope.launch(Dispatchers.IO) {
-                imageDiskCache.clear()
+        // Only react to actual changes: entering the screen must not drop the
+        // shared Coil ImageLoader (it would flush every thumbnail in the app).
+        if (maxImageCacheSize != lastImageCacheSize) {
+            lastImageCacheSize = maxImageCacheSize
+            SingletonImageLoader.reset()
+            if (maxImageCacheSize == 0) {
+                coroutineScope.launch(Dispatchers.IO) {
+                    imageDiskCache.clear()
+                }
             }
         }
     }

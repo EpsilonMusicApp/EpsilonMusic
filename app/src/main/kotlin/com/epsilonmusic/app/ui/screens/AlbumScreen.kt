@@ -720,7 +720,10 @@ fun AlbumScreen(
                                     } else {
                                         playerConnection.service.getAutomix(playlistId)
                                         playerConnection.playQueue(
-                                            LocalAlbumRadio(albumWithSongs, startIndex = index),
+                                            LocalAlbumRadio(
+                                                albumWithSongs.copy(songs = filteredSongs),
+                                                startIndex = index,
+                                            ),
                                         )
                                     }
                                 },

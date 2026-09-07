@@ -32,6 +32,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -289,15 +290,13 @@ fun Thumbnail(
     val thumbnailLazyGridState = rememberLazyGridState()
     
     
-    val mediaItemsData by remember(
-        playerConnection.player.currentMediaItemIndex,
-        playerConnection.player.shuffleModeEnabled,
+    val mediaItemsData = remember(
+        playerConnection.currentWindowIndex.collectAsState().value,
+        playerConnection.shuffleModeEnabled.collectAsState().value,
         swipeThumbnail,
         mediaMetadata
     ) {
-        derivedStateOf {
-            getMediaItems(playerConnection.player, swipeThumbnail)
-        }
+        getMediaItems(playerConnection.player, swipeThumbnail)
     }
     
     val mediaItems = mediaItemsData.items
@@ -455,12 +454,12 @@ fun Thumbnail(
                             Modifier.fillMaxSize()
                         }
                     ) {
-                        items(
+                        itemsIndexed(
                             items = mediaItems,
-                            key = { item -> 
-                                item.mediaId.ifEmpty { "unknown_${item.hashCode()}" }
+                            key = { index, item ->
+                                "${index}_${item.mediaId.ifEmpty { "unknown_${item.hashCode()}" }}"
                             }
-                        ) { item ->
+                        ) { _, item ->
                             ThumbnailItem(
                                 item = item,
                                 dimensions = dimensions,
@@ -662,7 +661,10 @@ private fun ThumbnailItem(
                             playerConnection.player.seekTo((currentPosition - skipAmount).coerceAtLeast(0))
                             onSeek(context.getString(R.string.seek_backward_dynamic, skipAmount / 1000), true)
                         } else if (isRightSide) {
-                            playerConnection.player.seekTo((currentPosition + skipAmount).coerceAtMost(duration))
+                            val targetPosition = currentPosition + skipAmount
+                            playerConnection.player.seekTo(
+                                if (duration != C.TIME_UNSET) targetPosition.coerceAtMost(duration) else targetPosition
+                            )
                             onSeek(context.getString(R.string.seek_forward_dynamic, skipAmount / 1000), true)
                         } else {
                             if (playerConnection.player.playWhenReady) {

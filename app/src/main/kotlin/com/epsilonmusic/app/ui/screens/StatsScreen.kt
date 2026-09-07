@@ -275,19 +275,21 @@ fun StatsScreen(
                                             playerConnection.playQueue(
                                                 YouTubeQueue(
                                                     endpoint = WatchEndpoint(song.id),
-                                                    preloadItem = mostPlayedSongs[index].toMediaMetadata(),
+                                                    preloadItem = mostPlayedSongs.find { it.id == song.id }?.toMediaMetadata(),
                                                 ),
                                             )
                                         }
                                     },
                                     onLongClick = {
                                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                        menuState.show {
-                                            SongMenu(
-                                                originalSong = mostPlayedSongs[index],
-                                                navController = navController,
-                                                onDismiss = menuState::dismiss,
-                                            )
+                                        mostPlayedSongs.find { it.id == song.id }?.let { originalSong ->
+                                            menuState.show {
+                                                SongMenu(
+                                                    originalSong = originalSong,
+                                                    navController = navController,
+                                                    onDismiss = menuState::dismiss,
+                                                )
+                                            }
                                         }
                                     },
                                 )

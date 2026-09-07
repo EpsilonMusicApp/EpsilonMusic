@@ -114,7 +114,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.palette.graphics.Palette
-import coil3.ImageLoader
+import coil3.imageLoader
 import coil3.request.ImageRequest
 import coil3.request.allowHardware
 import coil3.toBitmap
@@ -263,7 +263,23 @@ fun Lyrics(
         if (darkTheme == DarkMode.AUTO) isSystemInDarkTheme else darkTheme == DarkMode.ON
     }
 
-    val lines = remember(lyrics, scope) {
+    val lines = remember(
+        lyrics,
+        scope,
+        romanizeJapaneseLyrics,
+        romanizeKoreanLyrics,
+        romanizeChineseLyrics,
+        romanizeHindiLyrics,
+        romanizePunjabiLyrics,
+        romanizeRussianLyrics,
+        romanizeUkrainianLyrics,
+        romanizeSerbianLyrics,
+        romanizeBulgarianLyrics,
+        romanizeBelarusianLyrics,
+        romanizeKyrgyzLyrics,
+        romanizeMacedonianLyrics,
+        romanizeCyrillicByLine
+    ) {
         if (lyrics == null || lyrics == LYRICS_NOT_FOUND) {
             emptyList()
         } else if (lyrics.startsWith("[")) {
@@ -483,7 +499,7 @@ fun Lyrics(
     }
     
     
-    LaunchedEffect(showLyrics, lines.size) {
+    LaunchedEffect(showLyrics, lines) {
         LyricsTranslationHelper.manualTrigger.collect {
             val effectiveApiKey = if (aiProvider == "DeepL") deeplApiKey else openRouterApiKey
             if (showLyrics && lines.isNotEmpty() && effectiveApiKey.isNotBlank()) {
@@ -510,7 +526,7 @@ fun Lyrics(
     }
 
     
-    LaunchedEffect(Unit) {
+    LaunchedEffect(lines) {
         LyricsTranslationHelper.clearTranslationsTrigger.collect {
             lines.forEach { it.translatedTextFlow.value = null }
         }
@@ -2135,7 +2151,7 @@ fun Lyrics(
             if (coverUrl != null) {
                 withContext(Dispatchers.IO) {
                     try {
-                        val loader = ImageLoader(context)
+                        val loader = context.imageLoader
                         val req = ImageRequest.Builder(context).data(coverUrl).allowHardware(false).build()
                         val result = loader.execute(req)
                         val bmp = result.image?.toBitmap()

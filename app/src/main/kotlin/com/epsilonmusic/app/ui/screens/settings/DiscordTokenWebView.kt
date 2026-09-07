@@ -74,6 +74,13 @@ fun DiscordTokenWebView(
         },
         update = { webView ->
             // Update block if needed
+        },
+        onRelease = { webView ->
+            // Release the WebView's native resources and JS engine,
+            // otherwise every login attempt leaks a WebView for the process lifetime.
+            webView.stopLoading()
+            webView.loadUrl("about:blank")
+            webView.destroy()
         }
     )
 }

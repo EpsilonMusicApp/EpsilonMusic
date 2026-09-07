@@ -181,6 +181,7 @@ fun ArtistScreen(
     val lazyListState = rememberLazyListState()
     val snackbarHostState = remember { SnackbarHostState() }
     var showLocal by rememberSaveable { mutableStateOf(false) }
+    var showLocalInitialized by rememberSaveable { mutableStateOf(false) }
     val density = LocalDensity.current
 
     
@@ -196,8 +197,10 @@ fun ArtistScreen(
     }
 
     LaunchedEffect(libraryArtist) {
-        
-        showLocal = libraryArtist?.artist?.isLocal == true
+        if (!showLocalInitialized && libraryArtist != null) {
+            showLocal = libraryArtist?.artist?.isLocal == true
+            showLocalInitialized = true
+        }
     }
 
     Box(
@@ -735,7 +738,7 @@ fun ArtistScreen(
                                                 playerConnection.playQueue(
                                                     ListQueue(
                                                         title = libraryArtist?.artist?.name ?: "Unknown Artist",
-                                                        items = librarySongs.map { it.toMediaItem() },
+                                                        items = filteredLibrarySongs.map { it.toMediaItem() },
                                                         startIndex = index
                                                     )
                                                 )

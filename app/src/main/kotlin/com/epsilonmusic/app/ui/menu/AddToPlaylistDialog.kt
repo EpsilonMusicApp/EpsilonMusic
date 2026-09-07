@@ -271,13 +271,21 @@ fun AddToPlaylistDialog(
                         onClick = {
                             showDuplicateDialog = false
                             onDismiss()
+                            val songsToAdd = songIds!!.filter {
+                                !duplicates.contains(it)
+                            }
                             database.transaction {
                                 addSongToPlaylist(
                                     selectedPlaylist!!,
-                                    songIds!!.filter {
-                                        !duplicates.contains(it)
-                                    }
+                                    songsToAdd
                                 )
+                            }
+                            coroutineScope.launch(Dispatchers.IO) {
+                                selectedPlaylist!!.playlist.browseId?.let { plist ->
+                                    songsToAdd.forEach {
+                                        YouTube.addToPlaylist(plist, it)
+                                    }
+                                }
                             }
                             Toast.makeText(context, context.getString(R.string.added_to_playlist, selectedPlaylist!!.playlist.name), Toast.LENGTH_SHORT).show()
                         }
@@ -291,6 +299,13 @@ fun AddToPlaylistDialog(
                             onDismiss()
                             database.transaction {
                                 addSongToPlaylist(selectedPlaylist!!, songIds!!)
+                            }
+                            coroutineScope.launch(Dispatchers.IO) {
+                                selectedPlaylist!!.playlist.browseId?.let { plist ->
+                                    songIds!!.forEach {
+                                        YouTube.addToPlaylist(plist, it)
+                                    }
+                                }
                             }
                             Toast.makeText(context, context.getString(R.string.added_to_playlist, selectedPlaylist!!.playlist.name), Toast.LENGTH_SHORT).show()
                         }

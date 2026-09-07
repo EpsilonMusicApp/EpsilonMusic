@@ -299,10 +299,11 @@ fun Queue(
         if (sleepTimerEnabled) {
             while (isActive) {
                 sleepTimerTimeLeft = if (playerConnection.service.sleepTimer.pauseWhenSongEnd) {
-                    playerConnection.player.duration - playerConnection.player.currentPosition
+                    (playerConnection.player.duration.takeIf { it >= 0 } ?: 0L) -
+                        playerConnection.player.currentPosition
                 } else {
                     playerConnection.service.sleepTimer.triggerTime - System.currentTimeMillis()
-                }
+                }.coerceAtLeast(0L)
                 delay(1000L)
             }
         }
@@ -371,7 +372,7 @@ fun Queue(
                         modifier = Modifier.size(buttonSize),
                         textButtonColor = textButtonColor,
                         iconButtonColor = iconButtonColor,
-                        text = if (sleepTimerEnabled) makeTimeString(sleepTimerTimeLeft) else null,
+                        text = if (sleepTimerEnabled) makeTimeString(sleepTimerTimeLeft.coerceAtLeast(0L)) else null,
                         iconSize = iconSize,
                         textBackgroundColor = TextBackgroundColor,
                         playerBackground = playerBackground
@@ -579,7 +580,7 @@ fun Queue(
                                 if (sleepTimerEnabled) {
                                     Spacer(modifier = Modifier.width(4.dp))
                                     Text(
-                                        text = makeTimeString(sleepTimerTimeLeft),
+                                        text = makeTimeString(sleepTimerTimeLeft.coerceAtLeast(0L)),
                                         style = MaterialTheme.typography.labelSmall,
                                         color = TextBackgroundColor,
                                         maxLines = 1
@@ -759,9 +760,9 @@ fun Queue(
             }
         }
 
-        LaunchedEffect(mutableQueueWindows) {
+        LaunchedEffect(currentWindowIndex, queueWindows) {
             if (currentWindowIndex != -1) {
-                lazyListState.scrollToItem(currentWindowIndex)
+                lazyListState.scrollToItem(currentWindowIndex + headerItems)
             }
         }
 

@@ -61,7 +61,7 @@ fun LoginScreen(
     var accountChannelHandle by rememberPreference(AccountChannelHandleKey, "")
     var hasCompletedLogin by remember { mutableStateOf(false) }
 
-    var webView: WebView? = null
+    var webView by remember { mutableStateOf<WebView?>(null) }
 
     AndroidView(
         modifier = Modifier
@@ -141,6 +141,12 @@ fun LoginScreen(
                 webView = this
                 loadUrl("https://accounts.google.com/ServiceLogin?continue=https%3A%2F%2Fmusic.youtube.com")
             }
+        },
+        onRelease = { releasedWebView ->
+            releasedWebView.stopLoading()
+            releasedWebView.loadUrl("about:blank")
+            releasedWebView.destroy()
+            webView = null
         }
     )
 

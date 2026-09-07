@@ -162,8 +162,7 @@ fun SearchScreen(
         label = "SearchBarTopPadding"
     )
 
-    val onSearch: (String) -> Unit = remember {
-        { searchQuery ->
+    val onSearch: (String) -> Unit = { searchQuery ->
             if (searchQuery.isNotEmpty()) {
                 focusManager.clearFocus()
                 when (val parsedUrl = YouTubeUrlParser.parse(searchQuery)) {
@@ -192,11 +191,9 @@ fun SearchScreen(
                     }
                 }
             }
-        }
     }
 
-    val onSearchFromSuggestion: (String) -> Unit = remember {
-        { searchQuery ->
+    val onSearchFromSuggestion: (String) -> Unit = { searchQuery ->
             if (searchQuery.isNotEmpty()) {
                 focusManager.clearFocus()
                 when (val parsedUrl = YouTubeUrlParser.parse(searchQuery)) {
@@ -225,7 +222,6 @@ fun SearchScreen(
                     }
                 }
             }
-        }
     }
 
     Scaffold(

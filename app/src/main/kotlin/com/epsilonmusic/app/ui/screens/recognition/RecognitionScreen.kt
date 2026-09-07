@@ -67,6 +67,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import android.app.Activity
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -112,9 +113,15 @@ fun RecognitionScreen(
         com.epsilonmusic.app.recognition.MusicRecognitionService.reset()
     }
     
+    val activity = context as? Activity
     DisposableEffect(Unit) {
         onDispose {
-            com.epsilonmusic.app.recognition.MusicRecognitionService.reset()
+            // Only reset when the screen is truly left. Rotation / dark-mode config
+            // changes also dispose the composition, and wiping the result then
+            // would lose a successful recognition the user is viewing.
+            if (activity?.isChangingConfigurations != true) {
+                com.epsilonmusic.app.recognition.MusicRecognitionService.reset()
+            }
         }
     }
     

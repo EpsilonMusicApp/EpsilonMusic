@@ -120,9 +120,6 @@ fun QueueMenu(
             database.transaction {
                 insert(mediaMetadata)
             }
-            coroutineScope.launch(Dispatchers.IO) {
-                playlist.playlist.browseId?.let { YouTube.addToPlaylist(it, mediaMetadata.id) }
-            }
             listOf(mediaMetadata.id)
         },
         onDismiss = {
@@ -172,13 +169,19 @@ fun QueueMenu(
                         modifier = Modifier.padding(8.dp),
                         contentAlignment = Alignment.Center,
                     ) {
-                        AsyncImage(
-                            model = null,
-                            contentDescription = null,
+                        Box(
                             modifier = Modifier
                                 .size(ListThumbnailSize)
                                 .clip(CircleShape),
-                        )
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Icon(
+                                painter = painterResource(R.drawable.artist),
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.size(ListThumbnailSize / 2),
+                            )
+                        }
                     }
                     Text(
                         text = artist.name,

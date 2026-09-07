@@ -318,10 +318,13 @@ fun BackupAndRestore(
                         )
                         importedSongs.clear()
                         importedSongs.addAll(result)
+                        // Always dismiss the undismissable import progress dialog,
+                        // even when the import matched zero songs (or failed),
+                        // otherwise the user is trapped in the overlay.
+                        showCsvImportProgress = false
+                        csvImportProgress = 0
+                        csvRecentLogs.clear()
                         if (result.isNotEmpty()) {
-                            showCsvImportProgress = false
-                            csvImportProgress = 0
-                            csvRecentLogs.clear()
                             showChoosePlaylistDialogOnline = true
                         }
                     }

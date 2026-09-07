@@ -307,14 +307,24 @@ private fun SpotifyLoginSheet(
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var webView by remember { mutableStateOf<WebView?>(null) }
+    var webViewContainer by remember { mutableStateOf<android.widget.FrameLayout?>(null) }
     var captured by remember { mutableStateOf(false) }
 
     DisposableEffect(Unit) {
         onDispose {
-            webView?.stopLoading()
-            webView?.loadUrl("about:blank")
-            webView?.destroy()
+            // Destroy EVERY WebView in the container (main + any open popup),
+            // not just the currently active one — otherwise dismissing the sheet
+            // mid-login leaks the other WebView along with the Activity it holds.
+            val container = webViewContainer
+            if (container != null) {
+                for (index in container.childCount - 1 downTo 0) {
+                    (container.getChildAt(index) as? WebView)?.destroySpotifyLoginWebView()
+                }
+            } else {
+                webView?.destroySpotifyLoginWebView()
+            }
             webView = null
+            webViewContainer = null
         }
     }
 
@@ -424,6 +434,7 @@ private fun SpotifyLoginSheet(
                             android.view.ViewGroup.LayoutParams.MATCH_PARENT
                         )
                     )
+                    webViewContainer = container
                     container
                 },
                 update = { view ->

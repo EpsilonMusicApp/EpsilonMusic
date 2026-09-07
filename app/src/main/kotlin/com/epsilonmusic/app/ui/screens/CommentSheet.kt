@@ -24,6 +24,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -191,17 +192,34 @@ fun CommentSheet(
 
                                     if (nextToken != null) {
                                         item(key = "pagination_loader") {
-                                            LaunchedEffect(nextToken) {
+                                            var loadFailed by remember(nextToken) { mutableStateOf(false) }
+                                            LaunchedEffect(nextToken, loadFailed) {
+                                                if (loadFailed) return@LaunchedEffect
                                                 YouTube.commentContinuation(nextToken!!).onSuccess { (newComments, token) ->
-                                                    comments = comments + newComments
+                                                    comments = (comments + newComments).distinctBy {
+                                                        it.comment?.commentRenderer?.commentId ?: it.hashCode().toString()
+                                                    }
                                                     nextToken = token
+                                                }.onFailure {
+                                                    loadFailed = true
                                                 }
                                             }
-                                            Box(
-                                                modifier = Modifier.fillMaxWidth().padding(vertical = 32.dp),
-                                                contentAlignment = Alignment.Center
-                                            ) {
-                                                CircularWavyProgressIndicator(modifier = Modifier.size(32.dp))
+                                            if (loadFailed) {
+                                                Row(
+                                                    modifier = Modifier.fillMaxWidth().padding(vertical = 24.dp),
+                                                    horizontalArrangement = Arrangement.Center
+                                                ) {
+                                                    TextButton(onClick = { loadFailed = false }) {
+                                                        Text(stringResource(R.string.retry))
+                                                    }
+                                                }
+                                            } else {
+                                                Box(
+                                                    modifier = Modifier.fillMaxWidth().padding(vertical = 32.dp),
+                                                    contentAlignment = Alignment.Center
+                                                ) {
+                                                    CircularWavyProgressIndicator(modifier = Modifier.size(32.dp))
+                                                }
                                             }
                                         }
                                     }

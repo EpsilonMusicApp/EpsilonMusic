@@ -74,24 +74,22 @@ fun SquigglySlider(
 
     
     LaunchedEffect(isPlaying, isDragging) {
-        scope.launch {
-            val shouldFlatten = !isPlaying || isDragging
-            val targetHeight = if (shouldFlatten) 0f else 1f
-            val animDuration = if (shouldFlatten) 150 else 200 
-            val startDelay = if (shouldFlatten) 0L else 30L
+        val shouldFlatten = !isPlaying || isDragging
+        val targetHeight = if (shouldFlatten) 0f else 1f
+        val animDuration = if (shouldFlatten) 150 else 200 
+        val startDelay = if (shouldFlatten) 0L else 30L
 
-            delay(startDelay)
+        delay(startDelay)
 
-            val animator = Animatable(heightFraction)
-            animator.animateTo(
-                targetValue = targetHeight,
-                animationSpec = tween(
-                    durationMillis = animDuration,
-                    easing = LinearEasing,
-                ),
-            ) {
-                heightFraction = this.value
-            }
+        val animator = Animatable(heightFraction)
+        animator.animateTo(
+            targetValue = targetHeight,
+            animationSpec = tween(
+                durationMillis = animDuration,
+                easing = LinearEasing,
+            ),
+        ) {
+            heightFraction = this.value
         }
     }
 

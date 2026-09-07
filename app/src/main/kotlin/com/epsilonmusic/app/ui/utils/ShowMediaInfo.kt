@@ -165,9 +165,11 @@ fun ShowMediaInfo(videoId: String) {
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         val duration = song?.song?.duration?.let { totalSeconds ->
-                            val minutes = totalSeconds / 60
+                            val hours = totalSeconds / 3600
+                            val minutes = (totalSeconds % 3600) / 60
                             val seconds = totalSeconds % 60
-                            "%d:%02d".format(minutes, seconds)
+                            if (hours > 0) "%d:%02d:%02d".format(hours, minutes, seconds)
+                            else "%d:%02d".format(minutes, seconds)
                         } ?: stringResource(R.string.unknown)
                         InfoItem(
                             label = stringResource(R.string.song_info_duration_label),

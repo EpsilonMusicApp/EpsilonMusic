@@ -198,7 +198,7 @@ fun ListenTogetherScreen(
                 selectedUserForMenu?.let { userId ->
                     selectedUsername?.let { username ->
                         listenTogetherManager.blockUser(username)
-                        listenTogetherManager.kickUser(userId, R.string.user_blocked_by_host.toString())
+                        listenTogetherManager.kickUser(userId, context.getString(R.string.user_blocked_by_host))
                     }
                 }
                 selectedUserForMenu = null
@@ -381,15 +381,6 @@ fun ListenTogetherScreen(
                             
                             listenTogetherManager.connect()
                             listenTogetherManager.createRoom(finalUsername)
-                            
-                            // Simulate a second click in the background to handle dropped first messages
-                            coroutineScope.launch {
-                                kotlinx.coroutines.delay(600)
-                                if (isCreatingRoom) {
-                                    listenTogetherManager.connect()
-                                    listenTogetherManager.createRoom(finalUsername)
-                                }
-                            }
                         } else {
                             Toast.makeText(context, R.string.error_username_empty, Toast.LENGTH_SHORT).show()
                         }
@@ -412,15 +403,6 @@ fun ListenTogetherScreen(
                             
                             listenTogetherManager.connect()
                             listenTogetherManager.joinRoom(finalRoomCode, finalUsername)
-                            
-                            // Simulate a second click in the background to handle dropped first messages
-                            coroutineScope.launch {
-                                kotlinx.coroutines.delay(600)
-                                if (isJoiningRoom) {
-                                    listenTogetherManager.connect()
-                                    listenTogetherManager.joinRoom(finalRoomCode, finalUsername)
-                                }
-                            }
                         } else {
                             Toast.makeText(context, R.string.error_username_empty, Toast.LENGTH_SHORT).show()
                         }

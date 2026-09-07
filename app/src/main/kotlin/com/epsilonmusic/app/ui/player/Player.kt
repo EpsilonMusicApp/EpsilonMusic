@@ -512,8 +512,10 @@ fun BottomSheetPlayer(
     }
     val gradientColorsCache = remember { mutableMapOf<String, List<Color>>() }
 
-    if (!canSkipNext && automix.isNotEmpty()) {
-        playerConnection.service.addToQueueAutomix(automix[0], 0)
+    LaunchedEffect(canSkipNext) {
+        if (!canSkipNext && automix.isNotEmpty()) {
+            playerConnection.service.addToQueueAutomix(automix[0], 0)
+        }
     }
 
     val bluetoothDeviceName by produceState<String?>(initialValue = getConnectedBluetoothDeviceName(context)) {
