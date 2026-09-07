@@ -215,7 +215,8 @@ highlightKey: String? = null) {
     )
     val (stopMusicOnTaskClear, onStopMusicOnTaskClearChange) = rememberPreference(
         StopMusicOnTaskClearKey,
-        defaultValue = true
+        // Keep in sync with MainActivity.kt — default is disabled
+        defaultValue = false
     )
     val (pauseOnMute, onPauseOnMuteChange) = rememberPreference(
         PauseOnMute,

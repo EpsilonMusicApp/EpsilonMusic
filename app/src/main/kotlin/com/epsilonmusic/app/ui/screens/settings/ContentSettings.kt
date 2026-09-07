@@ -163,7 +163,8 @@ highlightKey: String? = null) {
     val (showSpeedDial, onShowSpeedDialChange) = rememberPreference(key = ShowSpeedDialKey, defaultValue = true)
     val (randomizeHomeOrder, onRandomizeHomeOrderChange) = rememberPreference(
         RandomizeHomeOrderKey,
-        defaultValue = false
+        // Keep in sync with HomeScreen.kt — default is enabled
+        defaultValue = true
     )
     val (ipVersion, onIpVersionChange) = rememberEnumPreference(
         IpVersionKey,

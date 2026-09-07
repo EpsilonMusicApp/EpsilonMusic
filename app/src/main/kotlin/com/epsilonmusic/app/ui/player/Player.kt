@@ -330,7 +330,8 @@ fun BottomSheetPlayer(
     }
 
     val dataSaverEnabled by rememberPreference(key = com.epsilonmusic.app.constants.DataSaverEnabledKey, defaultValue = false)
-    val enableCanvasPref by rememberPreference(CanvasThumbnailAnimationKey, true)
+    // Keep in sync with Thumbnail.kt and AppearanceSettings — default is disabled
+    val enableCanvasPref by rememberPreference(CanvasThumbnailAnimationKey, false)
     val enableCanvas = if (dataSaverEnabled) false else enableCanvasPref
 
     val shouldUseDarkButtonColors = remember(playerBackground, useDarkTheme) {

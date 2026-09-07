@@ -254,7 +254,8 @@ fun Lyrics(
 
     val playerBackground by rememberEnumPreference(
         key = PlayerBackgroundStyleKey,
-        defaultValue = PlayerBackgroundStyle.GRADIENT
+        // Keep in sync with Player.kt — default is GLOW_ANIMATED
+        defaultValue = PlayerBackgroundStyle.GLOW_ANIMATED
     )
 
     val darkTheme by rememberEnumPreference(DarkModeKey, defaultValue = DarkMode.AUTO)

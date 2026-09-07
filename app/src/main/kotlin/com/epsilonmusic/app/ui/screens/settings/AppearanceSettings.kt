@@ -193,7 +193,8 @@ highlightKey: String? = null) {
     )
     val (hidePlayerSlider, onHidePlayerSliderChange) = rememberPreference(
         com.epsilonmusic.app.constants.HidePlayerSliderKey,
-        defaultValue = false
+        // Keep in sync with Player.kt — default is hidden (see UI/UX overhaul 61a894e)
+        defaultValue = true
     )
     val (hidePlayerThumbnail, onHidePlayerThumbnailChange) = rememberPreference(
         HidePlayerThumbnailKey,
@@ -206,7 +207,8 @@ highlightKey: String? = null) {
     val (playerBackground, onPlayerBackgroundChange) =
         rememberEnumPreference(
             PlayerBackgroundStyleKey,
-            defaultValue = PlayerBackgroundStyle.GRADIENT,
+            // Keep in sync with Player.kt — default is GLOW_ANIMATED (see UI/UX overhaul 61a894e)
+            defaultValue = PlayerBackgroundStyle.GLOW_ANIMATED,
         )
     val (miniPlayerBackground, onMiniPlayerBackgroundChange) =
         rememberEnumPreference(
@@ -270,7 +272,8 @@ highlightKey: String? = null) {
     )
     val (gridItemSize, onGridItemSizeChange) = rememberEnumPreference(
         GridItemsSizeKey,
-        defaultValue = GridItemSize.SMALL
+        // Keep in sync with grid read-sites (Items.kt and all screens) — default is BIG
+        defaultValue = GridItemSize.BIG
     )
 
     
@@ -294,7 +297,9 @@ highlightKey: String? = null) {
 
     val (listenTogetherInTopBar, onListenTogetherInTopBarChange) = rememberPreference(
         ListenTogetherInTopBarKey,
-        defaultValue = true
+        // Keep in sync with MainActivity/ListenTogetherScreen — default is the nav bar
+        // (see UI/UX overhaul 61a894e: "Default Listen Together to the navigation bar")
+        defaultValue = false
     )
 
     val (swipeToSong, onSwipeToSongChange) = rememberPreference(
