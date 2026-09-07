@@ -32,7 +32,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
@@ -44,7 +43,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -115,10 +113,8 @@ import com.epsilonmusic.app.ui.component.WavySlider
 import com.epsilonmusic.app.ui.theme.DefaultThemeColor
 import com.epsilonmusic.app.ui.theme.PlayerSliderColors
 import com.epsilonmusic.app.ui.utils.backToMain
-import com.epsilonmusic.app.utils.IconUtils
-import com.epsilonmusic.app.utils.rememberEnumPreference
 import com.epsilonmusic.app.utils.rememberPreference
-import kotlinx.coroutines.launch
+import com.epsilonmusic.app.utils.rememberEnumPreference
 import kotlin.math.roundToInt
 import com.epsilonmusic.app.constants.LyricsClickKey
 import com.epsilonmusic.app.constants.AppleMusicLyricsBlurKey
@@ -143,10 +139,6 @@ highlightKey: String? = null) {
         DynamicThemeKey,
         defaultValue = true
     )
-    val (enableLegacyIcon, onEnableLegacyIconChange) = rememberPreference(
-        com.epsilonmusic.app.constants.EnableLegacyIconKey,
-        defaultValue = false
-    )
     val (enableHighRefreshRate, onEnableHighRefreshRateChange) = rememberPreference(
         com.epsilonmusic.app.constants.EnableHighRefreshRateKey,
         defaultValue = true
@@ -161,26 +153,6 @@ highlightKey: String? = null) {
     )
     
     val isUsingCustomColor = selectedThemeColorInt != DefaultThemeColor.toArgb()
-    val coroutineScope = rememberCoroutineScope()
-
-    fun handleIconChange(legacyEnabled: Boolean) {
-        onEnableLegacyIconChange(legacyEnabled)
-        IconUtils.setIcon(activity, false, legacyEnabled)
-        coroutineScope.launch {
-            val result = snackbarHostState.showSnackbar(
-                message = "Icon updated, restart to apply",
-                actionLabel = "Restart"
-            )
-            if (result == SnackbarResult.ActionPerformed) {
-                val packageManager = activity.packageManager
-                val intent = packageManager.getLaunchIntentForPackage(activity.packageName)
-                val componentName = intent?.component
-                val mainIntent = Intent.makeRestartActivityTask(componentName)
-                activity.startActivity(mainIntent)
-                Runtime.getRuntime().exit(0)
-            }
-        }
-    }
 
 
     val (useNewPlayerDesign, onUseNewPlayerDesignChange) = rememberPreference(
@@ -1019,22 +991,7 @@ highlightKey: String? = null) {
                         customIcon = { Icon(painterResource(R.mipmap.legacy_icon_monochrome), contentDescription = null, modifier = Modifier.size(48.dp), tint = MaterialTheme.colorScheme.primary) },
                         title = { Text(stringResource(R.string.legacy_icon)) },
                         description = { Text(stringResource(R.string.legacy_icon_desc)) },
-                        trailingContent = {
-                            Switch(
-                                checked = enableLegacyIcon,
-                                onCheckedChange = { handleIconChange(it) },
-                                thumbContent = {
-                                    Icon(
-                                        painter = painterResource(
-                                            id = if (enableLegacyIcon) R.drawable.check else R.drawable.close
-                                        ),
-                                        contentDescription = null,
-                                        modifier = Modifier.size(SwitchDefaults.IconSize)
-                                    )
-                                }
-                            )
-                        },
-                        onClick = { handleIconChange(!enableLegacyIcon) }
+                        onClick = { navController.navigate("settings/appearance/legacyicon") }
                     )
                 )
                 add(

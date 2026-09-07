@@ -25,10 +25,10 @@
     <string name="other_results">Other</string>
     <string name="parsed_from_link">From link</string>
     <string name="album_text">Album</string>
-	<string name="by_text">By </string>
-	<string name="artist">Artist </string>
-	<string name="explicit">Explicit</string>
-	
+        <string name="by_text">By </string>
+        <string name="artist">Artist </string>
+        <string name="explicit">Explicit</string>
+        
     <string name="weeks">Weeks</string>
     <string name="months">Months</string>
     <string name="years">Years</string>
@@ -1024,5 +1024,15 @@
     <string name="enable_lossless_audio">Enable Lossless Audio</string>
     <string name="lossless_audio_warning">Lossless audio requires a fast connection. It may consume more data and battery. Continue?</string>
     <string name="legacy_icon">Legacy Icon</string>
-    <string name="legacy_icon_desc">Revert the app icon back to the original legacy design</string>
+    <string name="legacy_icon_desc">Choose a legacy app icon design</string>
+    <string name="legacy_icon_default">Current Icon</string>
+    <string name="legacy_icon_default_desc">Keep the default app icon</string>
+    <string name="legacy_icon_classic">Legacy Classic</string>
+    <string name="legacy_icon_classic_desc">The original legacy design</string>
+    <string name="legacy_icon_1">Legacy Icon 1</string>
+    <string name="legacy_icon_1_desc">Gradient glow note</string>
+    <string name="legacy_icon_2">Legacy Icon 2</string>
+    <string name="legacy_icon_2_desc">Deep purple note</string>
+    <string name="legacy_icon_3">Legacy Icon 3</string>
+    <string name="legacy_icon_3_desc">Red ring emblem</string>
 </resources>

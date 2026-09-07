@@ -258,6 +258,48 @@
         </activity-alias>
 
         <activity-alias
+            android:name=".MainActivityLegacy1"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/legacy_icon_1"
+            android:label="@string/app_name"
+            android:roundIcon="@mipmap/legacy_icon_1_round"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias
+            android:name=".MainActivityLegacy2"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/legacy_icon_2"
+            android:label="@string/app_name"
+            android:roundIcon="@mipmap/legacy_icon_2_round"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias
+            android:name=".MainActivityLegacy3"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/legacy_icon_3"
+            android:label="@string/app_name"
+            android:roundIcon="@mipmap/legacy_icon_3_round"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias
             android:name=".MainActivityStatic"
             android:enabled="false"
             android:exported="true"

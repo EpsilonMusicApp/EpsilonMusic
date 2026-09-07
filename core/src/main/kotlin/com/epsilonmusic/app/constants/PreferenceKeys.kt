@@ -23,6 +23,13 @@ val SpotifyAccessTokenKey = stringPreferencesKey("spotify_access_token")
 val SpotifyAccessTokenExpiresAtKey = longPreferencesKey("spotify_access_token_expires_at")
 val EnableDynamicIconKey = booleanPreferencesKey("enableDynamicIcon")
 val EnableLegacyIconKey = booleanPreferencesKey("enableLegacyIcon")
+/**
+ * Which legacy launcher icon variant is active.
+ * Values: 0 = classic legacy icon, 1..3 = the additional legacy icon designs
+ * (see IconUtils.LEGACY_* and LegacyIconScreen). Only meaningful while
+ * EnableLegacyIconKey is true.
+ */
+val LegacyIconVariantKey = intPreferencesKey("legacyIconVariant")
 val EnableHighRefreshRateKey = booleanPreferencesKey("enableHighRefreshRate")
 val EnableHapticsKey = booleanPreferencesKey("enableHaptics")
 val DynamicThemeKey = booleanPreferencesKey("dynamicTheme")

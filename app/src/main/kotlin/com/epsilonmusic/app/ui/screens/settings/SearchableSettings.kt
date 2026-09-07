@@ -149,7 +149,7 @@ fun getAllSearchableSettings(): List<SearchableSetting> {
             SearchableSetting(stringResource(R.string.keep_screen_on_when_player_is_expanded), stringResource(R.string.keep_screen_on_when_player_is_expanded_desc), "Player and audio", "settings/player"),
             SearchableSetting(stringResource(R.string.last_song_listened), stringResource(R.string.last_song_listened_desc), "Content", "settings/content"),
             SearchableSetting(stringResource(R.string.left), stringResource(R.string.left_desc), "Appearance", "settings/appearance"),
-            SearchableSetting(stringResource(R.string.legacy_icon), stringResource(R.string.legacy_icon_desc), "Appearance", "settings/appearance"),
+            SearchableSetting(stringResource(R.string.legacy_icon), stringResource(R.string.legacy_icon_desc), "Appearance", "settings/appearance/legacyicon"),
             SearchableSetting(stringResource(R.string.line_by_line_dialog_title), stringResource(R.string.line_by_line_dialog_title_desc), "Romanization", "settings/appearance"),
             SearchableSetting(stringResource(R.string.line_by_line_option_title), stringResource(R.string.line_by_line_option_title_desc), "Romanization", "settings/appearance"),
             SearchableSetting(stringResource(R.string.listen_history), stringResource(R.string.listen_history_desc), "Privacy", "settings/privacy"),
