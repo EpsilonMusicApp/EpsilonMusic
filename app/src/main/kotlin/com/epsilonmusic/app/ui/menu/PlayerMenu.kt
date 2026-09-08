@@ -1385,7 +1385,11 @@ fun ListenTogetherDialog(
                             if (isHost) {
                                 Spacer(modifier = Modifier.height(12.dp))
                                 val inviteLink = remember(room.roomCode) {
-                                    "https://epsilonmusic-listen-together.onrender.com/listen?code=${room.roomCode}"
+                                    // Deep link handled by AndroidManifest (scheme
+                                    // "epsilonmusic", host "listen"); MainActivity
+                                    // auto-joins from the "code" parameter. The old
+                                    // https URL pointed to a non-existent host.
+                                    "epsilonmusic://listen?code=${room.roomCode}"
                                 }
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,

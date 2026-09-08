@@ -215,6 +215,19 @@ class MessageCodec(
             is ReconnectPayload -> Listentogether.ReconnectPayload.newBuilder()
                 .setSessionToken(payload.sessionToken)
                 .build()
+            is ChatPayload -> {
+                val builder = Listentogether.ChatPayload.newBuilder()
+                    .setMessage(payload.message)
+                payload.replyTo?.let { reply ->
+                    builder.setReplyTo(
+                        Listentogether.RepliedMessage.newBuilder()
+                            .setUsername(reply.username)
+                            .setMessage(reply.message)
+                            .build()
+                    )
+                }
+                builder.build()
+            }
             is TransferHostPayload -> Listentogether.TransferHostPayload.newBuilder()
                 .setNewHostId(payload.newHostId)
                 .build()
@@ -379,6 +392,18 @@ class MessageCodec(
             MessageTypes.SUGGESTION_REJECTED -> {
                 val pb = Listentogether.SuggestionRejectedPayload.parseFrom(payloadBytes)
                 SuggestionRejectedPayload(pb.suggestionId, pb.reason.let { if (it.isEmpty()) null else it })
+            }
+            MessageTypes.CHAT -> {
+                val pb = Listentogether.ChatMessagePayload.parseFrom(payloadBytes)
+                ChatMessagePayload(
+                    userId = pb.userId,
+                    username = pb.username,
+                    message = pb.message,
+                    timestamp = pb.timestamp,
+                    replyTo = if (pb.hasReplyTo()) {
+                        RepliedMessage(pb.replyTo.username, pb.replyTo.message)
+                    } else null
+                )
             }
             MessageTypes.ROOM_SETTINGS_CHANGED -> {
                 val pb = Listentogether.UpdateRoomSettingsPayload.parseFrom(payloadBytes)

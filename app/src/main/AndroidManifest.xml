@@ -123,18 +123,10 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
 
-            <!-- Listen Together invite link (HTTPS App Link - works after APK installation verification) -->
-            <intent-filter android:autoVerify="true">
-                <action android:name="android.intent.action.VIEW" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-
-                <data android:scheme="https" />
-                <data android:host="epsilonmusic-listen-together.onrender.com" />
-                <data android:pathPrefix="/listen" />
-            </intent-filter>
-
+            <!-- Listen Together invite deep link: epsilonmusic://listen?code=ROOMCODE.
+                 MainActivity.handleDeepLinkIntent parses the "code" parameter and
+                 auto-joins the room. (The previous https App Link pointed to a
+                 non-existent onrender.com host and never resolved.) -->
             <!-- Custom scheme for direct opens from browser (works in ALL browsers) -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />

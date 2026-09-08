@@ -175,6 +175,19 @@ fun ListenTogetherScreen(
                     val clip = android.content.ClipData.newPlainText("ListenTogetherRoom", event.roomCode)
                     clipboard.setPrimaryClip(clip)
                 }
+                is ListenTogetherEvent.ServerError -> {
+                    // Surface join-phase server errors (e.g. room_not_found when the
+                    // code doesn't exist) instead of failing silently.
+                    if (!listenTogetherManager.isInRoom) {
+                        isJoiningRoom = false
+                        isCreatingRoom = false
+                        joinErrorMessage = when (event.code) {
+                            "room_not_found" -> invalidRoomCodeText
+                            "session_not_found" -> invalidRoomCodeText
+                            else -> "${event.message}"
+                        }
+                    }
+                }
                 else -> {}
             }
         }
@@ -745,7 +758,11 @@ private fun RoomStatusCard(
             if (isHost) {
                 Spacer(modifier = Modifier.height(16.dp))
                 val inviteLink = remember(roomCode) {
-                    "https://epsilonmusic-listen-together.onrender.com/listen?code=$roomCode"
+                    // Deep link handled by AndroidManifest (scheme "epsilonmusic", host
+                    // "listen") and parsed by MainActivity.handleDeepLinkIntent, which
+                    // auto-joins the room. The old https invite URL pointed to a
+                    // non-existent onrender.com host and never resolved.
+                    "epsilonmusic://listen?code=$roomCode"
                 }
                 Row(
                     verticalAlignment = Alignment.CenterVertically,

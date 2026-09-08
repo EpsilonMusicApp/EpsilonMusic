@@ -92,6 +92,7 @@ enum class LogLevel {
 sealed class PendingAction {
     data class CreateRoom(val username: String) : PendingAction()
     data class JoinRoom(val roomCode: String, val username: String) : PendingAction()
+    data class Reconnect(val sessionToken: String) : PendingAction()
 }
 
 
@@ -398,6 +399,13 @@ class ListenTogetherClient @Inject constructor(
     @Volatile private var sessionToken: String? = null
     @Volatile private var storedUsername: String? = null
     @Volatile private var storedRoomCode: String? = null
+
+    // Wire-format safety net: remembers the create/join/reconnect action that was
+    // last sent so that, if the server rejects our frame because we guessed the
+    // wrong format ("invalid_message"), we can re-send it once in the server's
+    // format after the codec has been re-synced.
+    @Volatile private var lastHandshakeAction: PendingAction? = null
+    @Volatile private var handshakeRetried = false
     private var wasHost: Boolean = false
     private var sessionStartTime: Long = 0
 
@@ -569,9 +577,14 @@ class ListenTogetherClient @Inject constructor(
         val serverUrl = getServerUrl()
         log(LogLevel.INFO, "Connecting to server", serverUrl)
 
-        
-        codec.format = MessageFormat.JSON
-        codec.compressionEnabled = false
+        // The production Listen Together server (and every Metrolist-family server)
+        // speaks the protobuf Envelope protocol from the very first frame and rejects
+        // JSON with "invalid_message: Invalid message format" (verified live).
+        // Start in protobuf mode with gzip enabled for large payloads; if a server
+        // ever answers in JSON instead, handleMessage() re-syncs the codec and the
+        // handshake action is retried once in the server's format.
+        codec.format = MessageFormat.PROTOBUF
+        codec.compressionEnabled = true
 
         val request = Request.Builder()
             .url(serverUrl)
@@ -588,6 +601,8 @@ class ListenTogetherClient @Inject constructor(
                 
                 if (sessionToken != null && storedRoomCode != null) {
                     log(LogLevel.INFO, "Attempting to reconnect to previous session", "Room: $storedRoomCode")
+                    lastHandshakeAction = PendingAction.Reconnect(sessionToken!!)
+                    handshakeRetried = false
                     sendMessage(MessageTypes.RECONNECT, ReconnectPayload(sessionToken!!))
                 } else {
                     
@@ -622,6 +637,25 @@ class ListenTogetherClient @Inject constructor(
         })
     }
     
+    private fun resendHandshakeAction() {
+        val action = lastHandshakeAction ?: return
+        handshakeRetried = true
+        when (action) {
+            is PendingAction.CreateRoom -> {
+                log(LogLevel.WARNING, "Retrying create room after format switch")
+                sendMessage(MessageTypes.CREATE_ROOM, CreateRoomPayload(action.username))
+            }
+            is PendingAction.JoinRoom -> {
+                log(LogLevel.WARNING, "Retrying join room after format switch")
+                sendMessage(MessageTypes.JOIN_ROOM, JoinRoomPayload(action.roomCode, action.username))
+            }
+            is PendingAction.Reconnect -> {
+                log(LogLevel.WARNING, "Retrying reconnect after format switch")
+                sendMessage(MessageTypes.RECONNECT, ReconnectPayload(action.sessionToken))
+            }
+        }
+    }
+
     private fun executePendingAction() {
         val action = pendingAction ?: return
         pendingAction = null
@@ -634,6 +668,10 @@ class ListenTogetherClient @Inject constructor(
             is PendingAction.JoinRoom -> {
                 log(LogLevel.INFO, "Executing pending join room", "${action.roomCode} as ${action.username}")
                 sendMessage(MessageTypes.JOIN_ROOM, JoinRoomPayload(action.roomCode.uppercase(), action.username))
+            }
+            is PendingAction.Reconnect -> {
+                log(LogLevel.INFO, "Executing pending reconnect", action.sessionToken)
+                sendMessage(MessageTypes.RECONNECT, ReconnectPayload(action.sessionToken))
             }
         }
     }
@@ -653,6 +691,8 @@ class ListenTogetherClient @Inject constructor(
         storedRoomCode = null
         storedUsername = null
         pendingAction = null
+        lastHandshakeAction = null
+        handshakeRetried = false
         _roomState.value = null
         _role.value = RoomRole.NONE
         _userId.value = null
@@ -878,11 +918,16 @@ class ListenTogetherClient @Inject constructor(
         
         try {
             
+            // Re-sync the wire format to whatever the server actually speaks.
+            // Decoding auto-detects per frame, but ENCODING follows codec.format,
+            // so if the server answers in a different format than we are sending,
+            // switch here so subsequent sends use the right one (and so an
+            // "invalid_message" rejection can be retried in the correct format).
             val detectedFormat = MessageCodec.detectMessageFormat(data)
-            if (detectedFormat == MessageFormat.PROTOBUF && codec.format == MessageFormat.JSON) {
-                codec.format = MessageFormat.PROTOBUF
-                codec.compressionEnabled = true
-                log(LogLevel.INFO, "Upgraded to Protobuf", "with compression")
+            if (detectedFormat != codec.format) {
+                codec.format = detectedFormat
+                codec.compressionEnabled = detectedFormat == MessageFormat.PROTOBUF
+                log(LogLevel.INFO, "Switched message format", "Server speaks ${detectedFormat.name}")
             }
             
             
@@ -897,6 +942,8 @@ class ListenTogetherClient @Inject constructor(
                     storedRoomCode = payload.roomCode
                     wasHost = true
                     sessionStartTime = System.currentTimeMillis()
+                    lastHandshakeAction = null
+                    handshakeRetried = false
                     
                     _roomState.value = RoomState(
                         roomCode = payload.roomCode,
@@ -965,6 +1012,8 @@ class ListenTogetherClient @Inject constructor(
                     storedRoomCode = payload.roomCode
                     wasHost = false
                     sessionStartTime = System.currentTimeMillis()
+                    lastHandshakeAction = null
+                    handshakeRetried = false
                     
                     _roomState.value = payload.state
                     
@@ -978,6 +1027,8 @@ class ListenTogetherClient @Inject constructor(
                 
                 MessageTypes.JOIN_REJECTED -> {
                     val payload = codec.decodePayload(msgType, payloadBytes, detectedFormat) as? JoinRejectedPayload ?: return
+                    lastHandshakeAction = null
+                    handshakeRetried = false
                     log(LogLevel.WARNING, "Join rejected", payload.reason)
                     scope.launch { _events.emit(ListenTogetherEvent.JoinRejected(payload.reason)) }
                 }
@@ -1172,8 +1223,19 @@ class ListenTogetherClient @Inject constructor(
                     val payload = codec.decodePayload(msgType, payloadBytes, detectedFormat) as? ErrorPayload ?: return
                     log(LogLevel.ERROR, "Server error", "${payload.code}: ${payload.message}")
                     
-                    
                     when (payload.code) {
+                        "invalid_message" -> {
+                            // Our frame was sent in the wrong wire format. The format
+                            // re-sync above already pointed the codec at the server's
+                            // format, so re-send the handshake action once (covers
+                            // JSON-only servers if one is ever configured).
+                            if (!handshakeRetried) {
+                                log(LogLevel.WARNING, "Message format rejected, retrying in ${codec.format.name}", payload.message)
+                                resendHandshakeAction()
+                            } else {
+                                log(LogLevel.ERROR, "Message still rejected after format retry", payload.message)
+                            }
+                        }
                         "session_not_found" -> {
                             
                             if (storedRoomCode != null && storedUsername != null && !wasHost) {
@@ -1221,6 +1283,8 @@ class ListenTogetherClient @Inject constructor(
                     
                     wasHost = payload.isHost
                     sessionStartTime = System.currentTimeMillis()
+                    lastHandshakeAction = null
+                    handshakeRetried = false
                     savePersistedSession()
                     
                     
@@ -1331,6 +1395,8 @@ class ListenTogetherClient @Inject constructor(
         wasHost = false
         
         storedUsername = username
+        lastHandshakeAction = PendingAction.CreateRoom(username)
+        handshakeRetried = false
         
         if (_connectionState.value == ConnectionState.CONNECTED) {
             sendMessage(MessageTypes.CREATE_ROOM, CreateRoomPayload(username))
@@ -1356,6 +1422,8 @@ class ListenTogetherClient @Inject constructor(
         wasHost = false
 
         storedUsername = username
+        lastHandshakeAction = PendingAction.JoinRoom(roomCode.uppercase(), username)
+        handshakeRetried = false
         
         if (_connectionState.value == ConnectionState.CONNECTED) {
             sendMessage(MessageTypes.JOIN_ROOM, JoinRoomPayload(roomCode.uppercase(), username))
@@ -1381,6 +1449,8 @@ class ListenTogetherClient @Inject constructor(
         storedRoomCode = null
         storedUsername = null
         pendingAction = null
+        lastHandshakeAction = null
+        handshakeRetried = false
         _roomState.value = null
         _role.value = RoomRole.NONE
         _userId.value = null

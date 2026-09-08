@@ -198,6 +198,24 @@ message UserDisconnectedPayload {
   string username = 2;
 }
 
+message RepliedMessage {
+  string username = 1;
+  string message = 2;
+}
+
+message ChatPayload {
+  string message = 1;
+  RepliedMessage reply_to = 2;
+}
+
+message ChatMessagePayload {
+  string user_id = 1;
+  string username = 2;
+  string message = 3;
+  int64 timestamp = 4;
+  RepliedMessage reply_to = 5;
+}
+
 message Envelope {
   string type = 1;
   bytes payload = 2;
