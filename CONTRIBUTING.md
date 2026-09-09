@@ -292,7 +292,7 @@ We provide issue templates for:
 
 ### Code Organization
 
-Path: `app/src/main/kotlin/com/music/echo/`
+Path: `app/src/main/kotlin/com/epsilonmusic/app`
 
 > **Note:** We are currently in Phase 1 of modularizing the application. The `lyrics` and `playback` code, along with shared `constants` and `models`, are actively being migrated out of `:app` into dedicated `:lyrics`, `:playback`, and `:core` Gradle modules. The structure below represents the legacy monolithic structure until migration is complete.
 
