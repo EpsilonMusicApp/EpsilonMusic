@@ -445,3 +445,9 @@ If you have questions about contributing:
 3. Contact maintainers directly
 
 Thank you for contributing to Epsilon Music!
+
+---
+<div align="center">
+    <img src="Screenshots/epsilon_music_wind_minimal.gif"/>
+  </a>
+</div>
