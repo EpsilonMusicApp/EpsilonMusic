@@ -10,9 +10,9 @@
 sdk.dir=YOUR_ANDROID_SDK_PATH
 
 # Optional: Firebase configuration for the GMS build.
-# If you want Firebase Analytics / Crashlytics in your debug build,
-# place your own `google-services.json` at `app/google-services.json`.
-# The file is gitignored and will NOT be committed.
+# `app/google-services.json` IS committed to the repo (it is an app identifier,
+# not a credential) so CI builds ship Analytics/Crashlytics. For a different
+# Firebase project, replace that file with one downloaded from your console.
 # Without it, the GMS build simply skips the Google Services plugin —
 # the app builds and runs fine, just without Firebase.
 

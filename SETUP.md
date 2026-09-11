@@ -43,11 +43,11 @@ sdk.dir=/path/to/your/android/sdk
 Firebase is used for analytics and crash reporting. If you want to use these features:
 
 1. Create a Firebase project at [Firebase Console](https://console.firebase.google.com/)
-2. Add an Android app to your Firebase project with package name `com.epsilonmusic.app`
-3. Download the `google-services.json` file
-4. Place it in the `app/` directory (replacing the existing one)
+2. Add Android apps for BOTH package names: `com.epsilonmusic.app` (release) and `com.epsilonmusic.app.debug` (debug) — one file covers both variants
+3. Download the `google-services.json` file (it contains all apps in the project)
+4. Commit it at `app/google-services.json` so CI builds include Analytics/Crashlytics
 
-**Important (post-rename):** The current `app/google-services.json` is configured for Firebase project `epsilonmusic-b7b95` with package `com.epsilonmusic.app` (release) and `com.epsilonmusic.app.debug` (debug). If you need to use a different Firebase project, replace the file with one downloaded from your own Firebase console.
+**Important:** The project's `app/google-services.json` is configured for Firebase project `epsilonmusic-b7b95` with package `com.epsilonmusic.app` (release) and `com.epsilonmusic.app.debug` (debug). It is committed to the repo on purpose — it is an app identifier, not a credential (see Firebase docs), and committing it is what makes CI-built APKs report analytics. If you prefer to keep it out of the repo, base64-encode it and set it as the `GOOGLE_SERVICES_JSON` GitHub Actions secret instead; CI restores it before building.
 
 **Firebase services used:**
 - ✅ Firebase Analytics (GMS flavor only)
