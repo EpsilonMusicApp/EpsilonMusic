@@ -41,6 +41,17 @@ jobs:
         languages: ${{ matrix.language }}
         build-mode: manual
 
+    # CodeQL builds the DEBUG variant (applicationIdSuffix ".debug"). The
+    # google-services plugin fails on debug when google-services.json only contains
+    # the release package — hide the file for this analysis-only build so it stays
+    # green whether or not the config is committed.
+    - name: Hide google-services.json for debug-variant analysis
+      run: |
+        if [ -f app/google-services.json ]; then
+          mv app/google-services.json "$RUNNER_TEMP/google-services.json"
+          echo "google-services.json temporarily hidden for the CodeQL debug build"
+        fi
+
     - name: Build project
       run: |
         chmod +x gradlew
