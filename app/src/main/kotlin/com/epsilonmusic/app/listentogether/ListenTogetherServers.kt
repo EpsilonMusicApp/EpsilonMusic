@@ -21,7 +21,7 @@ data class ListenTogetherServer(
 )
 
 object ListenTogetherServers {
-    private const val SERVER_JSON_URL = "https://raw.githubusercontent.com/VihaanAngaria/EpsilonMusic/refs/heads/main/app/server.json"
+    private const val SERVER_JSON_URL = "https://raw.githubusercontent.com/EpsilonMusicApp/EpsilonMusic/refs/heads/main/app/server.json"
 
     private val _servers = MutableStateFlow(
         listOf(

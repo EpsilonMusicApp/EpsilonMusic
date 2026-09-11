@@ -144,7 +144,7 @@ fun ChangelogScreen(
                         showingCached = true
                     }
                 } else {
-                    val changelogUrl = URL("https://github.com/VihaanAngaria/EpsilonMusic/releases/download/$tag/changelog.json")
+                    val changelogUrl = URL("https://github.com/EpsilonMusicApp/EpsilonMusic/releases/download/$tag/changelog.json")
                     val connection = changelogUrl.openConnection() as HttpURLConnection
                     connection.setRequestProperty("User-Agent", "epsilonmusic-Changelog-App")
                     connection.setRequestProperty("Accept", "application/json")
@@ -217,7 +217,7 @@ fun ChangelogScreen(
         isFetchingOldReleases = true
         coroutineScope.launch(Dispatchers.IO) {
             try {
-                val releasesUrl = URL("https://api.github.com/repos/VihaanAngaria/EpsilonMusic/releases")
+                val releasesUrl = URL("https://api.github.com/repos/EpsilonMusicApp/EpsilonMusic/releases")
                 val connection = releasesUrl.openConnection() as HttpURLConnection
                 connection.setRequestProperty("User-Agent", "epsilonmusic-Changelog-App")
                 connection.setRequestProperty("Accept", "application/vnd.github+json")

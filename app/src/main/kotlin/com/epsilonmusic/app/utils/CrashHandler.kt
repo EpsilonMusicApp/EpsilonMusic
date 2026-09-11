@@ -43,15 +43,27 @@ class CrashHandler private constructor(
         try {
             val crashLog = buildCrashLog(throwable)
             Timber.e(throwable, "App crashed")
-            
-            
+
+
             val intent = Intent(applicationContext, CrashActivity::class.java).apply {
                 putExtra(EXTRA_CRASH_LOG, crashLog)
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
             }
             applicationContext.startActivity(intent)
-            
-            
+
+            // Deliver the fatal crash to the previously-installed handler chain
+            // (Crashlytics on gms builds, registered before Application.onCreate).
+            // Without this, the process was killed here and Crashlytics NEVER saw a
+            // single fatal crash — the Firebase console stayed empty even for real
+            // crashes. Crashlytics writes its report synchronously and then chains
+            // to the system handler, which terminates the process itself; the kill
+            // below is only a safety net in case that chain returns.
+            try {
+                defaultHandler?.uncaughtException(thread, throwable)
+            } catch (chainError: Throwable) {
+                Timber.e(chainError, "Crash reporting chain failed")
+            }
+
             android.os.Process.killProcess(android.os.Process.myPid())
             exitProcess(1)
         } catch (e: Exception) {

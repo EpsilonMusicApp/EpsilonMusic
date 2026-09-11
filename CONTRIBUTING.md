@@ -65,12 +65,12 @@ We are committed to providing a welcoming and inspiring community for all. We pl
 1. Fork the repository on GitHub
 2. Clone your fork locally:
    ```bash
-   git clone https://github.com/VihaanAngaria/EpsilonMusic.git
+   git clone https://github.com/EpsilonMusicApp/EpsilonMusic.git
    cd EpsilonMusic
    ```
 3. Add the upstream repository:
    ```bash
-   git remote add upstream https://github.com/VihaanAngaria/EpsilonMusic.git
+   git remote add upstream https://github.com/EpsilonMusicApp/EpsilonMusic.git
    ```
 
 ## Development Setup
@@ -424,7 +424,7 @@ We follow [Semantic Versioning](https://semver.org/):
 
 If you have questions about contributing:
 
-1. Check the [GitHub Discussions](https://github.com/VihaanAngaria/EpsilonMusic/discussions)
+1. Check the [GitHub Discussions](https://github.com/EpsilonMusicApp/EpsilonMusic/discussions)
 2. Create a new discussion
 3. Contact maintainers directly through GitHub
 
@@ -440,7 +440,7 @@ Contributors will be recognized in:
 
 If you have questions about contributing:
 
-1. Check the [GitHub Discussions](https://github.com/VihaanAngaria/EpsilonMusic/discussions)
+1. Check the [GitHub Discussions](https://github.com/EpsilonMusicApp/EpsilonMusic/discussions)
 2. Create a new discussion
 3. Contact maintainers directly
 

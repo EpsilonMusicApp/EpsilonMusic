@@ -86,8 +86,8 @@ fun WelcomeDialog(
                     WelcomeActionRow(
                         icon = painterResource(R.drawable.star),
                         title = "Star on GitHub",
-                        subtitle = "github.com/VihaanAngaria/EpsilonMusic",
-                        onClick = { uriHandler.openUri("https://github.com/VihaanAngaria/EpsilonMusic") }
+                        subtitle = "github.com/EpsilonMusicApp/EpsilonMusic",
+                        onClick = { uriHandler.openUri("https://github.com/EpsilonMusicApp/EpsilonMusic") }
                     )
                 }
 

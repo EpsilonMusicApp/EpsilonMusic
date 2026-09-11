@@ -783,9 +783,20 @@ object YTPlayerUtils {
     ): PlayerResponse.StreamingData.Format? {
         Timber.tag(logTag).d("Finding format with audioQuality: $audioQuality, network metered: ${connectivityManager.isActiveNetworkMetered}")
 
-        val format = playerResponse.streamingData?.adaptiveFormats
-            ?.filter { it.isAudio && it.isOriginal }
-            ?.maxByOrNull {
+        val audioFormats = playerResponse.streamingData?.adaptiveFormats
+            ?.filter { it.isAudio }
+            .orEmpty()
+        // Prefer original (non-auto-dubbed) tracks. Some songs — increasingly common for
+        // international releases on YT Music — ONLY carry audioTrack.isAutoDubbed == true
+        // formats. The old `filter { it.isAudio && it.isOriginal }` returned null for those
+        // on every fallback client ("Could not find format"), so the song silently never
+        // played. Falling back to the dubbed track turns a dead song into a playable one.
+        val originalFormats = audioFormats.filter { it.isOriginal }
+        if (originalFormats.isEmpty() && audioFormats.isNotEmpty()) {
+            Timber.tag(logTag).w("No original audio track available (${audioFormats.size} dubbed) — falling back to auto-dubbed audio")
+        }
+        val format = (originalFormats.ifEmpty { audioFormats })
+            .maxByOrNull {
                 it.bitrate * 1 + (if (it.mimeType.startsWith("audio/webm")) 10240 else 0)
             }
 

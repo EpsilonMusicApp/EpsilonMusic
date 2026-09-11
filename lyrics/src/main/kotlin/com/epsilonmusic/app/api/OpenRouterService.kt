@@ -143,7 +143,7 @@ Output MUST be a JSON array with EXACTLY $lineCount strings."""
                         }
                     }
                     .addHeader("Content-Type", "application/json")
-                    .addHeader("HTTP-Referer", "https://github.com/VihaanAngaria/EpsilonMusic")
+                    .addHeader("HTTP-Referer", "https://github.com/EpsilonMusicApp/EpsilonMusic")
                     .addHeader("X-Title", "epsilonmusic")
                     .post(jsonBody.toString().toRequestBody(JSON))
                     .build()

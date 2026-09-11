@@ -2110,6 +2110,32 @@ class MusicService :
         scrobbleManager?.onSongStop()
         checkAndSubmitListenBrainzFinished()
 
+        // Song-play analytics (no PII: only playback-technical flags). The queue title
+        // is deliberately excluded; Firebase events should not carry media titles.
+        player.currentMetadata?.let { md ->
+            com.epsilonmusic.app.utils.analytics.Analytics.logEvent(
+                "song_play",
+                mapOf(
+                    "reason" to when (reason) {
+                        Player.MEDIA_ITEM_TRANSITION_REASON_AUTO -> "auto"
+                        Player.MEDIA_ITEM_TRANSITION_REASON_SEEK -> "seek"
+                        Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED -> "playlist_changed"
+                        Player.MEDIA_ITEM_TRANSITION_REASON_REPEAT -> "repeat"
+                        else -> "other"
+                    },
+                    "is_video" to md.isVideoSong,
+                    "explicit" to md.explicit,
+                    "duration_bucket" to when {
+                        md.duration <= 0 -> "unknown"
+                        md.duration < 120 -> "lt2m"
+                        md.duration < 300 -> "lt5m"
+                        md.duration < 600 -> "lt10m"
+                        else -> "ge10m"
+                    },
+                ),
+            )
+        }
+
         if (player.playWhenReady && player.playbackState == Player.STATE_READY) {
             scrobbleManager?.onSongStart(player.currentMetadata, duration = player.duration)
             player.currentMediaItem?.mediaId?.let { mediaId ->
@@ -2503,6 +2529,28 @@ class MusicService :
             reportException(error)
         }
 
+        // Playback-error analytics: error code + recovery class, no media id. This is
+        // the primary signal for diagnosing "some songs don't play" reports remotely —
+        // the error taxonomy (renderer / 416 / cache / 403 / network / other) maps
+        // directly onto the recovery branches below.
+        com.epsilonmusic.app.utils.analytics.Analytics.logEvent(
+            "player_error",
+            mapOf(
+                "error_code" to error.errorCode,
+                "error_class" to when {
+                    isAudioRendererError(error) -> "audio_renderer"
+                    isRangeNotSatisfiableError(error) -> "range_416"
+                    isCacheOrStreamCorruptionError(error) -> "cache_corruption"
+                    isPageReloadError(error) -> "page_reload"
+                    isExpiredUrlError(error) -> "expired_url_403"
+                    !isNetworkConnected.value -> "offline"
+                    isNetworkRelatedError(error) -> "network"
+                    else -> "other"
+                },
+                "is_fallback" to isFallbackError,
+            ),
+        )
+
         
         if (mediaId != null && hasExceededRetryLimit(mediaId)) {
             Timber.tag(TAG).w("Song $mediaId has exceeded retry limit, skipping")
@@ -2798,8 +2846,16 @@ class MusicService :
         if (dataStore.get(AutoSkipNextOnErrorKey, false)) {
             Timber.tag(TAG).d("All recovery attempts exhausted, auto-skipping to next track")
             skipOnError()
+        } else if (player.nextMediaItemIndex != C.INDEX_UNSET) {
+            // Previously this branch paused the player outright, so ONE unplayable song
+            // froze the entire queue ("some songs in the playlist don't play" — the rest
+            // never started either). Advance past the dead track instead; skipOnError()'s
+            // consecutivePlaybackErr guard (MAX_CONSECUTIVE_ERR) still stops a fully
+            // broken queue from cycling forever.
+            Timber.tag(TAG).w("All recovery attempts exhausted, advancing past failed track")
+            skipOnError()
         } else {
-            Timber.tag(TAG).d("All recovery attempts exhausted, stopping playback")
+            Timber.tag(TAG).d("All recovery attempts exhausted, stopping playback (end of queue)")
             stopOnError()
         }
     }

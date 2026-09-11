@@ -120,9 +120,9 @@ We may update this Privacy Policy from time to time. We will notify you of any c
 If you have any questions about this Privacy Policy or our data practices, please contact us:
 
 - **Email**: [ownerepsilon@zohomail.com](mailto:ownerepsilon@zohomail.com)
-- **GitHub**: [https://github.com/VihaanAngaria/EpsilonMusic](https://github.com/VihaanAngaria/EpsilonMusic)
-- **Issues**: [https://github.com/VihaanAngaria/EpsilonMusic/issues](https://github.com/VihaanAngaria/EpsilonMusic/issues)
-- **Discussions**: [https://github.com/VihaanAngaria/EpsilonMusic/discussions](https://github.com/VihaanAngaria/EpsilonMusic/discussions)
+- **GitHub**: [https://github.com/EpsilonMusicApp/EpsilonMusic](https://github.com/EpsilonMusicApp/EpsilonMusic)
+- **Issues**: [https://github.com/EpsilonMusicApp/EpsilonMusic/issues](https://github.com/EpsilonMusicApp/EpsilonMusic/issues)
+- **Discussions**: [https://github.com/EpsilonMusicApp/EpsilonMusic/discussions](https://github.com/EpsilonMusicApp/EpsilonMusic/discussions)
 
 ## Data Protection Compliance
 

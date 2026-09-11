@@ -655,6 +655,22 @@ class MainActivity : ComponentActivity() {
                 val bottomInsetDp = WindowInsets.systemBars.asPaddingValues().calculateBottomPadding()
 
                 val navController = rememberNavController()
+
+                // Screen-view analytics: one listener for the whole nav graph, reported
+                // through the flavor-agnostic Analytics facade (no-op on foss builds).
+                DisposableEffect(navController) {
+                    val listener = androidx.navigation.NavController.OnDestinationChangedListener { _, destination, _ ->
+                        destination.route?.let { route ->
+                            com.epsilonmusic.app.utils.analytics.Analytics.logEvent(
+                                "screen_view",
+                                mapOf("screen" to route.take(100)),
+                            )
+                        }
+                    }
+                    navController.addOnDestinationChangedListener(listener)
+                    onDispose { navController.removeOnDestinationChangedListener(listener) }
+                }
+
                 val homeViewModel: HomeViewModel = hiltViewModel()
                 val accountImageUrl by homeViewModel.accountImageUrl.collectAsState()
                 val navBackStackEntry by navController.currentBackStackEntryAsState()

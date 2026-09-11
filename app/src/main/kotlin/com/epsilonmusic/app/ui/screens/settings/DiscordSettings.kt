@@ -292,7 +292,7 @@ fun DiscordSettings(
     val (button2CustomUrl) =
         rememberPreference(
             key = DiscordActivityButton2CustomUrlKey,
-            defaultValue = "https://github.com/VihaanAngaria/EpsilonMusic",
+            defaultValue = "https://github.com/EpsilonMusicApp/EpsilonMusic",
         )
 
     val (activityType, onActivityTypeChange) =
@@ -1190,7 +1190,7 @@ fun RichPresence(
     button2Label: String = "Go to Epsilon Music",
     button2Enabled: Boolean = true,
     button2UrlSource: String = "custom",
-    button2CustomUrl: String = "https://github.com/VihaanAngaria/EpsilonMusic",
+    button2CustomUrl: String = "https://github.com/EpsilonMusicApp/EpsilonMusic",
     isPlaying: Boolean = false,
 ) {
     val context = LocalContext.current

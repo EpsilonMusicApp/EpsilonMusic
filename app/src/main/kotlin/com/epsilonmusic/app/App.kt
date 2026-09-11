@@ -102,8 +102,36 @@ class App : Application(), SingletonImageLoader.Factory {
         AppContextHolder.initialize(this)
         com.epsilonmusic.app.utils.cipher.CipherDeobfuscator.initialize(this)
 
+        // Firebase Analytics + Crashlytics — real wiring on the gms flavor, no-op on
+        // foss (same-named AnalyticsBootstrap per flavor source set). Crashlytics
+        // installs its uncaught-exception handler via its init provider before
+        // Application.onCreate, so CrashHandler's captured default handler already
+        // includes it for fatal-crash delivery.
+        com.epsilonmusic.app.utils.analytics.AnalyticsBootstrap.install(this)
+
         if (BuildConfig.DEBUG) {
             Timber.plant(Timber.DebugTree())
+        }
+
+        applicationScope.launch(Dispatchers.IO) {
+            // Anonymous, persisted install id — scopes Analytics sessions and
+            // Crashlytics reports to an installation without any PII.
+            val installId = dataStore.data.first()[AnalyticsInstallIdKey]
+                ?: com.epsilonmusic.app.utils.analytics.freshInstallId().also { newId ->
+                    dataStore.edit { settings ->
+                        settings[AnalyticsInstallIdKey] = newId
+                    }
+                }
+            com.epsilonmusic.app.utils.analytics.Analytics.setUserId(installId)
+
+            val loggedIn = dataStore.data.first()[InnerTubeCookieKey] != null
+            com.epsilonmusic.app.utils.analytics.Analytics.setUserProperty(
+                "yt_logged_in", if (loggedIn) "true" else "false",
+            )
+            com.epsilonmusic.app.utils.analytics.Analytics.logEvent(
+                "app_open",
+                mapOf("nightly" to BuildConfig.IS_NIGHTLY),
+            )
         }
 
         applicationScope.launch(Dispatchers.IO) {

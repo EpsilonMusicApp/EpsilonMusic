@@ -156,8 +156,8 @@ highlightKey: String? = null) {
                     AboutActionRow(
                         icon = painterResource(R.drawable.star),
                         title = "Star on GitHub",
-                        subtitle = "VihaanAngaria/EpsilonMusic",
-                        onClick = { uriHandler.openUri("https://github.com/VihaanAngaria/EpsilonMusic") },
+                        subtitle = "EpsilonMusicApp/EpsilonMusic",
+                        onClick = { uriHandler.openUri("https://github.com/EpsilonMusicApp/EpsilonMusic") },
                     )
                 }
             }
@@ -167,8 +167,8 @@ highlightKey: String? = null) {
                     AboutActionRow(
                         icon = painterResource(R.drawable.github),
                         title = "GitHub",
-                        subtitle = "VihaanAngaria/EpsilonMusic",
-                        onClick = { uriHandler.openUri("https://github.com/VihaanAngaria/EpsilonMusic") },
+                        subtitle = "EpsilonMusicApp/EpsilonMusic",
+                        onClick = { uriHandler.openUri("https://github.com/EpsilonMusicApp/EpsilonMusic") },
                     )
                     AboutDivider()
                     AboutActionRow(

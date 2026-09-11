@@ -175,7 +175,7 @@ Epsilon Music delivers a seamless, premium listening experience by leveraging Yo
 
 ### Android Installation
 
-Download the latest pre-compiled APK from the [Releases Page](https://github.com/VihaanAngaria/EpsilonMusic/releases/latest).
+Download the latest pre-compiled APK from the [Releases Page](https://github.com/EpsilonMusicApp/EpsilonMusic/releases/latest).
 
 <details>
 <summary><b>Building from Source</b></summary>
@@ -183,7 +183,7 @@ Download the latest pre-compiled APK from the [Releases Page](https://github.com
 
 1. **Clone the Repository**
    ```bash
-   git clone https://github.com/VihaanAngaria/EpsilonMusic.git
+   git clone https://github.com/EpsilonMusicApp/EpsilonMusic.git
    cd EpsilonMusic
    ```
 
@@ -228,8 +228,8 @@ Epsilon Music is community-translated. If you'd like to contribute a translation
 
 ## Community & Support
 
-- **GitHub Issues**: [Report a bug or request a feature](https://github.com/VihaanAngaria/EpsilonMusic/issues)
-- **GitHub Discussions**: [Join the conversation](https://github.com/VihaanAngaria/EpsilonMusic/discussions)
+- **GitHub Issues**: [Report a bug or request a feature](https://github.com/EpsilonMusicApp/EpsilonMusic/issues)
+- **GitHub Discussions**: [Join the conversation](https://github.com/EpsilonMusicApp/EpsilonMusic/discussions)
 - **Email**: [ownerepsilon@zohomail.com](mailto:ownerepsilon@zohomail.com)
 
 ---
@@ -263,7 +263,7 @@ We do not host, upload, distribute, or store any audio, video, or copyrighted me
 ### 5. User Responsibility & Legal Contact
 The software is provided "AS IS", without warranty of any kind. The developers of Epsilon Music do not encourage or condone piracy. Users are solely responsible for ensuring their usage of this app complies with their local copyright laws and the Terms of Service of the platforms they access.
 
-Because we do not host any media files, we cannot process DMCA takedown requests for audio or video content. However, if you represent a copyright holder or have legal concerns regarding the open-source code itself, please open a [GitHub Issue](https://github.com/VihaanAngaria/EpsilonMusic/issues).
+Because we do not host any media files, we cannot process DMCA takedown requests for audio or video content. However, if you represent a copyright holder or have legal concerns regarding the open-source code itself, please open a [GitHub Issue](https://github.com/EpsilonMusicApp/EpsilonMusic/issues).
 
 ---
 

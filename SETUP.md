@@ -14,7 +14,7 @@ This document provides instructions for setting up the Epsilon Music project for
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/VihaanAngaria/EpsilonMusic.git
+git clone https://github.com/EpsilonMusicApp/EpsilonMusic.git
 cd EpsilonMusic
 ```
 

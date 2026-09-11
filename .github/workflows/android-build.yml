@@ -43,6 +43,19 @@ jobs:
         echo "Keystore decoded successfully."
         ls -la keystore.jks
 
+    - name: Restore google-services.json (Firebase Analytics/Crashlytics)
+      env:
+        ENCODED_GOOGLE_SERVICES: ${{ secrets.GOOGLE_SERVICES_JSON }}
+      run: |
+        if [ -f app/google-services.json ]; then
+          echo "google-services.json found in repo — Firebase will be compiled in."
+        elif [ -n "$ENCODED_GOOGLE_SERVICES" ]; then
+          echo "$ENCODED_GOOGLE_SERVICES" | base64 -di > app/google-services.json
+          echo "google-services.json restored from GOOGLE_SERVICES_JSON secret — Firebase will be compiled in."
+        else
+          echo "::warning::No google-services.json in the repo and GOOGLE_SERVICES_JSON secret is not set. The APK will be built WITHOUT Firebase Analytics/Crashlytics (empty Firebase console). Either commit app/google-services.json or add the base64-encoded file as the GOOGLE_SERVICES_JSON secret."
+        fi
+
     - name: Build Release APK
       env:
         KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
@@ -69,6 +82,17 @@ jobs:
           exit 1
         fi
         echo "=== APK count: $APK_COUNT ==="
+
+        # Store-friendly, versioned name for the universal APK (Uptodown/APKPure/
+        # APKMirror submissions all want an explicit version in the filename).
+        VERSION_NAME=$(grep -oP 'versionName\s*=\s*"\K[^"]+' app/build.gradle.kts | head -1)
+        UNIVERSAL_APK=$(find app/build/outputs/apk -name "*universal*.apk" -type f | head -1)
+        if [ -n "$UNIVERSAL_APK" ]; then
+          cp "$UNIVERSAL_APK" "EpsilonMusic-v${VERSION_NAME}-universal.apk"
+          echo "Renamed universal APK -> EpsilonMusic-v${VERSION_NAME}-universal.apk"
+          ls -lh "EpsilonMusic-v${VERSION_NAME}-universal.apk"
+        fi
+
         for apk in $(find app/build/outputs/apk -name "*.apk" -type f); do
           echo "APK: $apk"
           ls -lh "$apk"
@@ -80,7 +104,9 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: Epsilon-Music-Universal-APK
-        path: app/build/outputs/apk/**/*.apk
+        path: |
+          EpsilonMusic-v*-universal.apk
+          app/build/outputs/apk/**/*.apk
         if-no-files-found: error
         retention-days: 30
         compression-level: 0

@@ -35,10 +35,10 @@ lastfm-empty/build/
 # Logs
 *.log
 
-# Sensitive — Firebase / Google Services config (NEVER commit)
-# Each developer must provide their own google-services.json.
-# See local.properties.template for instructions.
-app/google-services.json
+# Firebase / Google Services config.
+# The production google-services.json is SAFE to commit (it identifies the Firebase
+# project, not a secret credential — see Firebase docs) and MUST be in the repo for
+# CI builds to ship Analytics/Crashlytics. Debug-only variants stay ignored.
 app/google-services-debug.json
 app/debug/google-services.json
 google-services.json
