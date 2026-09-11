@@ -35,6 +35,15 @@ object AnalyticsBootstrap {
             val firebaseAnalytics = FirebaseAnalytics.getInstance(context)
             val crashlytics = FirebaseCrashlytics.getInstance()
 
+            // Collection ON, explicitly. The fork's old manifest shipped
+            // firebase_*_collection_enabled=false with nothing ever re-enabling
+            // it — the SDK was initialized but silently dropped every event and
+            // crash, which is why the Firebase console stayed empty. Enabling
+            // here (in addition to removing those manifest flags) keeps the
+            // intent explicit and guards against the flags sneaking back in.
+            firebaseAnalytics.setAnalyticsCollectionEnabled(true)
+            crashlytics.setCrashlyticsCollectionEnabled(true)
+
             // Anonymous install id: persisted by App (DataStore) and passed back in
             // via setUserId below. Crashlytics userId must never be a real account id.
             Analytics.impl = object : AnalyticsImpl {

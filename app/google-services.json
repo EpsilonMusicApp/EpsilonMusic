@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "480696176970",
+    "project_id": "epsilonmusic-b7b95",
+    "storage_bucket": "epsilonmusic-b7b95.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:480696176970:android:18cf44414de71a7014f1b3",
+        "android_client_info": {
+          "package_name": "com.epsilonmusic.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAth8ExSmcE6s3g3PihMK4lnw4ZxWD3Mo8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

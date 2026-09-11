@@ -286,8 +286,9 @@ NDK `27.0.12077973`. JDK 21 (kotlin/java toolchain).
 
 - `local.properties` (from `local.properties.template`) — Android SDK path.
   Never commit.
-- `app/google-services.json` — Firebase config, **optional**; app builds fine
-  without it (GMS-only feature).
+- `app/google-services.json` — Firebase config, **committed on purpose** (app
+  identifier, not a credential); CI builds Analytics/Crashlytics from it. Builds
+  fine without it too (GMS-only feature, auto-detected).
 - Build-time secrets read from `local.properties` first, then env vars:
   `LASTFM_API_KEY`, `LASTFM_SECRET`, `GH_CLIENT_ID`, `GH_CLIENT_SECRET`.
   Also `FLOW_NEURO_BASE_URL` / `FLOW_NEURO_API_KEY` (defaults to
@@ -295,8 +296,9 @@ NDK `27.0.12077973`. JDK 21 (kotlin/java toolchain).
 - AI lyrics translation is configured **in-app** (Settings → AI Settings),
   not at build time — supports OpenRouter (default) or custom
   OpenAI/Anthropic/Gemini-compatible providers.
-- Never commit: `local.properties`, `*.keystore`, real `google-services.json`,
-  any `gradle.properties` containing signing credentials.
+- Never commit: `local.properties`, `*.keystore`, any `gradle.properties`
+  containing signing credentials. (`app/google-services.json` is intentionally
+  committed — see above.)
 
 ## Testing
 

@@ -50,11 +50,14 @@ If you discover a security vulnerability in Epsilon Music, please report it resp
 
 The following files contain sensitive information and should never be committed:
 
-- `google-services.json` - Firebase configuration with API keys
 - `local.properties` - Local development configuration
 - `*.keystore` / `*.jks` - App signing keys
 - `secrets.properties` - API keys and secrets
 - `**/assets/po_token.html` - YouTube authentication tokens
+
+Note: `app/google-services.json` (Firebase config) is committed on purpose — Firebase
+documents it as an app identifier rather than a credential, and having it in the repo
+is what enables Analytics/Crashlytics in CI builds.
 
 ## Data Privacy
 

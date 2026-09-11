@@ -43,11 +43,13 @@ sdk.dir=/path/to/your/android/sdk
 Firebase is used for analytics and crash reporting. If you want to use these features:
 
 1. Create a Firebase project at [Firebase Console](https://console.firebase.google.com/)
-2. Add Android apps for BOTH package names: `com.epsilonmusic.app` (release) and `com.epsilonmusic.app.debug` (debug) — one file covers both variants
-3. Download the `google-services.json` file (it contains all apps in the project)
+2. Add an Android app for the release package name `com.epsilonmusic.app`
+3. Download the `google-services.json` file
 4. Commit it at `app/google-services.json` so CI builds include Analytics/Crashlytics
 
-**Important:** The project's `app/google-services.json` is configured for Firebase project `epsilonmusic-b7b95` with package `com.epsilonmusic.app` (release) and `com.epsilonmusic.app.debug` (debug). It is committed to the repo on purpose — it is an app identifier, not a credential (see Firebase docs), and committing it is what makes CI-built APKs report analytics. If you prefer to keep it out of the repo, base64-encode it and set it as the `GOOGLE_SERVICES_JSON` GitHub Actions secret instead; CI restores it before building.
+**Important:** The committed `app/google-services.json` targets Firebase project `epsilonmusic-b7b95` with the release package `com.epsilonmusic.app` (the only package CI ships). It is committed on purpose — it is an app identifier, not a credential (see Firebase docs), and committing it is what makes CI-built APKs report analytics. If you prefer to keep it out of the repo, base64-encode it and set it as the `GOOGLE_SERVICES_JSON` GitHub Actions secret instead; CI restores it before building.
+
+The json deliberately contains only the release package: the debug build uses the `com.epsilonmusic.app.debug` suffix, and CodeQL hides the file for its debug-variant analysis so both stay green. If you also want analytics from debug builds, register `com.epsilonmusic.app.debug` in the Firebase console and append that client entry to the json.
 
 **Firebase services used:**
 - ✅ Firebase Analytics (GMS flavor only)

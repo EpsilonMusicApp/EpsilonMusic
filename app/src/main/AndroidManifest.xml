@@ -64,25 +64,20 @@
         tools:targetApi="tiramisu">
 
         <!-- ============================================================ -->
-        <!-- Privacy hardening: disable Firebase auto-collection by      -->
-        <!-- default. Even if a developer adds their own google-services.json, -->
-        <!-- Firebase Analytics and Crashlytics will NOT collect data      -->
-        <!-- unless the user explicitly enables them at runtime via:       -->
-        <!--   FirebaseAnalytics.getInstance().setAnalyticsCollectionEnabled(true)  -->
-        <!--   FirebaseCrashlytics.getInstance().setCrashlyticsCollectionEnabled(true) -->
-        <!-- This protects user privacy by default.                       -->
+        <!-- Firebase collection is ENABLED on purpose: the app ships     -->
+        <!-- google-services.json and AnalyticsBootstrap (gms flavor)      -->
+        <!-- turns Analytics + Crashlytics collection on at startup.       -->
+        <!-- FOSS builds contain no Firebase SDK at all.                   -->
+        <!--                                                              -->
+        <!-- Kept off (by design):                                         -->
+        <!--  - automatic screen reporting: single-activity Compose app,   -->
+        <!--    the app logs its own screen_view events (no duplicates);   -->
+        <!--  - Advertising ID collection: privacy-positive, not needed    -->
+        <!--    for console analytics.                                     -->
         <!-- ============================================================ -->
-        <meta-data
-            android:name="firebase_analytics_collection_enabled"
-            android:value="false" />
-        <meta-data
-            android:name="firebase_crashlytics_collection_enabled"
-            android:value="false" />
-        <!-- Also disable automatic screen reporting (part of Analytics) -->
         <meta-data
             android:name="google_analytics_automatic_screen_reporting_enabled"
             android:value="false" />
-        <!-- Disable Advertising ID collection (relevant if Analytics is ever enabled) -->
         <meta-data
             android:name="google_analytics_adid_collection_enabled"
             android:value="false" />

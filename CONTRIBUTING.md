@@ -94,16 +94,14 @@ We are committed to providing a welcoming and inspiring community for all. We pl
 If you want to test Firebase features:
 
 1. Create a Firebase project
-2. Add Android apps with package names:
-   - `com.epsilonmusic.app` (release)
-   - `com.epsilonmusic.app.debug` (debug)
-3. Copy the template and configure it with your Firebase credentials:
-   ```bash
-   cp app/google-services.json.template app/google-services.json
-   ```
-4. Edit `app/google-services.json` with your Firebase project details
+2. Add an Android app with package name `com.epsilonmusic.app` (release)
+3. The repo already ships `app/google-services.json` (project `epsilonmusic-b7b95`) —
+   replace it with your own only if you fork to a different Firebase project
 
-> **IMPORTANT**: Never commit your actual `google-services.json` file to the repository as it contains sensitive API keys. The `.gitignore` file is configured to exclude this file.
+> **NOTE**: `app/google-services.json` is committed on purpose — per Firebase's
+> own docs it is an app identifier, not a secret credential, and committing it is
+> what makes CI-built APKs report Analytics/Crashlytics. The real secrets (signing
+> keystore, service credentials) are never in the repo.
 
 ## Handling Sensitive Information
 
@@ -115,9 +113,9 @@ When contributing to Epsilon Music, it's crucial to handle sensitive information
    - Contains your local SDK path
    - Use the provided template (`local.properties.template`) instead
 
-2. **google-services.json**
-   - Contains Firebase API keys and project credentials
-   - Use the provided template (`app/google-services.json.template`) instead
+2. **Signer credentials & truly private keys**
+   - `local.properties`, `*.keystore`/`*.jks`, `secrets.properties` must stay local
+   - `app/google-services.json` is intentionally tracked (app identifier, see above)
 
 3. **Build outputs**
    - Never commit `.apk`, `.aab`, `.class`, or other build artifacts
