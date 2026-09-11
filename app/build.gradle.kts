@@ -246,9 +246,13 @@ dependencies {
 
 
     // Firebase - GMS flavor only (excluded from F-Droid / FOSS builds)
-    "gmsImplementation"(platform("com.google.firebase:firebase-bom:33.1.0"))
+    "gmsImplementation"(platform("com.google.firebase:firebase-bom:34.19.0"))
     "gmsImplementation"("com.google.firebase:firebase-analytics")
     "gmsImplementation"("com.google.firebase:firebase-crashlytics")
+    // NDK crash reporting: the app ships native libs (ffmpeg-kit audio engine),
+    // so native crashes are reported too. The Crashlytics Gradle plugin picks
+    // this dependency up and uploads native symbols on release builds.
+    "gmsImplementation"("com.google.firebase:firebase-crashlytics-ndk")
 
     // Google Drive Sync - GMS flavor only
     "gmsImplementation"(libs.play.services.auth)

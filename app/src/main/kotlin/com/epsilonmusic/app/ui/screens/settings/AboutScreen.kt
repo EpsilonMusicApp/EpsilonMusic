@@ -123,6 +123,13 @@ highlightKey: String? = null) {
                         subtitle = "VihaanAngaria",
                         onClick = { uriHandler.openUri("https://github.com/VihaanAngaria") },
                     )
+                    AboutDivider()
+                    AboutActionRow(
+                        icon = painterResource(R.drawable.linkedin),
+                        title = "LinkedIn",
+                        subtitle = "Vihaan Angaria",
+                        onClick = { uriHandler.openUri("https://www.linkedin.com/in/vihaanangaria") },
+                    )
                 }
             }
 
@@ -195,6 +202,7 @@ highlightKey: String? = null) {
 
 @Composable
 private fun AboutAppCard() {
+    val context = LocalContext.current
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(28.dp),
@@ -280,9 +288,36 @@ private fun AboutAppCard() {
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
+                // Hidden Crashlytics setup verification (Firebase "force a test
+                // crash" step) without shipping a visible debug button: 7 taps
+                // on the version chip throw on the main thread -> uncaught ->
+                // CrashHandler -> default handler (Crashlytics) -> fatal report.
+                // Restarting the app after the crash delivers it to Firebase.
+                var crashTaps by remember { mutableStateOf(0) }
+                val versionChipInteraction = remember { MutableInteractionSource() }
                 Surface(
                     shape = RoundedCornerShape(8.dp),
                     color = MaterialTheme.colorScheme.primary.copy(alpha = 0.10f),
+                    modifier = Modifier.clickable(
+                        interactionSource = versionChipInteraction,
+                        indication = null,
+                    ) {
+                        crashTaps++
+                        if (crashTaps >= 7) {
+                            Toast.makeText(
+                                context,
+                                "Test crash sent — restart the app to deliver the report to Crashlytics",
+                                Toast.LENGTH_LONG,
+                            ).show()
+                            throw RuntimeException("Test Crash — Crashlytics setup verification")
+                        } else if (crashTaps >= 4) {
+                            Toast.makeText(
+                                context,
+                                "${7 - crashTaps} more taps to send a test crash report",
+                                Toast.LENGTH_SHORT,
+                            ).show()
+                        }
+                    },
                 ) {
                     Text(
                         text = BuildConfig.VERSION_NAME,
