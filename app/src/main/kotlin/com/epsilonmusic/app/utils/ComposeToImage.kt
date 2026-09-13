@@ -25,7 +25,7 @@ import androidx.core.content.FileProvider
 import androidx.core.graphics.createBitmap
 import androidx.core.graphics.drawable.toBitmap
 import androidx.palette.graphics.Palette
-import coil3.ImageLoader
+import coil3.imageLoader
 import coil3.request.ImageRequest
 import coil3.request.allowHardware
 import coil3.toBitmap
@@ -73,7 +73,9 @@ object ComposeToImage {
         var coverArtBitmap: Bitmap? = null
         if (coverArtUrl != null) {
             try {
-                val imageLoader = ImageLoader(context)
+                // Singleton loader (provided by App's SingletonImageLoader.Factory) —
+                // constructing a new ImageLoader per call leaked memory/caches.
+                val imageLoader = context.imageLoader
                 val request = ImageRequest.Builder(context)
                     .data(coverArtUrl)
                     .size(1024) 

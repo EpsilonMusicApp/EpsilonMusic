@@ -366,6 +366,16 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         super.onCreate(savedInstanceState)
+
+        // Pre-start the playback service so the ExoPlayer engine, media session and
+        // audio pipeline are warm before the user taps a song — noticeably cuts the
+        // time-to-audio on cold starts.
+        try {
+            startService(Intent(this, com.epsilonmusic.app.playback.MusicService::class.java))
+        } catch (e: Exception) {
+            timber.log.Timber.e(e, "Failed to pre-start MusicService for warmup")
+        }
+
         window.decorView.layoutDirection = View.LAYOUT_DIRECTION_LTR
         WindowCompat.setDecorFitsSystemWindows(window, false)
 

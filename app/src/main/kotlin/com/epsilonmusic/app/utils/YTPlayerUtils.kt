@@ -62,6 +62,15 @@ object YTPlayerUtils {
     private val poTokenGenerator = PoTokenGenerator()
 
     /**
+     * Pre-warms the PoToken WebView/BotGuard pipeline at app start so the first
+     * playback doesn't block on a multi-second WebView cold init. Called from
+     * Application.onCreate; see [PoTokenGenerator.initialize].
+     */
+    fun initialize() {
+        poTokenGenerator.initialize()
+    }
+
+    /**
      * Size of the first media chunk ExoPlayer requests. Must stay in sync with
      * `MusicService.CHUNK_LENGTH`; kept as a local copy so this object does not have to depend
      * on the playback service. Used by [validateStatus] so the probe and the real request match.

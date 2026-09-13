@@ -22,6 +22,30 @@ class PoTokenGenerator {
     private var webPoTokenStreamingPot: String? = null
     private var webPoTokenGenerator: PoTokenWebView? = null
 
+    /**
+     * Pre-warms the PoToken WebView on a background dispatcher so the first playback
+     * doesn't pay the multi-second WebView/BotGuard init cost. Safe to call multiple
+     * times; only the first call does real work, later calls are no-ops once the
+     * generator exists.
+     */
+    fun initialize() {
+        if (!webViewSupported || webViewBadImpl) return
+        kotlinx.coroutines.GlobalScope.launch(Dispatchers.Main) {
+            try {
+                webPoTokenGenLock.withLock {
+                    if (webPoTokenGenerator == null) {
+                        Timber.tag(TAG).d("Pre-initializing PoTokenWebView in background...")
+                        webPoTokenSessionId = "init-" + System.currentTimeMillis()
+                        webPoTokenGenerator = PoTokenWebView.getNewPoTokenGenerator(CipherDeobfuscator.appContext)
+                        webPoTokenStreamingPot = webPoTokenGenerator!!.generatePoToken(webPoTokenSessionId!!)
+                    }
+                }
+            } catch (e: Exception) {
+                Timber.tag(TAG).e(e, "Failed to pre-initialize PoTokenWebView")
+            }
+        }
+    }
+
     fun getWebClientPoToken(videoId: String, sessionId: String): PoTokenResult? {
         Timber.tag(TAG).d("getWebClientPoToken called: videoId=$videoId, sessionId=$sessionId")
         Timber.tag(TAG).d("WebView state: supported=$webViewSupported, badImpl=$webViewBadImpl")

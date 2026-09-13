@@ -102,6 +102,10 @@ class App : Application(), SingletonImageLoader.Factory {
         AppContextHolder.initialize(this)
         com.epsilonmusic.app.utils.cipher.CipherDeobfuscator.initialize(this)
 
+        // Pre-warm the PoToken WebView/BotGuard pipeline in the background so the
+        // first playback doesn't pay the multi-second WebView cold-init cost.
+        com.epsilonmusic.app.utils.YTPlayerUtils.initialize()
+
         // Firebase Analytics + Crashlytics — real wiring on the gms flavor, no-op on
         // foss (same-named AnalyticsBootstrap per flavor source set). Crashlytics
         // installs its uncaught-exception handler via its init provider before
@@ -111,6 +115,18 @@ class App : Application(), SingletonImageLoader.Factory {
 
         if (BuildConfig.DEBUG) {
             Timber.plant(Timber.DebugTree())
+        }
+
+        // DNS warming: resolve the streaming/API hosts once in the background so the
+        // first playback request doesn't stall on a cold DNS lookup.
+        applicationScope.launch(Dispatchers.IO) {
+            try {
+                java.net.InetAddress.getByName("music.youtube.com")
+                java.net.InetAddress.getByName("youtubei.googleapis.com")
+                java.net.InetAddress.getByName("googlevideo.com")
+            } catch (e: Exception) {
+                // Ignore — this is best-effort warming only.
+            }
         }
 
         applicationScope.launch(Dispatchers.IO) {
