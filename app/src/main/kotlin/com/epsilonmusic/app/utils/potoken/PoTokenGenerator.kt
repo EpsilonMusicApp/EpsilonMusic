@@ -3,7 +3,9 @@ package com.epsilonmusic.app.utils.potoken
 import android.webkit.CookieManager
 import com.epsilonmusic.app.utils.cipher.CipherDeobfuscator
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -30,7 +32,7 @@ class PoTokenGenerator {
      */
     fun initialize() {
         if (!webViewSupported || webViewBadImpl) return
-        kotlinx.coroutines.GlobalScope.launch(Dispatchers.Main) {
+        GlobalScope.launch(Dispatchers.Main) {
             try {
                 webPoTokenGenLock.withLock {
                     if (webPoTokenGenerator == null) {

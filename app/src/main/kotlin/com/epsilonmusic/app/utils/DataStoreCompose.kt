@@ -40,7 +40,7 @@ fun <T> rememberPreference(
             context.dataStore.data
                 .map { prefs ->
                     val value = try { prefs[key] } catch(e: Exception) { null }
-                    if (value != null && (defaultValue !is Set<*>) && value::class != defaultValue::class) {
+                    if (value != null && defaultValue != null && (defaultValue !is Set<*>) && value::class != defaultValue::class) {
                         // The key name was previously persisted under a different type —
                         // fall back to the default instead of letting a wrong-typed value
                         // flow into the UI and throw ClassCastException at the read site.
