@@ -941,7 +941,12 @@ fun BottomSheetPlayer(
             else MaterialTheme.colorScheme.surfaceContainer
     }
 
-    val backgroundAlpha = state.progress.coerceIn(0f, 1f)
+    // Deferred state read: during the bottom-sheet drag, `state.progress` changes every
+    // frame. Reading it into a local val (`val backgroundAlpha = ...`) forces a
+    // recomposition of this whole content per frame; a lambda read inside
+    // graphicsLayer defers it to the render phase and removes the layout jank.
+    val backgroundAlphaProvider = remember(state) { { state.progress.coerceIn(0f, 1f) } }
+    val showCanvas by remember(state) { derivedStateOf { backgroundAlphaProvider() > 0.01f } }
 
     BottomSheet(
         state = state,
@@ -963,7 +968,7 @@ fun BottomSheetPlayer(
                             label = "blurBackground"
                         ) { thumbnailUrl ->
                             if (thumbnailUrl != null) {
-                                Box(modifier = Modifier.alpha(backgroundAlpha)) {
+                                Box(modifier = Modifier.graphicsLayer { alpha = backgroundAlphaProvider() }) {
                                     AsyncImage(
                                         model = ImageRequest.Builder(context)
                                             .data(thumbnailUrl)
@@ -1010,7 +1015,7 @@ fun BottomSheetPlayer(
                                 Box(
                                     Modifier
                                         .fillMaxSize()
-                                        .alpha(backgroundAlpha)
+                                        .graphicsLayer { alpha = backgroundAlphaProvider() }
                                         .background(Brush.verticalGradient(colorStops = gradientColorStops))
                                         .background(Color.Black.copy(alpha = 0.2f))
                                 )
@@ -1098,7 +1103,7 @@ fun BottomSheetPlayer(
                                 Box(
                                     modifier = Modifier
                                         .fillMaxSize()
-                                        .alpha(backgroundAlpha)
+                                        .graphicsLayer { alpha = backgroundAlphaProvider() }
                                         .drawWithCache {
                                             val width = size.width
                                             val height = size.height
@@ -1185,7 +1190,7 @@ fun BottomSheetPlayer(
                                 Box(
                                     modifier = Modifier
                                         .fillMaxSize()
-                                        .alpha(backgroundAlpha)
+                                        .graphicsLayer { alpha = backgroundAlphaProvider() }
                                 ) {
                                     
                                     AsyncImage(
@@ -1241,7 +1246,7 @@ fun BottomSheetPlayer(
                                             modifier = Modifier.fillMaxSize()
                                         )
 
-                                        if (enableCanvas && canvasArtwork != null && backgroundAlpha > 0.01f) {
+                                        if (enableCanvas && canvasArtwork != null && showCanvas) {
                                             BackgroundVideoView(
                                                 videoUrl = canvasArtwork?.animated ?: canvasArtwork?.videoUrl ?: "",
                                                 isPlaying = isPlaying,
@@ -1311,9 +1316,9 @@ fun BottomSheetPlayer(
                                 Box(
                                     modifier = Modifier
                                         .fillMaxSize()
-                                        .alpha(backgroundAlpha)
                                         .graphicsLayer {
-                                            
+                                            alpha = backgroundAlphaProvider()
+
                                             scaleX = 1.7f
                                             scaleY = 1.7f
                                         }

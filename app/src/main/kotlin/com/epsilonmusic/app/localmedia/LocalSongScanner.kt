@@ -451,10 +451,14 @@ constructor(
     private fun shouldExcludeFolder(folderPath: String?, excludedFolders: Set<String>): Boolean {
         if (folderPath.isNullOrEmpty() || excludedFolders.isEmpty()) return false
         return excludedFolders.any { excludedFolder ->
-            folderPath == excludedFolder ||
-                folderPath.startsWith("$excludedFolder/") ||
-                folderPath.endsWith("/$excludedFolder") ||
-                folderPath.contains("/$excludedFolder/")
+            // Case-insensitive comparison: MediaStore paths and user-picked excluded
+            // folders can differ in case (e.g. /Music vs /music), which previously
+            // made the exclusion silently fail and "excluded" songs still showed up.
+            val lowerExcluded = excludedFolder.lowercase(java.util.Locale.ROOT)
+            folderPath == lowerExcluded ||
+                folderPath.startsWith("$lowerExcluded/") ||
+                folderPath.endsWith("/$lowerExcluded") ||
+                folderPath.contains("/$lowerExcluded/")
         }
     }
 

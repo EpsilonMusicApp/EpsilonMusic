@@ -38,7 +38,19 @@ fun <T> rememberPreference(
     val state =
         remember {
             context.dataStore.data
-                .map { (try { it[key] } catch(e: Exception) { null }) ?: defaultValue }
+                .map { prefs ->
+                    val value = try { prefs[key] } catch(e: Exception) { null }
+                    if (value != null && defaultValue != null && (defaultValue !is Set<*>) && value::class != defaultValue::class) {
+                        // The key name was previously persisted under a different type —
+                        // fall back to the default instead of letting a wrong-typed value
+                        // flow into the UI and throw ClassCastException at the read site.
+                        // Set<*> is exempt: DataStore wraps sets in UnmodifiableSet/EmptySet,
+                        // whose runtime class never matches the default's class.
+                        defaultValue
+                    } else {
+                        (value ?: defaultValue) as T
+                    }
+                }
                 .distinctUntilChanged()
         }.collectAsState(defaultValue)
 
@@ -72,7 +84,10 @@ inline fun <reified T : Enum<T>> rememberEnumPreference(
     val state =
         remember {
             context.dataStore.data
-                .map { (try { it[key] } catch(e: Exception) { null }).toEnum(defaultValue = defaultValue) }
+                .map { prefs ->
+                    val value = try { prefs[key] } catch (e: Exception) { null }
+                    (if (value != null && value !is String) null else value as String?).toEnum(defaultValue = defaultValue)
+                }
                 .distinctUntilChanged()
         }.collectAsState(defaultValue)
 

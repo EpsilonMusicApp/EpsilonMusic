@@ -4,6 +4,7 @@ package com.epsilonmusic.app.playback
 
 import android.content.ContentResolver
 import android.content.Context
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import androidx.annotation.DrawableRes
@@ -70,12 +71,72 @@ constructor(
     var toggleStartRadio: () -> Unit = {}
     var toggleLibrary: () -> Unit = {}
 
+    /**
+     * Package names [MediaSession.isAutomotiveController] and [MediaSession.isAutoCompanionController]
+     * treat as automotive/companion surfaces. Media3 documents both methods as comparing
+     * only [MediaSession.ControllerInfo.getPackageName] — a value that isn't necessarily backed
+     * by the calling UID on every connection path — and explicitly says neither is a security
+     * check. [isVerifiedAutomotiveController] re-derives the same intent but cross-checks the
+     * claimed package name against [PackageManager]'s actual UID for it, which *is* tied to the
+     * real calling process.
+     */
+    private val trustedAutomotivePackages = setOf(
+        "com.google.android.projection.gearhead", // Android Auto
+        "com.google.android.gms.car",              // Android Auto (legacy package)
+        "com.android.systemui",                    // Android Automotive OS system UI
+    )
+
+    /**
+     * True only if [controller] is both claiming a trusted automotive/companion package name
+     * *and* is actually running as that package's UID — closing the gap left by
+     * [MediaSession.isAutomotiveController]/[MediaSession.isAutoCompanionController], which
+     * Media3 documents as non-authoritative string comparisons an unverified controller could
+     * satisfy by merely reporting one of these package names.
+     */
+    private fun isVerifiedAutomotiveController(controller: MediaSession.ControllerInfo): Boolean {
+        val claimedPackage = controller.packageName
+        if (claimedPackage !in trustedAutomotivePackages) return false
+        val actualUid = try {
+            context.packageManager.getPackageUid(claimedPackage, 0)
+        } catch (e: PackageManager.NameNotFoundException) {
+            return false
+        }
+        return actualUid == controller.uid
+    }
+
+    /**
+     * Whether [controller] is a surface allowed to mutate playback state via the toggle
+     * custom commands (like/library/shuffle/repeat/radio): a trusted controller (the app
+     * itself, systemui, or an app holding MEDIA_CONTENT_CONTROL / an enabled notification
+     * listener), the system media notification, or a UID-verified Android Auto / Auto
+     * companion controller. [MusicService] is an exported
+     * [MediaLibraryService][androidx.media3.session.MediaLibraryService], so without this
+     * check any app on the device could bind to the session and invoke these
+     * state-changing commands.
+     */
+    private fun isAuthorizedController(
+        session: MediaSession,
+        controller: MediaSession.ControllerInfo,
+    ): Boolean =
+        controller.isTrusted ||
+            session.isMediaNotificationController(controller) ||
+            isVerifiedAutomotiveController(controller)
+
+    /**
+     * Negotiates connection capabilities for an incoming controller.
+     *
+     * Exposes the toggle custom commands ([SessionCommand]s for like, start-radio, library,
+     * shuffle and repeat) only to [isAuthorizedController] controllers — the system
+     * notification / mini player and the lock screen drive playback exclusively through
+     * these commands, so they still need to reach those surfaces, but an arbitrary
+     * unauthorized app must not be able to invoke them.
+     */
     override fun onConnect(
         session: MediaSession,
         controller: MediaSession.ControllerInfo,
     ): MediaSession.ConnectionResult {
         val connectionResult = super.onConnect(session, controller)
-        return MediaSession.ConnectionResult.accept(
+        val availableSessionCommands = if (isAuthorizedController(session, controller)) {
             connectionResult.availableSessionCommands
                 .buildUpon()
                 .add(MediaSessionConstants.CommandToggleLike)
@@ -83,17 +144,38 @@ constructor(
                 .add(MediaSessionConstants.CommandToggleLibrary)
                 .add(MediaSessionConstants.CommandToggleShuffle)
                 .add(MediaSessionConstants.CommandToggleRepeatMode)
-                .build(),
+                .build()
+        } else {
+            connectionResult.availableSessionCommands
+        }
+
+        return MediaSession.ConnectionResult.accept(
+            availableSessionCommands,
             connectionResult.availablePlayerCommands,
         )
     }
 
+    /**
+     * Handles custom session commands such as toggle-like, toggle-shuffle and toggle-repeat.
+     *
+     * Toggle commands are re-checked against [isAuthorizedController] as defense in depth —
+     * [onConnect] should already keep them out of an unauthorized controller's
+     * available-commands set, but a controller that somehow still sends one is rejected here.
+     */
     override fun onCustomCommand(
         session: MediaSession,
         controller: MediaSession.ControllerInfo,
         customCommand: SessionCommand,
         args: Bundle,
     ): ListenableFuture<SessionResult> {
+        val isToggleCommand = customCommand.customAction == MediaSessionConstants.ACTION_TOGGLE_LIKE ||
+            customCommand.customAction == MediaSessionConstants.ACTION_TOGGLE_START_RADIO ||
+            customCommand.customAction == MediaSessionConstants.ACTION_TOGGLE_LIBRARY ||
+            customCommand.customAction == MediaSessionConstants.ACTION_TOGGLE_SHUFFLE ||
+            customCommand.customAction == MediaSessionConstants.ACTION_TOGGLE_REPEAT_MODE
+        if (isToggleCommand && !isAuthorizedController(session, controller)) {
+            return Futures.immediateFuture(SessionResult(SessionResult.RESULT_ERROR_PERMISSION_DENIED))
+        }
         when (customCommand.customAction) {
             MediaSessionConstants.ACTION_TOGGLE_LIKE -> toggleLike()
             MediaSessionConstants.ACTION_TOGGLE_START_RADIO -> toggleStartRadio()
