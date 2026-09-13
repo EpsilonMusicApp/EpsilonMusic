@@ -533,7 +533,13 @@ highlightKey: String? = null) {
                         trailingContent = {
                             Switch(
                                 checked = automixCrossfade,
-                                onCheckedChange = onAutomixCrossfadeChange,
+                                onCheckedChange = {
+                                    onAutomixCrossfadeChange(it)
+                                    // Automix is implemented as crossfade-driven blending —
+                                    // enabling it without crossfade left it silently inert,
+                                    // so keep the two toggles in sync.
+                                    onCrossfadeEnabledChange(it)
+                                },
                                 thumbContent = {
                                     Icon(
                                         painter = painterResource(
@@ -545,7 +551,11 @@ highlightKey: String? = null) {
                                 }
                             )
                         },
-                        onClick = { onAutomixCrossfadeChange(!automixCrossfade) }
+                        onClick = {
+                            val newValue = !automixCrossfade
+                            onAutomixCrossfadeChange(newValue)
+                            onCrossfadeEnabledChange(newValue)
+                        }
                     ))
                     if (automixCrossfade) {
                         add(Material3SettingsItem(
