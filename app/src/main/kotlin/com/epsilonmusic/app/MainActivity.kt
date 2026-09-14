@@ -267,6 +267,14 @@ class MainActivity : ComponentActivity() {
 
     private var playerConnection by mutableStateOf<PlayerConnection?>(null)
 
+    /**
+     * Tracks whether [serviceConnection] is currently registered with the system.
+     * Lifecycle guarantees onStop() always runs before onDestroy(), so unbinding in
+     * both would throw "Service not registered" (IllegalArgumentException) and
+     * crash the app on exit — this flag makes every unbind idempotent.
+     */
+    private var isServiceBound = false
+
     private val serviceConnection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
             if (service is MusicBinder) {
@@ -311,7 +319,7 @@ class MainActivity : ComponentActivity() {
         
         
         
-        bindService(
+        isServiceBound = bindService(
             Intent(this, MusicService::class.java),
             serviceConnection,
             BIND_AUTO_CREATE
@@ -319,7 +327,7 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onStop() {
-        unbindService(serviceConnection)
+        unbindMusicService()
         super.onStop()
     }
 
@@ -330,8 +338,24 @@ class MainActivity : ComponentActivity() {
             isFinishing
         ) {
             stopService(Intent(this, MusicService::class.java))
-            unbindService(serviceConnection)
+            unbindMusicService()
             playerConnection = null
+        }
+    }
+
+    /**
+     * Unbinds the music service exactly once. Safe to call from any teardown path:
+     * no-ops when the connection is not currently registered.
+     */
+    private fun unbindMusicService() {
+        if (!isServiceBound) return
+        isServiceBound = false
+        try {
+            unbindService(serviceConnection)
+        } catch (e: IllegalArgumentException) {
+            // Defensive: the connection was already gone (e.g. service died and the
+            // system dropped the dispatcher). Never crash the app during teardown.
+            Timber.tag("MainActivity").w(e, "MusicService connection was not registered")
         }
     }
 
