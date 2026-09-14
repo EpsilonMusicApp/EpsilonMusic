@@ -9,6 +9,7 @@ import android.os.Build
 import android.provider.Settings
 import android.widget.Toast
 import android.net.Uri
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -21,8 +22,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.AutoAwesome
-import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.material.icons.rounded.Clear
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.*
@@ -32,21 +31,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.ui.Alignment
-
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.core.net.toUri
 import androidx.navigation.NavController
-import com.epsilonmusic.app.BuildConfig
 import com.epsilonmusic.app.LocalPlayerAwareWindowInsets
 import com.epsilonmusic.app.ui.component.IconButton
 import com.epsilonmusic.app.ui.component.Material3SettingsGroup
@@ -61,8 +52,7 @@ import com.epsilonmusic.app.epsilonmusic.updater.getUpdateAvailableState
 fun SettingsScreen(
     navController: NavController,
     scrollBehavior: TopAppBarScrollBehavior,
-highlightKey: String? = null) {
-    val uriHandler = LocalUriHandler.current
+    highlightKey: String? = null) {
     val context = LocalContext.current
     val isAndroid12OrLater = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
     val isUpdateAvailable = getUpdateAvailableState(context) && com.epsilonmusic.app.epsilonmusic.updater.getAutoUpdateCheckSetting(context)
@@ -81,7 +71,7 @@ highlightKey: String? = null) {
     val backupText = stringResource(R.string.backup_restore)
     val systemUpdateText = stringResource(R.string.system_update)
     val aboutText = stringResource(R.string.about)
-    
+
     val accountDesc = stringResource(R.string.setting_desc_account)
     val appearanceDesc = stringResource(R.string.setting_desc_appearance)
     val playerDesc = stringResource(R.string.setting_desc_player)
@@ -99,7 +89,8 @@ highlightKey: String? = null) {
         Modifier
             .windowInsetsPadding(LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Horizontal))
             .verticalScroll(scrollState)
-            .padding(horizontal = 16.dp)
+            .padding(horizontal = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         Spacer(
             Modifier.windowInsetsPadding(
@@ -114,7 +105,7 @@ highlightKey: String? = null) {
                 fontWeight = FontWeight.SemiBold
             ),
             color = MaterialTheme.colorScheme.onBackground,
-            modifier = Modifier.padding(start = 8.dp, top = 24.dp, bottom = 16.dp)
+            modifier = Modifier.padding(start = 8.dp, top = 16.dp, bottom = 8.dp)
         )
 
         OutlinedTextField(
@@ -138,12 +129,31 @@ highlightKey: String? = null) {
                 }
             },
             shape = RoundedCornerShape(24.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 8.dp, end = 8.dp, bottom = 16.dp)
+            modifier = Modifier.fillMaxWidth()
         )
 
-        val itemsList = buildList {
+        // Group 1: Important
+        val importantItems = buildList {
+            if (systemUpdateText.lowercase().contains(searchLower) || systemUpdateDesc.lowercase().contains(searchLower)) {
+                add(
+                    Material3SettingsItem(
+                        isHighlighted = (highlightKey == systemUpdateText),
+                        icon = painterResource(if (isUpdateAvailable) R.drawable.ic_launcher_nobg else R.drawable.update),
+                        title = { Text(systemUpdateText) },
+                        description = if (isUpdateAvailable) {
+                            {
+                                Text(
+                                    text = stringResource(R.string.update_available),
+                                    color = MaterialTheme.colorScheme.error
+                                )
+                            }
+                        } else {
+                            { Text(systemUpdateDesc) }
+                        },
+                        onClick = { navController.navigate("settings/update") }
+                    )
+                )
+            }
             if (accountText.lowercase().contains(searchLower) || accountDesc.lowercase().contains(searchLower)) {
                 add(
                     Material3SettingsItem(
@@ -155,30 +165,10 @@ highlightKey: String? = null) {
                     )
                 )
             }
+        }
 
-            if (aiLyricsText.lowercase().contains(searchLower) || aiLyricsDesc.lowercase().contains(searchLower)) {
-                add(
-                    Material3SettingsItem(
-                        isHighlighted = (highlightKey == aiLyricsText),
-                        customIcon = {
-                            Text(
-                                text = "Ai",
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
-                                color = if (highlightKey == aiLyricsText)
-                                    MaterialTheme.colorScheme.primary
-                                else
-                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.9f)
-                            )
-                        },
-                        title = { Text(aiLyricsText) },
-                        description = { Text(aiLyricsDesc) },
-                        onClick = { navController.navigate("settings/ai") }
-                    )
-                )
-            }
-
-
+        // Group 2: Media & Player Experience
+        val playerExperienceItems = buildList {
             if (appearanceText.lowercase().contains(searchLower) || appearanceDesc.lowercase().contains(searchLower)) {
                 add(
                     Material3SettingsItem(
@@ -223,7 +213,31 @@ highlightKey: String? = null) {
                     )
                 )
             }
+        }
 
+        // Group 3: Features & Data
+        val featuresDataItems = buildList {
+            if (aiLyricsText.lowercase().contains(searchLower) || aiLyricsDesc.lowercase().contains(searchLower)) {
+                add(
+                    Material3SettingsItem(
+                        isHighlighted = (highlightKey == aiLyricsText),
+                        customIcon = {
+                            Text(
+                                text = "Ai",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                                color = if (highlightKey == aiLyricsText)
+                                    MaterialTheme.colorScheme.primary
+                                else
+                                    MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        },
+                        title = { Text(aiLyricsText) },
+                        description = { Text(aiLyricsDesc) },
+                        onClick = { navController.navigate("settings/ai") }
+                    )
+                )
+            }
             if (privacyText.lowercase().contains(searchLower) || privacyDesc.lowercase().contains(searchLower)) {
                 add(
                     Material3SettingsItem(
@@ -246,6 +260,10 @@ highlightKey: String? = null) {
                     )
                 )
             }
+        }
+
+        // Group 4: System & Support
+        val systemSupportItems = buildList {
             if (backupText.lowercase().contains(searchLower) || backupDesc.lowercase().contains(searchLower)) {
                 add(
                     Material3SettingsItem(
@@ -257,27 +275,7 @@ highlightKey: String? = null) {
                     )
                 )
             }
-            if (systemUpdateText.lowercase().contains(searchLower) || systemUpdateDesc.lowercase().contains(searchLower)) {
-                add(
-                    Material3SettingsItem(
-                        isHighlighted = (highlightKey == systemUpdateText),
-                        icon = painterResource(if (isUpdateAvailable) R.drawable.ic_launcher_nobg else R.drawable.update),
-                        title = { Text(systemUpdateText) },
-                        description = if (isUpdateAvailable) {
-                            {
-                                Text(
-                                    text = stringResource(R.string.update_available),
-                                    color = MaterialTheme.colorScheme.error
-                                )
-                            }
-                        } else {
-                            { Text(systemUpdateDesc) }
-                        },
-                        onClick = { navController.navigate("settings/update") }
-                    )
-                )
-            }
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            if (isAndroid12OrLater) {
                 if ("supported links".contains(searchLower)) {
                     add(
                         Material3SettingsItem(
@@ -321,55 +319,64 @@ highlightKey: String? = null) {
             }
         }
 
-        val finalItemsList = if (searchQuery.isNotEmpty()) {
-            val subSettings = getAllSearchableSettings()
+        if (searchQuery.isEmpty()) {
+            importantItems.takeIf { it.isNotEmpty() }?.let {
+                Material3SettingsGroup(scrollState = scrollState, items = it)
+            }
+            playerExperienceItems.takeIf { it.isNotEmpty() }?.let {
+                Material3SettingsGroup(scrollState = scrollState, items = it)
+            }
+            featuresDataItems.takeIf { it.isNotEmpty() }?.let {
+                Material3SettingsGroup(scrollState = scrollState, items = it)
+            }
+            systemSupportItems.takeIf { it.isNotEmpty() }?.let {
+                Material3SettingsGroup(scrollState = scrollState, items = it)
+            }
+        } else {
+            val mainMatches = importantItems + playerExperienceItems + featuresDataItems + systemSupportItems
 
+            val subSettings = getAllSearchableSettings()
             val matchedSubSettings = subSettings
-                .filter { 
-                    it.title.lowercase().contains(searchLower) || 
+                .filter {
+                    it.title.lowercase().contains(searchLower) ||
                     (it.description?.lowercase()?.contains(searchLower) == true)
                 }
                 .map { setting ->
                     Material3SettingsItem(
                         icon = painterResource(R.drawable.search),
                         title = { Text(setting.title) },
-                        description = { 
+                        description = {
                             if (setting.description != null) {
-                                Text("${setting.category} • ${setting.description}") 
+                                Text("${setting.category} • ${setting.description}")
                             } else {
                                 Text(setting.category)
                             }
                         },
-                        onClick = { 
+                        onClick = {
                             val encodedTitle = android.net.Uri.encode(setting.title)
                             val finalRoute = if (setting.route.contains("?")) "${setting.route}&highlightKey=$encodedTitle" else "${setting.route}?highlightKey=$encodedTitle"
                             navController.navigate(finalRoute)
                         }
                     )
                 }
-            
-            itemsList + matchedSubSettings
-        } else {
-            itemsList
+
+            val finalItemsList = mainMatches + matchedSubSettings
+
+            if (finalItemsList.isEmpty()) {
+                Spacer(modifier = Modifier.height(32.dp))
+                Text(
+                    text = "No settings found for \"$searchQuery\"",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
+                )
+            } else {
+                Material3SettingsGroup(scrollState = scrollState, items = finalItemsList)
+            }
         }
 
-        if (finalItemsList.isEmpty() && searchQuery.isNotEmpty()) {
-            Spacer(modifier = Modifier.height(32.dp))
-            Text(
-                text = "No settings found for \"$searchQuery\"",
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
-            )
-        } else {
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Material3SettingsGroup(scrollState = scrollState, items = finalItemsList)
-        }
-        
-        Spacer(modifier = Modifier.height(50.dp))
+        Spacer(modifier = Modifier.height(40.dp))
         Spacer(
             Modifier.windowInsetsPadding(
                 LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Bottom)
@@ -379,16 +386,6 @@ highlightKey: String? = null) {
 
     TopAppBar(
         title = {
-            androidx.compose.animation.AnimatedVisibility(
-                visible = scrollState.value > 100,
-                enter = androidx.compose.animation.fadeIn(),
-                exit = androidx.compose.animation.fadeOut()
-            ) {
-                Text(
-                    text = stringResource(R.string.settings),
-                    style = MaterialTheme.typography.titleLarge
-                )
-            }
         },
         navigationIcon = {
             IconButton(
