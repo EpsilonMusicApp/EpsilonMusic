@@ -101,6 +101,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
@@ -212,7 +213,6 @@ import com.epsilonmusic.app.ui.screens.settings.DarkMode
 import com.epsilonmusic.app.ui.screens.settings.NavigationTab
 import com.epsilonmusic.app.ui.theme.ColorSaver
 import com.epsilonmusic.app.ui.theme.DefaultThemeColor
-import com.epsilonmusic.app.ui.theme.InterFontFamily
 import com.epsilonmusic.app.ui.theme.epsilonmusicTheme
 import com.epsilonmusic.app.ui.theme.extractThemeColor
 import com.epsilonmusic.app.ui.utils.appBarScrollBehavior
@@ -972,7 +972,7 @@ class MainActivity : ComponentActivity() {
                 }
 
                 val currentTitle = when (navBackStackEntry?.destination?.route) {
-                    Screens.Home.route -> "Epsilon Music"
+                    Screens.Home.route -> stringResource(R.string.music)
                     Screens.Search.route -> stringResource(R.string.search)
                     Screens.Library.route -> stringResource(R.string.filter_library)
                     Screens.ListenTogether.route -> stringResource(R.string.together)
@@ -980,7 +980,6 @@ class MainActivity : ComponentActivity() {
                 }
 
                 val isLibraryRoute = navBackStackEntry?.destination?.route == Screens.Library.route
-                val isHomeRoute = navBackStackEntry?.destination?.route == Screens.Home.route
 
 
 
@@ -1063,23 +1062,21 @@ class MainActivity : ComponentActivity() {
                                         title = {
                                             Text(
                                                 text = currentTitle,
-                                                // Home title uses Inter (closest free equivalent
-                                                // to ChatGPT's Söhne): SemiBold, 20sp, tight tracking
-                                                // for a premium look. Other tabs keep bold 24sp.
-                                                style = if (isHomeRoute) {
-                                                    MaterialTheme.typography.titleLarge.copy(
-                                                        fontFamily = InterFontFamily,
-                                                        fontWeight = FontWeight.SemiBold,
-                                                        fontSize = 20.sp,
-                                                        letterSpacing = (-0.02).sp
-                                                    )
-                                                } else {
-                                                    MaterialTheme.typography.titleLarge.copy(
-                                                        fontWeight = FontWeight.Bold,
-                                                        fontSize = 24.sp
-                                                    )
-                                                },
+                                                style = MaterialTheme.typography.titleLarge.copy(
+                                                    fontWeight = FontWeight.Bold,
+                                                    fontSize = 24.sp
+                                                ),
                                             )
+                                        },
+                                        navigationIcon = {
+                                            Box(modifier = Modifier.padding(start = 12.dp)) {
+                                                Image(
+                                                    painter = painterResource(R.drawable.epsilon_music_icon),
+                                                    contentDescription = null,
+                                                    modifier = Modifier.size(32.dp),
+                                                    colorFilter = ColorFilter.tint(LocalContentColor.current)
+                                                )
+                                            }
                                         },
                                         actions = {
                                             if (showHistoryButton) {
