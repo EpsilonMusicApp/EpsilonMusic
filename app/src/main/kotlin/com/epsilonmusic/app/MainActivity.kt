@@ -1095,7 +1095,10 @@ class MainActivity : ComponentActivity() {
                                         navigationIcon = {
                                             Box(modifier = Modifier.padding(start = 12.dp)) {
                                                 Image(
-                                                    painter = painterResource(R.drawable.epsilon_music_icon),
+                                                    // Must be a real <vector> drawable: painterResource()
+                                                    // rejects <bitmap> XML wrappers with an
+                                                    // IllegalArgumentException at runtime.
+                                                    painter = painterResource(R.drawable.music_note),
                                                     contentDescription = null,
                                                     modifier = Modifier.size(32.dp),
                                                     colorFilter = ColorFilter.tint(LocalContentColor.current)
