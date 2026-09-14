@@ -22,7 +22,7 @@
     <string name="your_app_getting_better">برنامه شما دارد بهتر و کامل‌تر می‌شود…</string>
     <string name="update_includes_features">این به‌روزرسانی شامل ویژگی‌های جدید و آخرین تغییرات Epsilon Music %1$s است که برنامه را کارآمدتر می‌کند. اطلاعات بیشتر در %2$s.</string>
     <string name="whats_new">چه چیزهایی جدید است؟</string>
-    <string name="update_available">به‌روزرسانی</string>
+    <string name="update_available">نسخه جدید موجود است</string>
     <string name="checking_for_updates">در حال بررسی برای به‌روزرسانی…</string>
     <string name="cant_check_updates">عدم امکان بررسی\nبه‌روزرسانی‌ها</string>
     <string name="app_up_to_date">برنامه به‌روز است</string>
@@ -40,7 +40,7 @@
     <string name="install">نصب</string>
     <string name="check_for_update">بررسی برای به‌روزرسانی</string>
     <string name="no_changelog_available">هیچ لیست تغییراتی در دسترس نیست</string>
-    <string name="system_update">به‌روزرسانی سیستم</string>
+    <string name="system_update">به‌روزرسانی‌های برنامه</string>
     <string name="app_updates_title">به‌روزرسانی‌های برنامه</string>
     <string name="update_settings_title">تنظیمات به‌روزرسانی</string>
     <string name="app_updates_subtitle">به‌روزرسانی‌های برنامه</string>

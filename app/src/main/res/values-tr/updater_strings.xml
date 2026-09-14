@@ -22,7 +22,7 @@
     <string name="your_app_getting_better">Uygulamanız daha da iyiye gidiyor…</string>
     <string name="update_includes_features">Bu güncelleme, Epsilon Music %1$s\'den yeni özellikler ve en son güncellemeleri içeriyor, bu da uygulamanızı daha da kullanışlı hale getiriyor. Daha fazla bilgi için %2$s adresini ziyaret edin.</string>
     <string name="whats_new">Yeni neler var?</string>
-    <string name="update_available">Güncelleme mevcut</string>
+    <string name="update_available">Yeni sürüm mevcut</string>
     <string name="checking_for_updates">Güncellemeler kontrol ediliyor…</string>
     <string name="cant_check_updates">Güncellemeler kontrol edilemiyor</string>
     <string name="app_up_to_date">Uygulama güncel</string>
@@ -40,7 +40,7 @@
     <string name="install">Yükle</string>
     <string name="check_for_update">Güncelleme kontrol et</string>
     <string name="no_changelog_available">Değişiklikler mevcut değil</string>
-    <string name="system_update">Sistem güncellemesi</string>
+    <string name="system_update">Uygulama güncellemeleri</string>
     <string name="app_updates_title">Uygulama güncellemeleri</string>
     <string name="update_settings_title">Güncelleme ayarları</string>
     <string name="app_updates_subtitle">Uygulama güncellemeleri</string>
