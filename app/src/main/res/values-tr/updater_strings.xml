@@ -17,7 +17,7 @@
     <string name="back_content_desc">Geri</string>
     <string name="settings_title">Ayarlar</string>
     <string name="changelog">Değişiklikler</string>
-    <string name="installing_system_update">Sistem\ngüncellemesi yükleniyor…</string>
+    <string name="installing_system_update">Uygulama\ngüncellemesi yükleniyor…</string>
     <string name="making_update_ready">Güncelleme hazırlanıyor, bu biraz zaman alabilir</string>
     <string name="your_app_getting_better">Uygulamanız daha da iyiye gidiyor…</string>
     <string name="update_includes_features">Bu güncelleme, Epsilon Music %1$s\'den yeni özellikler ve en son güncellemeleri içeriyor, bu da uygulamanızı daha da kullanışlı hale getiriyor. Daha fazla bilgi için %2$s adresini ziyaret edin.</string>

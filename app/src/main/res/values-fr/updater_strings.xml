@@ -17,7 +17,7 @@
     <string name="back_content_desc">Retour</string>
     <string name="settings_title">Paramètres</string>
     <string name="changelog">Journal des modifications</string>
-    <string name="installing_system_update">Installing system\nupdate…</string>
+    <string name="installing_system_update">Installation de la mise à\njour de l\'application…</string>
     <string name="making_update_ready">Préparation de la mise à jour, cela peut prendre un certain temps.</string>
     <string name="your_app_getting_better">Votre application s\'améliore encore…</string>
     <string name="update_includes_features">Cette mise à jour comprend de nouvelles fonctionnalités et les dernières nouveautés de Epsilon Music %1$s, pour rendre votre application encore plus utile. Pour en savoir plus, rendez-vous sur %2$s.</string>
@@ -40,7 +40,7 @@
     <string name="install">Installer</string>
     <string name="check_for_update">Vérifier les mises à jour</string>
     <string name="no_changelog_available">Aucun journal des modifications disponible</string>
-    <string name="system_update">Mises à jour de l'application</string>
+    <string name="system_update">Mises à jour de l\'application</string>
     <string name="app_updates_title">Mises à jour des applications</string>
     <string name="update_settings_title">Paramètres de mise à jour</string>
     <string name="app_updates_subtitle">Mises à jour de l\'application</string>

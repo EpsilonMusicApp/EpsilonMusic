@@ -17,7 +17,7 @@
     <string name="back_content_desc">بازگشت</string>
     <string name="settings_title">تنظیمات</string>
     <string name="changelog">لیست تغییرات</string>
-    <string name="installing_system_update">در حال نصب به‌روزرسانی\nسیستم…</string>
+    <string name="installing_system_update">در حال نصب به‌روزرسانی\nبرنامه…</string>
     <string name="making_update_ready">در حال آماده‌سازی به‌روزرسانی، این فرآیند ممکن است کمی زمان ببرد</string>
     <string name="your_app_getting_better">برنامه شما دارد بهتر و کامل‌تر می‌شود…</string>
     <string name="update_includes_features">این به‌روزرسانی شامل ویژگی‌های جدید و آخرین تغییرات Epsilon Music %1$s است که برنامه را کارآمدتر می‌کند. اطلاعات بیشتر در %2$s.</string>
