@@ -1095,10 +1095,10 @@ class MainActivity : ComponentActivity() {
                                         navigationIcon = {
                                             Box(modifier = Modifier.padding(start = 12.dp)) {
                                                 Image(
-                                                    // Must be a real <vector> drawable: painterResource()
-                                                    // rejects <bitmap> XML wrappers with an
-                                                    // IllegalArgumentException at runtime.
-                                                    painter = painterResource(R.drawable.music_note),
+                                                    // Direct PNG raster (drawable-nodpi):
+                                                    // painterResource() supports rasters natively;
+                                                    // only <bitmap> XML wrappers crash at runtime.
+                                                    painter = painterResource(R.drawable.ic_epsilon_logo),
                                                     contentDescription = null,
                                                     modifier = Modifier.size(32.dp),
                                                     colorFilter = ColorFilter.tint(LocalContentColor.current)

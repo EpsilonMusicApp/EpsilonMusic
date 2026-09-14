@@ -17,12 +17,12 @@
     <string name="back_content_desc">Back</string>
     <string name="settings_title">Settings</string>
     <string name="changelog">Changelog</string>
-    <string name="installing_system_update">Installing system\nupdate…</string>
+    <string name="installing_system_update">Installing app\nupdate…</string>
     <string name="making_update_ready">Making Update ready, this may take a while</string>
     <string name="your_app_getting_better">Your App is getting even better…</string>
     <string name="update_includes_features">This update includes new features and the latest from Epsilon Music %1$s, making your app even more helpful. Learn more at %2$s.</string>
     <string name="whats_new">What\'s new?</string>
-    <string name="update_available">Update</string>
+    <string name="update_available">New version available</string>
     <string name="checking_for_updates">Checking for updates…</string>
     <string name="cant_check_updates">Can\'t check for\nupdates</string>
     <string name="app_up_to_date">App is up to date</string>
@@ -40,7 +40,7 @@
     <string name="install">Install</string>
     <string name="check_for_update">Check for update</string>
     <string name="no_changelog_available">No changelog available</string>
-    <string name="system_update">System update</string>
+    <string name="system_update">App updates</string>
     <string name="app_updates_title">App Updates</string>
     <string name="update_settings_title">Update Settings</string>
     <string name="app_updates_subtitle">App updates</string>

@@ -22,7 +22,7 @@
     <string name="your_app_getting_better">Votre application s\'améliore encore…</string>
     <string name="update_includes_features">Cette mise à jour comprend de nouvelles fonctionnalités et les dernières nouveautés de Epsilon Music %1$s, pour rendre votre application encore plus utile. Pour en savoir plus, rendez-vous sur %2$s.</string>
     <string name="whats_new">Quoi de neuf ?</string>
-    <string name="update_available">Mise à jour</string>
+    <string name="update_available">Nouvelle version disponible</string>
     <string name="checking_for_updates">Recherche de mises à jour…</string>
     <string name="cant_check_updates">Can\'t check for\nupdates</string>
     <string name="app_up_to_date">L\'application est à jour</string>
@@ -40,7 +40,7 @@
     <string name="install">Installer</string>
     <string name="check_for_update">Vérifier les mises à jour</string>
     <string name="no_changelog_available">Aucun journal des modifications disponible</string>
-    <string name="system_update">Mise à jour du système</string>
+    <string name="system_update">Mises à jour de l'application</string>
     <string name="app_updates_title">Mises à jour des applications</string>
     <string name="update_settings_title">Paramètres de mise à jour</string>
     <string name="app_updates_subtitle">Mises à jour de l\'application</string>
