@@ -23,6 +23,9 @@
     <string name="update_includes_features">This update includes new features and the latest from Epsilon Music %1$s, making your app even more helpful. Learn more at %2$s.</string>
     <string name="whats_new">What\'s new?</string>
     <string name="update_available">New version available</string>
+    <string name="update_banner_version">Version %1$s is ready to install</string>
+    <string name="update_banner_tap_to_view">Tap to see what\'s new</string>
+    <string name="update_banner_new_chip">NEW</string>
     <string name="checking_for_updates">Checking for updates…</string>
     <string name="cant_check_updates">Can\'t check for\nupdates</string>
     <string name="app_up_to_date">App is up to date</string>

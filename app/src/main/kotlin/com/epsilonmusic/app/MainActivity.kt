@@ -178,6 +178,7 @@ import com.epsilonmusic.app.epsilonmusic.updater.checkForUpdate
 import com.epsilonmusic.app.epsilonmusic.updater.getAutoUpdateCheckSetting
 import com.epsilonmusic.app.epsilonmusic.updater.isNewerVersion
 import com.epsilonmusic.app.epsilonmusic.updater.saveUpdateAvailableState
+import com.epsilonmusic.app.epsilonmusic.updater.saveLatestAvailableVersion
 import com.epsilonmusic.app.epsilonmusic.updater.getUpdateNotificationsSetting
 import com.epsilonmusic.app.epsilonmusic.UpdateNotificationHelper
 import android.util.Log
@@ -516,6 +517,7 @@ class MainActivity : ComponentActivity() {
                         val currentVersion = BuildConfig.VERSION_NAME
                         Log.d("UpdateCheck", "Startup check success. Latest: $latestVersion, Current: $currentVersion, isAvailable: $isAvailable")
                         saveUpdateAvailableState(context, isAvailable)
+                        if (isAvailable) saveLatestAvailableVersion(context, latestVersion)
                         
                         if (isAvailable) {
                             availableUpdateVersion = latestVersion
