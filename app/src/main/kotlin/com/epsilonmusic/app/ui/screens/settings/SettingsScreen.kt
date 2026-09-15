@@ -9,6 +9,11 @@ import android.os.Build
 import android.provider.Settings
 import android.widget.Toast
 import android.net.Uri
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -31,6 +36,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -132,24 +138,27 @@ fun SettingsScreen(
             modifier = Modifier.fillMaxWidth()
         )
 
+        // Animated update banner — replaces the old broken update-available row
+        // (giant launcher icon + letter-stacked text). Small, branded, pulsing.
+        AnimatedVisibility(
+            visible = isUpdateAvailable && searchQuery.isEmpty(),
+            enter = fadeIn() + expandVertically(expandFrom = Alignment.Top),
+            exit = fadeOut() + shrinkVertically(shrinkTowards = Alignment.Top)
+        ) {
+            UpdateAvailableBanner(
+                onClick = { navController.navigate("update") }
+            )
+        }
+
         // Group 1: Important
         val importantItems = buildList {
             if (systemUpdateText.lowercase().contains(searchLower) || systemUpdateDesc.lowercase().contains(searchLower)) {
                 add(
                     Material3SettingsItem(
                         isHighlighted = (highlightKey == systemUpdateText),
-                        icon = painterResource(if (isUpdateAvailable) R.drawable.ic_launcher_nobg else R.drawable.update),
+                        icon = painterResource(R.drawable.update),
                         title = { Text(systemUpdateText) },
-                        description = if (isUpdateAvailable) {
-                            {
-                                Text(
-                                    text = stringResource(R.string.update_available),
-                                    color = MaterialTheme.colorScheme.error
-                                )
-                            }
-                        } else {
-                            { Text(systemUpdateDesc) }
-                        },
+                        description = { Text(systemUpdateDesc) },
                         onClick = { navController.navigate("settings/update") }
                     )
                 )

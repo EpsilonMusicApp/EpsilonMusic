@@ -111,6 +111,12 @@ private fun SettingsListItemRow(
         leadingContent = item.customIcon
             ?: item.icon?.let { icon ->
                 {
+                    // Size must stay bounded: vector drawables report small
+                    // intrinsic sizes, but raster PNGs (e.g. the 1080px launcher
+                    // art) report pixel dimensions as dp and would otherwise
+                    // swallow the whole row width, squeezing the text column
+                    // to a single character per line.
+                    val iconSize = if (compact) 20.dp else 24.dp
                     if (item.tintIcon) {
                         if (item.showBadge) {
                             BadgedBox(
@@ -121,14 +127,16 @@ private fun SettingsListItemRow(
                                 Icon(
                                     painter = icon,
                                     contentDescription = null,
-                                    tint = iconTint
+                                    tint = iconTint,
+                                    modifier = Modifier.size(iconSize)
                                 )
                             }
                         } else {
                             Icon(
                                 painter = icon,
                                 contentDescription = null,
-                                tint = iconTint
+                                tint = iconTint,
+                                modifier = Modifier.size(iconSize)
                             )
                         }
                     } else {

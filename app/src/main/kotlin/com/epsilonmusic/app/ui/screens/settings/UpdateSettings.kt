@@ -29,8 +29,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import android.content.Intent
-import android.net.Uri
 import androidx.navigation.NavController
 import com.epsilonmusic.app.LocalPlayerAwareWindowInsets
 import com.epsilonmusic.app.R
@@ -45,8 +43,6 @@ import com.epsilonmusic.app.epsilonmusic.updater.getUpdateAvailableState
 import com.epsilonmusic.app.epsilonmusic.updater.saveUpdateAvailableState
 import com.epsilonmusic.app.epsilonmusic.updater.getUpdateNotificationsSetting
 import com.epsilonmusic.app.epsilonmusic.updater.saveUpdateNotificationsSetting
-import android.widget.Toast
-import androidx.compose.ui.res.pluralStringResource
 import com.epsilonmusic.app.epsilonmusic.updater.getDownloadedApkCount
 import com.epsilonmusic.app.epsilonmusic.updater.clearDownloadedApks
 import com.epsilonmusic.app.epsilonmusic.updater.getBetaUpdatesSetting
@@ -105,17 +101,19 @@ fun UpdateSettings(
                     title = { Text(stringResource(R.string.system_update)) },
                     description = {
                         if (isUpdateAvailable) {
+                            // A pending update is good news — brand color, not error red
                             Text(
                                 text = stringResource(R.string.update_available),
-                                color = MaterialTheme.colorScheme.error
+                                color = MaterialTheme.colorScheme.primary
                             )
                         } else {
                             Text(stringResource(R.string.app_update_uptodate))
                         }
                     },
                     onClick = {
-                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://epsilonmusic.ct.ws"))
-                        context.startActivity(intent)
+                        // Open the in-app updater (check / changelog / install)
+                        // instead of the stale epsilonmusic.ct.ws download page
+                        navController.navigate("update")
                     }
                 ),
                 Material3SettingsItem(

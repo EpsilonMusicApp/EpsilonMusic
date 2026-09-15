@@ -202,6 +202,7 @@ fun UpdateScreen(navController: NavHostController) {
                 onSuccess = { tag, isAvailable, changelog, size, date, description, imageUrl, apkUrl ->
                     saveLastCheckedTime(context, LocalDateTime.now().format(DateTimeFormatter.ofPattern("d MMMM yyyy, h:mm a")))
                     saveUpdateAvailableState(context, isAvailable)
+                    if (isAvailable) saveLatestAvailableVersion(context, tag)
                     status = if (isAvailable) {
                         EpsilonUpdateStatus.Available(
                             version = tag,
@@ -563,6 +564,7 @@ const val KEY_AUTO_UPDATE_CHECK = "auto_update_check"
 const val KEY_LAST_CHECKED_TIME = "last_checked_time"
 const val KEY_BETA_UPDATES = "beta_updates"
 const val KEY_UPDATE_AVAILABLE = "update_available"
+const val KEY_LATEST_VERSION = "latest_version"
 
 fun getUpdateAvailableState(context: Context): Boolean {
     val sharedPrefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -572,6 +574,25 @@ fun getUpdateAvailableState(context: Context): Boolean {
 fun saveUpdateAvailableState(context: Context, available: Boolean) {
     val sharedPrefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
     sharedPrefs.edit().putBoolean(KEY_UPDATE_AVAILABLE, available).apply()
+    // Never leave a stale version behind once the update is consumed/dismissed
+    if (!available) saveLatestAvailableVersion(context, null)
+}
+
+/**
+ * The tag of the newest release seen by an update check (e.g. "v1.0.5"),
+ * shown by the in-settings update banner. Only meaningful while
+ * [getUpdateAvailableState] is true.
+ */
+fun getLatestAvailableVersion(context: Context): String? {
+    val sharedPrefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+    return sharedPrefs.getString(KEY_LATEST_VERSION, null)
+}
+
+fun saveLatestAvailableVersion(context: Context, version: String?) {
+    val sharedPrefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+    sharedPrefs.edit().apply {
+        if (version == null) remove(KEY_LATEST_VERSION) else putString(KEY_LATEST_VERSION, version)
+    }.apply()
 }
 
 fun getAutoUpdateCheckSetting(context: Context): Boolean {
