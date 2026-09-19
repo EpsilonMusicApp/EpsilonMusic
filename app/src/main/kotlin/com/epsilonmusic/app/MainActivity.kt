@@ -1095,16 +1095,9 @@ class MainActivity : ComponentActivity() {
                                             )
                                         },
                                         navigationIcon = {
-                                            Box(modifier = Modifier.padding(start = 12.dp)) {
-                                                Image(
-                                                    // Direct PNG raster (drawable-nodpi):
-                                                    // painterResource() supports rasters natively;
-                                                    // only <bitmap> XML wrappers crash at runtime.
-                                                    painter = painterResource(R.drawable.ic_epsilon_logo),
-                                                    contentDescription = null,
-                                                    modifier = Modifier.size(32.dp),
-                                                    colorFilter = ColorFilter.tint(LocalContentColor.current)
-                                                )
+                                            Box(modifier = Modifier.padding(start = 8.dp)) {
+                                                // Bright gradient brand chip — see EpsilonBrandMark.
+                                                EpsilonBrandMark()
                                             }
                                         },
                                         actions = {

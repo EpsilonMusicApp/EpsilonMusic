@@ -5,7 +5,6 @@ package com.epsilonmusic.app.ui.component
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
-import android.os.Build
 import android.text.Layout
 import android.view.WindowManager
 import android.widget.Toast
@@ -14,7 +13,9 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -88,7 +89,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.LinearGradientShader
 import androidx.compose.ui.graphics.ShaderBrush
 import androidx.compose.ui.graphics.Shadow
-import androidx.compose.ui.graphics.asComposeRenderEffect
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
@@ -142,7 +142,6 @@ import com.epsilonmusic.app.constants.LyricsRomanizeMacedonianKey
 import com.epsilonmusic.app.constants.LyricsRomanizeRussianKey
 import com.epsilonmusic.app.constants.LyricsRomanizeSerbianKey
 import com.epsilonmusic.app.constants.LyricsRomanizeUkrainianKey
-import com.epsilonmusic.app.constants.LyricsStandardBlurKey
 import com.epsilonmusic.app.constants.LyricsScrollKey
 import com.epsilonmusic.app.constants.LyricsTextPositionKey
 import com.epsilonmusic.app.constants.LyricsTextSizeKey
@@ -233,7 +232,6 @@ fun Lyrics(
     val lyricsAnimationStyle by rememberEnumPreference(LyricsAnimationStyleKey, LyricsAnimationStyle.epsilonmusic_1)
     val lyricsTextSize by rememberPreference(LyricsTextSizeKey, 24f)
     val lyricsLineSpacing by rememberPreference(LyricsLineSpacingKey, 1.3f)
-    val lyricsStandardBlur by rememberPreference(LyricsStandardBlurKey, false)
     
     val openRouterApiKey by rememberPreference(OpenRouterApiKey, "")
     val deeplApiKey by rememberPreference(DeeplApiKey, "")
@@ -264,9 +262,15 @@ fun Lyrics(
         if (darkTheme == DarkMode.AUTO) isSystemInDarkTheme else darkTheme == DarkMode.ON
     }
 
+    // Track-level "Romanize current track" toggle (LyricsMenu). Defaults to true so
+    // romanization follows the global language preferences until the user overrides
+    // it for a specific song. Keyed into `lines` so toggling triggers a live re-parse.
+    val currentSongRomanize = currentSong?.romanizeLyrics ?: true
+
     val lines = remember(
         lyrics,
         scope,
+        currentSongRomanize,
         romanizeJapaneseLyrics,
         romanizeKoreanLyrics,
         romanizeChineseLyrics,
@@ -597,7 +601,6 @@ fun Lyrics(
     val lazyListState = rememberLazyListState()
     
     
-    var isAnimating by remember { mutableStateOf(false) }
     var isAutoScrollEnabled by rememberSaveable { mutableStateOf(true) }
 
     
@@ -685,29 +688,26 @@ fun Lyrics(
     }
 
     suspend fun performSmoothPageScroll(targetIndex: Int, duration: Int = 1500) {
-        if (isAnimating) return 
-        isAnimating = true
-        try {
-            val lookUpIndex = if (isLyricsProviderShown) targetIndex + 1 else targetIndex
-            val itemInfo = lazyListState.layoutInfo.visibleItemsInfo.firstOrNull { it.index == lookUpIndex }
-            if (itemInfo != null) {
-                
-                val viewportHeight = lazyListState.layoutInfo.viewportEndOffset - lazyListState.layoutInfo.viewportStartOffset
-                val center = lazyListState.layoutInfo.viewportStartOffset + (viewportHeight / 2)
-                val itemCenter = itemInfo.offset + itemInfo.size / 2
-                val offset = itemCenter - center
-                if (kotlin.math.abs(offset) > 10) {
-                    lazyListState.animateScrollBy(
-                        value = offset.toFloat(),
-                        animationSpec = tween(durationMillis = duration)
+        val lookUpIndex = if (isLyricsProviderShown) targetIndex + 1 else targetIndex
+        val itemInfo = lazyListState.layoutInfo.visibleItemsInfo.firstOrNull { it.index == lookUpIndex }
+        if (itemInfo != null) {
+            val viewportHeight = lazyListState.layoutInfo.viewportEndOffset - lazyListState.layoutInfo.viewportStartOffset
+            val center = lazyListState.layoutInfo.viewportStartOffset + (viewportHeight / 2)
+            val itemCenter = itemInfo.offset + itemInfo.size / 2
+            val offset = itemCenter - center
+            if (kotlin.math.abs(offset) > 10) {
+                // Spring spec handles interruption gracefully: a new scroll request while
+                // one is in flight retargets instead of being dropped (fixes seek/scrub jank).
+                lazyListState.animateScrollBy(
+                    value = offset.toFloat(),
+                    animationSpec = spring(
+                        dampingRatio = Spring.DampingRatioNoBouncy,
+                        stiffness = Spring.StiffnessVeryLow
                     )
-                }
-            } else {
-                
-                lazyListState.scrollToItem(targetIndex)
+                )
             }
-        } finally {
-            isAnimating = false
+        } else {
+            lazyListState.scrollToItem(targetIndex)
         }
     }
     LaunchedEffect(currentLineIndex, lastPreviewTime, initialScrollDone, isAutoScrollEnabled) {
@@ -962,7 +962,7 @@ fun Lyrics(
                             distanceFromCurrent = kotlin.math.abs(index - displayedCurrentLineIndex),
                             lyricsTextPosition = lyricsTextPosition,
                             textColor = textColor,
-                            showRomanized = currentSong?.romanizeLyrics == true && (
+                            showRomanized = currentSongRomanize && (
                                     romanizeJapaneseLyrics ||
                                             romanizeKoreanLyrics ||
                                             romanizeRussianLyrics ||
@@ -1043,7 +1043,7 @@ fun Lyrics(
                             distanceFromCurrent = kotlin.math.abs(index - displayedCurrentLineIndex),
                             lyricsTextPosition = lyricsTextPosition,
                             textColor = textColor,
-                            showRomanized = currentSong?.romanizeLyrics == true && (
+                            showRomanized = currentSongRomanize && (
                                     romanizeJapaneseLyrics ||
                                             romanizeKoreanLyrics ||
                                             romanizeRussianLyrics ||
@@ -1203,27 +1203,6 @@ fun Lyrics(
                     )
 
                     
-                    
-                    val targetBlur = if (!lyricsStandardBlur || !isAutoScrollEnabled || (isSelectionModeActive && isSelected) || isActiveByIndex || isActiveByTime) {
-                        0f
-                    } else {
-                        val distance = kotlin.math.abs(index - (if (displayedCurrentLineIndex >= 0) displayedCurrentLineIndex else currentLineIndex))
-                        when (distance) {
-                            1 -> 0f
-                            2 -> 0f
-                            3 -> 2f
-                            4 -> 4f
-                            else -> 6f
-                        }
-                    }
-
-                    val blurRadius by animateFloatAsState(
-                        targetValue = targetBlur,
-                        animationSpec = tween(durationMillis = 1000),
-                        label = "standard_blur"
-                    )
-
-                    
                     val agentAlignment = when {
                         item.isBackground -> Alignment.CenterHorizontally 
                         item.agent == "v1" -> Alignment.Start 
@@ -1256,13 +1235,6 @@ fun Lyrics(
                             this.alpha = if (item.isBackground) alpha * 0.8f else alpha
                             this.scaleX = scale * bgScale
                             this.scaleY = scale * bgScale
-                            if (blurRadius > 0f && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                                this.renderEffect = android.graphics.RenderEffect.createBlurEffect(
-                                    blurRadius * density.density,
-                                    blurRadius * density.density,
-                                    android.graphics.Shader.TileMode.CLAMP
-                                ).asComposeRenderEffect()
-                            }
                         },
                         horizontalAlignment = agentAlignment
                     ) {

@@ -16,6 +16,12 @@ data class SearchableSetting(
 fun getAllSearchableSettings(): List<SearchableSetting> {
     return listOf(
             SearchableSetting(stringResource(R.string.about), null, "About", "settings/about"),
+            SearchableSetting("GitHub (developer)", "VihaanAngaria", "About", "settings/about"),
+            SearchableSetting("LinkedIn (developer)", "Vihaan Angaria", "About", "settings/about"),
+            SearchableSetting("Telegram", "@epsilonmusicapp", "About", "settings/about"),
+            SearchableSetting("Instagram", "@epsilonmusic.app", "About", "settings/about"),
+            SearchableSetting("Buy Me a Coffee", "Support development", "About", "settings/about"),
+            SearchableSetting("Star on GitHub", "EpsilonMusicApp/EpsilonMusic", "About", "settings/about"),
             SearchableSetting(stringResource(R.string.account), null, "Account", "settings/account"),
             SearchableSetting(stringResource(R.string.action_exported), stringResource(R.string.action_exported_desc), "Appearance", "settings/appearance"),
             SearchableSetting(stringResource(R.string.action_logout), stringResource(R.string.action_logout_desc), "Account", "settings/account"),
@@ -276,7 +282,6 @@ fun getAllSearchableSettings(): List<SearchableSetting> {
             SearchableSetting(stringResource(R.string.song_cache), null, "Storage", "settings/storage"),
             SearchableSetting(stringResource(R.string.songs), null, "Appearance", "settings/appearance"),
             SearchableSetting(stringResource(R.string.squiggly), null, "Appearance", "settings/appearance"),
-            SearchableSetting(stringResource(R.string.standard_lyrics_blur), stringResource(R.string.standard_lyrics_blur_desc), "Appearance", "settings/appearance"),
             SearchableSetting(stringResource(R.string.stop_music_on_task_clear), stringResource(R.string.stop_music_on_task_clear_desc), "Player and audio", "settings/player"),
             SearchableSetting(stringResource(R.string.storage), null, "Storage", "settings/storage"),
             SearchableSetting(stringResource(R.string.swipe_sensitivity), stringResource(R.string.swipe_sensitivity_desc), "Appearance", "settings/appearance"),

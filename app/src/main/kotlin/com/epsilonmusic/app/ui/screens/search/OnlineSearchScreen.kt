@@ -76,8 +76,6 @@ import com.epsilonmusic.app.ui.menu.YouTubePlaylistMenu
 import com.epsilonmusic.app.ui.menu.YouTubeSongMenu
 import com.epsilonmusic.app.viewmodels.OnlineSearchSuggestionViewModel
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.drop
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalComposeUiApi::class, ExperimentalMaterial3Api::class, FlowPreview::class)
@@ -116,13 +114,11 @@ fun OnlineSearchScreen(
     }
 
     LaunchedEffect(query) {
-        snapshotFlow { query }.collectLatest {
-            if (YouTubeUrlParser.isYouTubeUrl(it)) {
-                viewModel.query.value = it
-            } else {
-                kotlinx.coroutines.delay(300L)
-                viewModel.query.value = it
-            }
+        if (YouTubeUrlParser.isYouTubeUrl(query)) {
+            viewModel.query.value = query
+        } else {
+            kotlinx.coroutines.delay(300L)
+            viewModel.query.value = query
         }
     }
 

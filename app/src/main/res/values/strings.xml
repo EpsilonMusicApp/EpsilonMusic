@@ -426,7 +426,6 @@
     <string name="audio_devices">Audio devices</string>
     <string name="bluetooth_headphones">Bluetooth headphones</string>
     <string name="license">GNU General Public License v3.0</string>
-    <string name="standard_lyrics_blur">Standard lyrics blur</string>
     <string name="listen_together_smart_resync">Smart Network Resync</string>
     <string name="listen_together_smart_resync_desc">Automatically catch up with the host after a connection drop</string>
     <string name="spotify_import_title">Import From Spotify</string>
@@ -762,7 +761,6 @@
     <string name="song_cache_desc">Manage song cache settings</string>
     <string name="songs_desc">Manage Songs settings</string>
     <string name="squiggly_desc">Manage Squiggly settings</string>
-    <string name="standard_lyrics_blur_desc">Adjust standard lyrics blur options</string>
     <string name="stop_music_on_task_clear_desc">Stop playback when the app is removed from recents</string>
     <string name="storage_desc">Manage Storage settings</string>
     <string name="swipe_song_to_add_desc">Swipe a song left to queue it or right to play it</string>

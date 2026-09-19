@@ -74,7 +74,6 @@ import com.epsilonmusic.app.constants.LibraryFilter
 import com.epsilonmusic.app.constants.ListenTogetherInTopBarKey
 import com.epsilonmusic.app.constants.LyricsAnimationStyle
 import com.epsilonmusic.app.constants.LyricsAnimationStyleKey
-import com.epsilonmusic.app.constants.LyricsStandardBlurKey
 import com.epsilonmusic.app.constants.LyricsTextPositionKey
 import com.epsilonmusic.app.constants.LyricsTextSizeKey
 import com.epsilonmusic.app.constants.PlayerBackgroundStyle
@@ -213,7 +212,6 @@ highlightKey: String? = null) {
     val (lyricsLineSpacing, onLyricsLineSpacingChange) = rememberPreference(LyricsLineSpacingKey, defaultValue = 1.3f)
     val (lyricsGlowEffect, onLyricsGlowEffectChange) = rememberPreference(LyricsGlowEffectKey, defaultValue = false)
     val (appleMusicLyricsBlur, onAppleMusicLyricsBlurChange) = rememberPreference(AppleMusicLyricsBlurKey, defaultValue = true)
-    val (lyricsStandardBlur, onLyricsStandardBlurChange) = rememberPreference(LyricsStandardBlurKey, defaultValue = false)
     val (swipeLyrics, onSwipeLyricsChange) = rememberPreference(SwipeLyricsKey, defaultValue = false)
     val (enableLyricsThumbnailPlayPause, onEnableLyricsThumbnailPlayPauseChange) = rememberPreference(EnableLyricsThumbnailPlayPauseKey, defaultValue = false)
     val (hideStatusBarOnFullscreen, onHideStatusBarOnFullscreenChange) = rememberPreference(HideStatusBarOnFullscreenKey, defaultValue = false)
@@ -1572,28 +1570,6 @@ highlightKey: String? = null) {
                         onClick = { onAppleMusicLyricsBlurChange(!appleMusicLyricsBlur) }
                     )
                 } else null,
-                Material3SettingsItem(
-    isHighlighted = (highlightKey == stringResource(R.string.standard_lyrics_blur)),
-                    icon = painterResource(R.drawable.lyrics),
-                    title = { Text(stringResource(R.string.standard_lyrics_blur)) },
-                    description = { Text(stringResource(R.string.apple_music_lyrics_blur_desc)) },
-                    trailingContent = {
-                        Switch(
-                            checked = lyricsStandardBlur,
-                            onCheckedChange = onLyricsStandardBlurChange,
-                            thumbContent = {
-                                Icon(
-                                    painter = painterResource(
-                                        id = if (lyricsStandardBlur) R.drawable.check else R.drawable.close
-                                    ),
-                                    contentDescription = null,
-                                    modifier = Modifier.size(SwitchDefaults.IconSize)
-                                )
-                            }
-                        )
-                    },
-                    onClick = { onLyricsStandardBlurChange(!lyricsStandardBlur) }
-                ),
                 Material3SettingsItem(
     isHighlighted = (highlightKey == stringResource(R.string.lyrics_text_size)),
                     icon = painterResource(R.drawable.lyrics),

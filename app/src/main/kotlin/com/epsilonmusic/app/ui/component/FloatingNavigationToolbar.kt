@@ -294,7 +294,7 @@ private fun FloatingToolbarOverflowMenuButton(
             expanded = menuExpanded,
             onDismissRequest = { menuExpanded = false },
             shape = RoundedCornerShape(24.dp),
-            containerColor = if (pureBlack) Color.Black.copy(alpha = 0.92f) else MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.96f),
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.96f),
             tonalElevation = 8.dp,
         ) {
             if (onShuffleClick != null && shuffleIconRes != null) {

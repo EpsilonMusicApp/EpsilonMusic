@@ -112,6 +112,7 @@ import com.epsilonmusic.app.constants.MiniPlayerBackgroundStyleKey
 import com.epsilonmusic.app.constants.MiniPlayerHeight
 import com.epsilonmusic.app.constants.PlayerBackgroundStyle
 import com.epsilonmusic.app.constants.UseFloatingNavBarKey
+import com.epsilonmusic.app.constants.PureBlackKey
 import com.epsilonmusic.app.constants.PureBlackMiniPlayerKey
 import com.epsilonmusic.app.constants.SwipeSensitivityKey
 import com.epsilonmusic.app.constants.SwipeThumbnailKey
@@ -214,7 +215,18 @@ fun MiniPlayer(
 
     if (useFloatingNavBar) {
         val glassConfig = LocalGlassEffectConfig.current
-        val pureBlack by rememberPreference(PureBlackMiniPlayerKey, defaultValue = false)
+        // "Follow Theme" (DEFAULT) must track the app-wide pure black AMOLED setting,
+        // otherwise the floating pill renders a gray surface on a pitch black app.
+        val pureBlackMini by rememberPreference(PureBlackMiniPlayerKey, defaultValue = false)
+        val miniPlayerBackgroundStyle by rememberEnumPreference(MiniPlayerBackgroundStyleKey, defaultValue = PlayerBackgroundStyle.DEFAULT)
+        val isFollowTheme = miniPlayerBackgroundStyle == PlayerBackgroundStyle.DEFAULT
+        val pureBlackGlobal by rememberPreference(PureBlackKey, defaultValue = false)
+        val systemDark = isSystemInDarkTheme()
+        val darkMode by rememberEnumPreference(DarkModeKey, defaultValue = DarkMode.AUTO)
+        val useDarkTheme = remember(darkMode, systemDark) {
+            if (darkMode == DarkMode.AUTO) systemDark else darkMode == DarkMode.ON
+        }
+        val pureBlack = if (isFollowTheme) (pureBlackGlobal && useDarkTheme) else pureBlackMini
         val useGlass = glassConfig.isEnabledFor(GlassComponent.MINI_PLAYER) && isGlassSupported()
         
         val contentColor = if (useGlass) glassConfig.textColor else if (pureBlack) Color.White else MaterialTheme.colorScheme.onSurface
@@ -271,15 +283,22 @@ private fun NewMiniPlayer(
     val playerConnection = LocalPlayerConnection.current ?: return
     
     
-    val pureBlack by rememberPreference(PureBlackMiniPlayerKey, defaultValue = false)
+    val pureBlackMini by rememberPreference(PureBlackMiniPlayerKey, defaultValue = false)
     val isSystemInDarkTheme = isSystemInDarkTheme()
     val darkTheme by rememberEnumPreference(DarkModeKey, defaultValue = DarkMode.AUTO)
     val useDarkTheme = remember(darkTheme, isSystemInDarkTheme) {
         if (darkTheme == DarkMode.AUTO) isSystemInDarkTheme else darkTheme == DarkMode.ON
     }
-    
+
     val miniPlayerBackground by rememberEnumPreference(MiniPlayerBackgroundStyleKey, defaultValue = PlayerBackgroundStyle.DEFAULT)
-    
+
+    // Follow Theme: match the app-wide pure black AMOLED setting instead of the
+    // miniplayer-only override (port of upstream Echo Music color-match fix).
+    val pureBlackGlobal by rememberPreference(PureBlackKey, defaultValue = false)
+    val pureBlack =
+        if (miniPlayerBackground == PlayerBackgroundStyle.DEFAULT) (pureBlackGlobal && useDarkTheme)
+        else pureBlackMini
+
     
     val playbackState by playerConnection.playbackState.collectAsState()
     val mediaMetadata by playerConnection.mediaMetadata.collectAsState()
@@ -640,8 +659,20 @@ private fun LegacyMiniPlayer(
     modifier: Modifier = Modifier
 ) {
     val playerConnection = LocalPlayerConnection.current ?: return
-    val pureBlack by rememberPreference(PureBlackMiniPlayerKey, defaultValue = false)
-    
+    // Follow Theme: match the app-wide pure black AMOLED setting instead of the
+    // miniplayer-only override (port of upstream Echo Music color-match fix).
+    val pureBlackMini by rememberPreference(PureBlackMiniPlayerKey, defaultValue = false)
+    val miniPlayerBackgroundStyle by rememberEnumPreference(MiniPlayerBackgroundStyleKey, defaultValue = PlayerBackgroundStyle.DEFAULT)
+    val systemDark = isSystemInDarkTheme()
+    val darkMode by rememberEnumPreference(DarkModeKey, defaultValue = DarkMode.AUTO)
+    val useDarkTheme = remember(darkMode, systemDark) {
+        if (darkMode == DarkMode.AUTO) systemDark else darkMode == DarkMode.ON
+    }
+    val pureBlackGlobal by rememberPreference(PureBlackKey, defaultValue = false)
+    val pureBlack =
+        if (miniPlayerBackgroundStyle == PlayerBackgroundStyle.DEFAULT) (pureBlackGlobal && useDarkTheme)
+        else pureBlackMini
+
     val playbackState by playerConnection.playbackState.collectAsState()
     val mediaMetadata by playerConnection.mediaMetadata.collectAsState()
     val canSkipNext by playerConnection.canSkipNext.collectAsState()
