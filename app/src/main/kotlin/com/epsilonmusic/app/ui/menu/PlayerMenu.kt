@@ -174,6 +174,44 @@ fun PlayerMenu(
 
     val isExporting = remember(exportingSongIds, mediaMetadata.id) { exportingSongIds.split(",").contains(mediaMetadata.id) }
     val isExported = remember(exportedSongIds, mediaMetadata.id) { exportedSongIds.split(",").contains(mediaMetadata.id) }
+
+    var showReExportDialog by remember { mutableStateOf(false) }
+    if (showReExportDialog) {
+        AlertDialog(
+            onDismissRequest = { showReExportDialog = false },
+            title = { Text(stringResource(R.string.re_export_title)) },
+            text = { Text(stringResource(R.string.re_export_song_message)) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showReExportDialog = false
+                        if (exportDirectoryUri.isBlank()) {
+                            android.widget.Toast.makeText(context, context.getString(R.string.export_directory_not_set), android.widget.Toast.LENGTH_SHORT).show()
+                            onDismiss()
+                        } else {
+                            onDismiss()
+                            com.epsilonmusic.app.playback.AudioExportService.start(
+                                context = context,
+                                songId = mediaMetadata.id,
+                                songTitle = mediaMetadata.title,
+                                songArtist = artists.joinToString(", ") { it.name },
+                                songAlbum = mediaMetadata.album?.title ?: "",
+                                artworkUrl = mediaMetadata.thumbnailUrl ?: "",
+                                targetDirectoryUri = exportDirectoryUri
+                            )
+                        }
+                    }
+                ) {
+                    Text(stringResource(R.string.action_export))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showReExportDialog = false }) {
+                    Text(stringResource(android.R.string.cancel))
+                }
+            }
+        )
+    }
     
     var showListenTogetherDialog by rememberSaveable {
         mutableStateOf(false)
@@ -580,7 +618,7 @@ fun PlayerMenu(
                                         contentDescription = null
                                     )
                                 },
-                                onClick = {}
+                                onClick = { showReExportDialog = true }
                             )
                             else -> Material3MenuItemData(
                                 title = { Text(text = stringResource(R.string.action_export)) },

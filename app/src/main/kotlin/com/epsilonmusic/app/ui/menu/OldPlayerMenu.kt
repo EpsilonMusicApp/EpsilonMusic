@@ -19,11 +19,13 @@ import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -131,6 +133,44 @@ fun OldPlayerMenu(
 
     val isExporting = remember(exportingSongIds, mediaMetadata.id) { exportingSongIds.split(",").contains(mediaMetadata.id) }
     val isExported = remember(exportedSongIds, mediaMetadata.id) { exportedSongIds.split(",").contains(mediaMetadata.id) }
+
+    var showReExportDialog by remember { mutableStateOf(false) }
+    if (showReExportDialog) {
+        AlertDialog(
+            onDismissRequest = { showReExportDialog = false },
+            title = { Text(stringResource(R.string.re_export_title)) },
+            text = { Text(stringResource(R.string.re_export_song_message)) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showReExportDialog = false
+                        if (exportDirectoryUri.isBlank()) {
+                            android.widget.Toast.makeText(context, context.getString(R.string.export_directory_not_set), android.widget.Toast.LENGTH_SHORT).show()
+                            onDismiss()
+                        } else {
+                            onDismiss()
+                            com.epsilonmusic.app.playback.AudioExportService.start(
+                                context = context,
+                                songId = mediaMetadata.id,
+                                songTitle = mediaMetadata.title,
+                                songArtist = artists.joinToString(", ") { it.name },
+                                songAlbum = mediaMetadata.album?.title ?: "",
+                                artworkUrl = mediaMetadata.thumbnailUrl ?: "",
+                                targetDirectoryUri = exportDirectoryUri
+                            )
+                        }
+                    }
+                ) {
+                    Text(stringResource(R.string.action_export))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showReExportDialog = false }) {
+                    Text(stringResource(android.R.string.cancel))
+                }
+            }
+        )
+    }
 
     var showChoosePlaylistDialog by rememberSaveable { mutableStateOf(false) }
     var showListenTogetherDialog by rememberSaveable { mutableStateOf(false) }
@@ -430,7 +470,7 @@ fun OldPlayerMenu(
                                             modifier = Modifier.size(24.dp)
                                         )
                                     },
-                                    onClick = {}
+                                    onClick = { showReExportDialog = true }
                                 )
                             )
                             else -> add(

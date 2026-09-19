@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -29,6 +30,7 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -130,6 +132,44 @@ fun SongMenu(
 
     val isExporting = remember(exportingSongIds, song.id) { exportingSongIds.split(",").contains(song.id) }
     val isExported = remember(exportedSongIds, song.id) { exportedSongIds.split(",").contains(song.id) }
+
+    var showReExportDialog by remember { mutableStateOf(false) }
+    if (showReExportDialog) {
+        AlertDialog(
+            onDismissRequest = { showReExportDialog = false },
+            title = { Text(stringResource(R.string.re_export_title)) },
+            text = { Text(stringResource(R.string.re_export_song_message)) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showReExportDialog = false
+                        if (exportDirectoryUri.isBlank()) {
+                            android.widget.Toast.makeText(context, context.getString(R.string.export_directory_not_set), android.widget.Toast.LENGTH_SHORT).show()
+                            onDismiss()
+                        } else {
+                            onDismiss()
+                            com.epsilonmusic.app.playback.AudioExportService.start(
+                                context = context,
+                                songId = song.id,
+                                songTitle = song.song.title,
+                                songArtist = song.artists.joinToString(", ") { it.name },
+                                songAlbum = song.song.albumName ?: "",
+                                artworkUrl = song.thumbnailUrl ?: "",
+                                targetDirectoryUri = exportDirectoryUri
+                            )
+                        }
+                    }
+                ) {
+                    Text(stringResource(R.string.action_export))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showReExportDialog = false }) {
+                    Text(stringResource(android.R.string.cancel))
+                }
+            }
+        )
+    }
 
     var refetchIconDegree by remember { mutableFloatStateOf(0f) }
 
@@ -736,7 +776,7 @@ fun SongMenu(
                                         contentDescription = null
                                     )
                                 },
-                                onClick = {}
+                                onClick = { showReExportDialog = true }
                             )
                             else -> Material3MenuItemData(
                                 title = { Text(text = stringResource(R.string.action_export)) },

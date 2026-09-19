@@ -403,6 +403,9 @@
     <string name="export_music">Export music</string>
     <string name="exporting">Exporting</string>
     <string name="action_exported">Exported</string>
+    <string name="re_export_title">Re-export</string>
+    <string name="re_export_song_message">This song was already exported. Export it again? Useful if the exported file was deleted.</string>
+    <string name="re_export_playlist_message">This playlist was already exported. Export it again? Useful if the exported files were deleted.</string>
     <string name="export_preparing">Preparing export…</string>
     <string name="export_processing_audio">Downloading audio…</string>
     <string name="export_processing_tags">Embedding metadata…</string>
