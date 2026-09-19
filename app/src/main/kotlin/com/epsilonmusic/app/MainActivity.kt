@@ -1096,7 +1096,7 @@ class MainActivity : ComponentActivity() {
                                         },
                                         navigationIcon = {
                                             Box(modifier = Modifier.padding(start = 8.dp)) {
-                                                // Bright gradient brand chip — see EpsilonBrandMark.
+                                                // Bright white note brand mark — see EpsilonBrandMark.
                                                 EpsilonBrandMark()
                                             }
                                         },

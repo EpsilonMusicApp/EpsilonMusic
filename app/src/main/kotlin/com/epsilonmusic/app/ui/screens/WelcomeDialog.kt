@@ -75,19 +75,26 @@ fun WelcomeDialog(
                     )
                     WelcomeDivider()
                     WelcomeActionRow(
+                        icon = painterResource(R.drawable.linkedin),
+                        title = "LinkedIn",
+                        subtitle = "Vihaan Angaria",
+                        onClick = { uriHandler.openUri("https://www.linkedin.com/in/vihaanangaria") }
+                    )
+                    WelcomeDivider()
+                    WelcomeActionRow(
+                        icon = painterResource(R.drawable.x_social),
+                        title = "X (Twitter)",
+                        subtitle = "@VihaanAngaria",
+                        onClick = { uriHandler.openUri("https://x.com/VihaanAngaria") }
+                    )
+                }
+
+                WelcomeSectionCard(title = "Support Epsilon Music") {
+                    WelcomeActionRow(
                         icon = painterResource(R.drawable.coffee),
                         title = "Buy Me a Coffee",
                         subtitle = "buymeacoffee.com/vihaanangag",
                         onClick = { uriHandler.openUri("https://buymeacoffee.com/vihaanangag") }
-                    )
-                }
-
-                WelcomeSectionCard(title = "Support Epsilon") {
-                    WelcomeActionRow(
-                        icon = painterResource(R.drawable.star),
-                        title = "Star on GitHub",
-                        subtitle = "github.com/EpsilonMusicApp/EpsilonMusic",
-                        onClick = { uriHandler.openUri("https://github.com/EpsilonMusicApp/EpsilonMusic") }
                     )
                 }
 
@@ -104,6 +111,10 @@ fun WelcomeDialog(
                 ) {
                     Text("Continue", fontWeight = FontWeight.Bold, fontSize = 16.sp)
                 }
+
+                StarRepoButton(
+                    onClick = { uriHandler.openUri("https://github.com/EpsilonMusicApp/EpsilonMusic") }
+                )
             }
         }
     }
@@ -278,4 +289,55 @@ private fun WelcomeDivider() {
         thickness = 0.5.dp,
         color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f),
     )
+}
+
+/**
+ * Compact secondary action below the Continue button — a gentle nudge to star
+ * the repository. Tonal chip style with press feedback to match the dialog.
+ */
+@Composable
+private fun StarRepoButton(
+    onClick: () -> Unit,
+) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 0.97f else 1f,
+        animationSpec = spring(stiffness = Spring.StiffnessHigh),
+        label = "starScale",
+    )
+    val tint = MaterialTheme.colorScheme.primary
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .graphicsLayer { scaleX = scale; scaleY = scale }
+            .clip(RoundedCornerShape(14.dp))
+            .background(tint.copy(alpha = 0.10f))
+            .clickable(
+                interactionSource = interactionSource,
+                indication = ripple(),
+                onClick = onClick,
+            )
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.star),
+                contentDescription = null,
+                modifier = Modifier.size(18.dp),
+                tint = tint,
+            )
+            Text(
+                text = "Star on GitHub",
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = tint,
+            )
+        }
+    }
 }

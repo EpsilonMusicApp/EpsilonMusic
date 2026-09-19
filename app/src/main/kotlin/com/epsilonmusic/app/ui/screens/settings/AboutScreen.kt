@@ -130,6 +130,13 @@ highlightKey: String? = null) {
                         subtitle = "Vihaan Angaria",
                         onClick = { uriHandler.openUri("https://www.linkedin.com/in/vihaanangaria") },
                     )
+                    AboutDivider()
+                    AboutActionRow(
+                        icon = painterResource(R.drawable.x_social),
+                        title = "X (Twitter)",
+                        subtitle = "@VihaanAngaria",
+                        onClick = { uriHandler.openUri("https://x.com/VihaanAngaria") },
+                    )
                 }
             }
 
