@@ -18,6 +18,7 @@ fun getAllSearchableSettings(): List<SearchableSetting> {
             SearchableSetting(stringResource(R.string.about), null, "About", "settings/about"),
             SearchableSetting("GitHub (developer)", "VihaanAngaria", "About", "settings/about"),
             SearchableSetting("LinkedIn (developer)", "Vihaan Angaria", "About", "settings/about"),
+            SearchableSetting("X (developer)", "@VihaanAngaria", "About", "settings/about"),
             SearchableSetting("Telegram", "@epsilonmusicapp", "About", "settings/about"),
             SearchableSetting("Instagram", "@epsilonmusic.app", "About", "settings/about"),
             SearchableSetting("Buy Me a Coffee", "Support development", "About", "settings/about"),
