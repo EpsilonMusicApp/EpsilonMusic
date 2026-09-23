@@ -183,6 +183,13 @@ abstract class InternalDatabase : RoomDatabase() {
                             MIGRATION_44_45,
                         )
                         .setJournalMode(RoomDatabase.JournalMode.WRITE_AHEAD_LOGGING)
+                        // A device whose database is stamped with a NEWER schema version than
+                        // this build (e.g. rolling back to an older build during testing, or a
+                        // leftover database from a newer install) would otherwise crash with
+                        // "Room cannot downgrade" and brick the app until data is cleared.
+                        // Upgrade paths are NOT affected — the 1..45 migration chain above
+                        // stays the single source of truth for forward upgrades.
+                        .fallbackToDestructiveMigrationOnDowngrade()
                         .setTransactionExecutor(java.util.concurrent.Executors.newFixedThreadPool(4))
                         .setQueryExecutor(java.util.concurrent.Executors.newFixedThreadPool(4))
                         .addCallback(object : RoomDatabase.Callback() {
