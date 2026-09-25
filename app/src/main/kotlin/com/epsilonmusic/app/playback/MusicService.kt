@@ -2524,6 +2524,24 @@ class MusicService :
                 error.errorCode == PlaybackException.ERROR_CODE_IO_UNSPECIFIED
     }
 
+    /**
+     * Cache file vanished mid-playback (ENOENT): a cached range we already
+     * committed to reading no longer exists on disk. The fix is not a cache
+     * clear but a plain seek+prepare so the resolver picks a fresh source.
+     */
+    private fun isFileNotFoundError(error: PlaybackException): Boolean {
+        return error.errorCode == PlaybackException.ERROR_CODE_IO_FILE_NOT_FOUND ||
+                (error.cause as? PlaybackException)?.errorCode == PlaybackException.ERROR_CODE_IO_FILE_NOT_FOUND
+    }
+
+    /**
+     * Remote (cast/transfer) session went away mid-stream: the cached URL is
+     * stale, refresh it exactly like an expired URL.
+     */
+    private fun isRemotePlaybackError(error: PlaybackException): Boolean {
+        return error.errorCode == PlaybackException.ERROR_CODE_REMOTE_ERROR
+    }
+
     override fun onPlayerError(error: PlaybackException) {
         super.onPlayerError(error)
 
@@ -2599,6 +2617,18 @@ class MusicService :
             }
             isExpiredUrlError(error) -> {
                 Timber.tag(TAG).d("Expired URL (403) detected, refreshing stream URL")
+                handleExpiredUrlError(mediaId)
+                return
+            }
+
+            isFileNotFoundError(error) -> {
+                Timber.tag(TAG).d("Cache file missing (ENOENT) detected, re-preparing stream")
+                handleFileNotFoundError(mediaId)
+                return
+            }
+
+            isRemotePlaybackError(error) -> {
+                Timber.tag(TAG).d("Remote playback error detected, refreshing stream URL")
                 handleExpiredUrlError(mediaId)
                 return
             }
@@ -2760,8 +2790,14 @@ class MusicService :
             
             performAggressiveCacheClear(mediaId)
 
+            delay(RETRY_DELAY_MS)
 
             
+            if (player.currentMediaItem?.mediaId != mediaId) {
+                Timber.tag(TAG).d("Skipping stale 416 retry for $mediaId")
+                return@launch
+            }
+
             val currentIndex = player.currentMediaItemIndex
             player.seekTo(currentIndex, 0)
             player.prepare()
@@ -2786,10 +2822,19 @@ class MusicService :
             
             performAggressiveCacheClear(mediaId)
 
+            val retryPosition = player.currentPosition
+            val retryIndex = player.currentMediaItemIndex
+            delay(RETRY_DELAY_MS)
+
             
-            val currentPosition = player.currentPosition
-            val currentIndex = player.currentMediaItemIndex
-            player.seekTo(currentIndex, currentPosition)
+            if (player.currentMediaItem?.mediaId != mediaId ||
+                player.currentMediaItemIndex != retryIndex
+            ) {
+                Timber.tag(TAG).d("Skipping stale page-reload retry for $mediaId")
+                return@launch
+            }
+
+            player.seekTo(retryIndex, retryPosition)
             player.prepare()
 
             Timber.tag(TAG).d("Retrying playback for $mediaId after page reload error")
@@ -2818,14 +2863,66 @@ class MusicService :
 
         retryJob?.cancel()
         retryJob = scope.launch {
+            // Give the network a beat before retrying: an instant prepare() on a
+            // flaky connection fails straight back and burns the retry budget,
+            // which is how playback ends up dead after a couple of seconds.
+            val retryPosition = player.currentPosition
+            val retryIndex = player.currentMediaItemIndex
+            val retryPlayWhenReady = player.playWhenReady
+            delay(RETRY_DELAY_MS)
 
-            
-            val currentPosition = player.currentPosition
-            val currentIndex = player.currentMediaItemIndex
-            player.seekTo(currentIndex, currentPosition)
+            // Stale-retry guard: if the user already skipped/seeked/paused while we
+            // were waiting, do NOT yank the player back to the old position.
+            if (player.currentMediaItem?.mediaId != mediaId ||
+                player.currentMediaItemIndex != retryIndex ||
+                player.currentPosition != retryPosition ||
+                player.playWhenReady != retryPlayWhenReady
+            ) {
+                Timber.tag(TAG).d("Skipping stale 403 retry for $mediaId")
+                return@launch
+            }
+
+            player.seekTo(retryIndex, retryPosition)
             player.prepare()
 
             Timber.tag(TAG).d("Retrying playback for $mediaId after 403 error")
+        }
+    }
+
+    /**
+     * Cache file vanished mid-playback (ENOENT). Keep the current item and
+     * position; a plain re-prepare makes the resolver fetch a fresh source.
+     */
+    private fun handleFileNotFoundError(mediaId: String?) {
+        if (mediaId == null) {
+            handleFinalFailure()
+            return
+        }
+
+        incrementRetryCount(mediaId)
+
+        retryJob?.cancel()
+        retryJob = scope.launch {
+            val retryPosition = player.currentPosition
+            val retryIndex = player.currentMediaItemIndex
+            if (retryIndex == C.INDEX_UNSET) {
+                Timber.tag(TAG).w("Invalid media item index during file-not-found recovery")
+                handleFinalFailure()
+                return@launch
+            }
+            delay(RETRY_DELAY_MS)
+
+            if (player.currentMediaItem?.mediaId != mediaId ||
+                player.currentMediaItemIndex != retryIndex
+            ) {
+                Timber.tag(TAG).d("Skipping stale ENOENT retry for $mediaId")
+                return@launch
+            }
+
+            player.seekTo(retryIndex, retryPosition)
+            player.prepare()
+
+            Timber.tag(TAG).d("Retrying playback for $mediaId after IO_FILE_NOT_FOUND")
         }
     }
 
@@ -2842,10 +2939,21 @@ class MusicService :
         retryJob = scope.launch {
             performAggressiveCacheClear(mediaId)
 
+            val retryPosition = player.currentPosition
+            val retryIndex = player.currentMediaItemIndex
+            val retryPlayWhenReady = player.playWhenReady
+            delay(RETRY_DELAY_MS)
 
-            val currentPosition = player.currentPosition
-            val currentIndex = player.currentMediaItemIndex
-            player.seekTo(currentIndex, currentPosition)
+            if (player.currentMediaItem?.mediaId != mediaId ||
+                player.currentMediaItemIndex != retryIndex ||
+                player.currentPosition != retryPosition ||
+                player.playWhenReady != retryPlayWhenReady
+            ) {
+                Timber.tag(TAG).d("Skipping stale generic-IO retry for $mediaId")
+                return@launch
+            }
+
+            player.seekTo(retryIndex, retryPosition)
             player.prepare()
 
             Timber.tag(TAG).d("Retrying playback for $mediaId after generic IO error")

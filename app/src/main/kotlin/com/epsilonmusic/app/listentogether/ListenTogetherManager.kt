@@ -158,6 +158,10 @@ class ListenTogetherManager @Inject constructor(
                 if (isSyncing || !canControlMusic || !isInRoom) return
                 
                 val connection = playerConnection ?: return
+                // Suppress re-broadcasting play-state changes that the sync engine
+                // itself just applied — otherwise every applied remote action echoes
+                // back to the room and fights the controller (pause/play loops).
+                if (connection.allowInternalSync) return
                 val player = connection.player
 
                 Timber.tag(TAG).d("Play state changed: $playWhenReady (reason: $reason)")
@@ -221,6 +225,15 @@ class ListenTogetherManager @Inject constructor(
                 if (mediaItem == null) return
                 
                 val connection = playerConnection ?: return
+                // Suppress transitions that the sync engine itself just applied
+                // (echo of a remote track change) — without this, applying a room
+                // track change immediately re-broadcasts it back to the room.
+                if (connection.allowInternalSync) return
+                // Non-hosts must never broadcast NATURAL song transitions: a guest's
+                // local auto-advance would hijack the room's playback ("song changed
+                // by itself"). User-initiated skips still propagate through the skip
+                // hooks and user-initiated transition reasons (SEEK/PLAYLIST_CHANGED).
+                if (!isHost && reason == Player.MEDIA_ITEM_TRANSITION_REASON_AUTO) return
                 val player = connection.player
                 
                 val trackId = mediaItem.mediaId
@@ -260,6 +273,7 @@ class ListenTogetherManager @Inject constructor(
             try {
                 if (isSyncing || !canControlMusic || !isInRoom) return
                 
+                playerConnection?.let { if (it.allowInternalSync) return }
                 
                 if (reason == Player.DISCONTINUITY_REASON_SEEK) {
                     Timber.tag(TAG).d("Host sending SEEK to ${newPosition.positionMs}")
@@ -978,6 +992,14 @@ class ListenTogetherManager @Inject constructor(
                     action.trackInfo?.let { track ->
                         Timber.tag(TAG).d("Guest: CHANGE_TRACK to ${track.title}, queue size=${action.queue?.size}")
                         
+                        // Echo guard: if this track is already the one playing and the
+                        // message carries no queue update, it's our own change relayed
+                        // back — applying it would reset the position to 0 and restart
+                        // the song for no reason.
+                        if (track.id == player.currentMediaItem?.mediaId && action.queue.isNullOrEmpty()) {
+                            Timber.tag(TAG).d("CHANGE_TRACK is an echo of the current track, skipping")
+                            return
+                        }
                         
                         lastSyncActionTime = 0L
                         
@@ -1090,6 +1112,19 @@ class ListenTogetherManager @Inject constructor(
                             if (playerConnection !== connection) return@launch
                             val player = connection.player
                             
+                            // Echo guard: if the incoming queue is already exactly what
+                            // the player has (same songs, same order), re-applying it
+                            // would tear down and re-buffer every media item — causing
+                            // playback stalls and an endless SYNC_QUEUE ping-pong once
+                            // two clients echo each other. Skip instead.
+                            val currentIds = ArrayList<String>(player.mediaItemCount)
+                            for (i in 0 until player.mediaItemCount) {
+                                currentIds.add(player.getMediaItemAt(i).mediaId)
+                            }
+                            if (currentIds == queue.map { it.id }) {
+                                Timber.tag(TAG).d("SYNC_QUEUE matches local queue, skipping re-apply")
+                                return@launch
+                            }
                             
                             val mediaItems = queue.map { track ->
                                 track.toMediaMetadata().toMediaItem()
@@ -1544,7 +1579,13 @@ class ListenTogetherManager @Inject constructor(
                 }
                 ?.distinctUntilChanged()
                 ?.collectLatest { tracks ->
-                    if (!canControlMusic || !isInRoom || isSyncing) return@collectLatest
+                    // Only the HOST broadcasts the full queue. When guests also sent
+                    // SYNC_QUEUE, any local queue change on their side (autoplay
+                    // additions, auto-advance, echoes of applied syncs) overwrote the
+                    // room's queue and caused songs to change without anyone
+                    // touching anything. Guests add songs through suggestions,
+                    // which the host applies and re-broadcasts.
+                    if (!isHost || !isInRoom || isSyncing) return@collectLatest
                 
                     delay(500) 
                 
