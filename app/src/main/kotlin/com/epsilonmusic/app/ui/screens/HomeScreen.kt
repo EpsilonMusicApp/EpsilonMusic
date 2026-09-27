@@ -67,6 +67,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.LaunchedEffect
+import kotlinx.coroutines.delay
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -851,6 +852,9 @@ fun HomeScreen(
                 
                 val base = when (section) {
                     HomeSection.QuickPicks -> 10000
+                    // YouTube's own suggestions and moods sit right below Quick
+                    // Picks instead of being pushed to the bottom of the page.
+                    is HomeSection.HomePageSection -> 9000 - (section.index * 10)
                     HomeSection.SpeedDial,
                     HomeSection.DailyDiscover -> 500 
 
@@ -897,7 +901,7 @@ fun HomeScreen(
             list.sortedByDescending { section ->
                 when(section) {
                     is HomeSection.SimilarRecommendation -> 30 - section.index
-                    is HomeSection.HomePageSection -> 20 - section.index
+                    is HomeSection.HomePageSection -> 900 - section.index
                     else -> defaultOrder[section] ?: 0
                 }
             }
@@ -1200,8 +1204,21 @@ fun HomeScreen(
 
                                 item(key = "quick_picks_list") {
                                     val distinctQuickPicks = quickPicks.distinctBy { it.id }
+                                    val carouselState = rememberCarouselState { distinctQuickPicks.size }
+                                    // Auto-advance the recommendations every 5s;
+                                    // yields to the user's own drag and resumes
+                                    // from wherever they left the carousel.
+                                    LaunchedEffect(carouselState) {
+                                        while (true) {
+                                            delay(5000)
+                                            if (distinctQuickPicks.size > 1 && !carouselState.isScrollInProgress) {
+                                                val next = (carouselState.currentItem + 1) % distinctQuickPicks.size
+                                                carouselState.animateScrollToItem(next)
+                                            }
+                                        }
+                                    }
                                     HorizontalCenteredHeroCarousel(
-                                        state = rememberCarouselState { distinctQuickPicks.size },
+                                        state = carouselState,
                                         maxItemWidth = 250.dp,
                                         itemSpacing = 8.dp,
                                         contentPadding = PaddingValues(horizontal = 16.dp),

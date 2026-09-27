@@ -5,7 +5,6 @@ package com.epsilonmusic.app.di
 import android.content.Context
 import androidx.media3.database.DatabaseProvider
 import androidx.media3.database.StandaloneDatabaseProvider
-import androidx.media3.datasource.cache.LeastRecentlyUsedCacheEvictor
 import androidx.media3.datasource.cache.NoOpCacheEvictor
 import androidx.media3.datasource.cache.SimpleCache
 import androidx.room.Room
@@ -14,6 +13,7 @@ import com.epsilonmusic.app.db.InternalDatabase
 import com.epsilonmusic.app.db.MusicDatabase
 import com.epsilonmusic.app.listentogether.ListenTogetherClient
 import com.epsilonmusic.app.listentogether.ListenTogetherManager
+import com.epsilonmusic.app.playback.DynamicLruCacheEvictor
 import com.epsilonmusic.app.utils.dataStore
 import com.epsilonmusic.app.utils.get
 import dagger.Module
@@ -110,7 +110,9 @@ object AppModule {
             context.filesDir.resolve("exoplayer"),
             when (cacheSize) {
                 -1 -> NoOpCacheEvictor()
-                else -> LeastRecentlyUsedCacheEvictor(cacheSize * 1024 * 1024L)
+                // Protects the opening of every cached track from eviction so
+                // replays start instantly instead of re-resolving + re-fetching.
+                else -> DynamicLruCacheEvictor(cacheSize * 1024 * 1024L)
             },
             databaseProvider,
         )

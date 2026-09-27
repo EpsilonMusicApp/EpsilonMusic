@@ -58,7 +58,6 @@ fun getAllSearchableSettings(): List<SearchableSetting> {
             SearchableSetting(stringResource(R.string.app_updates_title), null, "System Update", "settings/update"),
             SearchableSetting(stringResource(R.string.appearance), null, "Appearance", "settings/appearance"),
             SearchableSetting(stringResource(R.string.apple_music), null, "Appearance", "settings/appearance"),
-            SearchableSetting(stringResource(R.string.apple_music_lyrics_blur), stringResource(R.string.apple_music_lyrics_blur_desc), "Appearance", "settings/appearance"),
             SearchableSetting(stringResource(R.string.apple_music_style), null, "Appearance", "settings/appearance"),
             SearchableSetting(stringResource(R.string.apple_music_style_letter), null, "Appearance", "settings/appearance"),
             SearchableSetting(stringResource(R.string.artist_page_settings), null, "Content", "settings/content"),

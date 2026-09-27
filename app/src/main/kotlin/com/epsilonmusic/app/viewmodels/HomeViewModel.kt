@@ -628,7 +628,11 @@ class HomeViewModel @Inject constructor(
             val hideExplicit = context.dataStore.get(HideExplicitKey, false)
             val hideVideoSongs = context.dataStore.get(HideVideoSongsKey, false)
             val hideYoutubeShorts = context.dataStore.get(HideYoutubeShortsKey, false)
-            val nextSections = YouTube.home(params = chip.endpoint?.params).getOrNull() ?: return@launch
+            // Mood chips (Workout, Feel Good, ...) carry their own browseId;
+            // falling back to params alone always resolved the default home
+            // page, so every chip showed the same content.
+            val browseId = chip.endpoint?.browseId ?: "FEmusic_home"
+            val nextSections = YouTube.home(browseId = browseId, params = chip.endpoint?.params).getOrNull() ?: return@launch
 
             homePage.value = nextSections.copy(
                 chips = homePage.value?.chips,

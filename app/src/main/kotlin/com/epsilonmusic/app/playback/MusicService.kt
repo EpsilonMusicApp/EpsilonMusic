@@ -43,6 +43,7 @@ import androidx.media3.common.Timeline
 import androidx.media3.common.audio.SonicAudioProcessor
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DataSource
+import androidx.media3.datasource.DataSpec
 import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.datasource.HttpDataSource
 import androidx.media3.datasource.ResolvingDataSource
@@ -3007,7 +3008,11 @@ class MusicService :
                     .Factory()
                     .setCache(playerCache)
                     .setUpstreamDataSourceFactory(
-                        OkHttpDataSource.Factory(
+                        // Ranged requests keep googlevideo from pacing the stream
+                        // down to playback speed: bounded ranges are served at line
+                        // rate, which is what lets the buffer actually build.
+                        com.epsilonmusic.app.playback.ChunkedDataSource.Factory(
+                            OkHttpDataSource.Factory(
                             OkHttpClient
                                     .Builder()
                                     .dns(object : Dns {
@@ -3029,7 +3034,9 @@ class MusicService :
                                         } ?: response.request
                                     }
                                     .build()
-                            )
+                            ),
+                            1024L * 1024
+                        )
                     )
             ).setCacheWriteDataSinkFactory(null)
             .setFlags(FLAG_IGNORE_CACHE_ON_ERROR)
@@ -3204,7 +3211,7 @@ class MusicService :
                 ) {
                     songUrlCache["${mediaId}_${lockedQuality.name}"]?.takeIf { it.second > System.currentTimeMillis() }?.let {
                         scope.launch(Dispatchers.IO) { recoverSong(mediaId, isOfflinePlayback = true) }
-                        return@Factory dataSpec.withUri(it.first.toUri())
+                        return@Factory dressStreamSpec(dataSpec, it.first)
                     }
                     // Fall through to fetch real URL since it's only partially downloaded
                 }
@@ -3212,7 +3219,7 @@ class MusicService :
                 if (playerCache.isCached(mediaId, dataSpec.position, CHUNK_LENGTH)) {
                     songUrlCache["${mediaId}_${lockedQuality.name}"]?.takeIf { it.second > System.currentTimeMillis() }?.let {
                         scope.launch(Dispatchers.IO) { recoverSong(mediaId, isOfflinePlayback = true) }
-                        return@Factory dataSpec.withUri(it.first.toUri())
+                        return@Factory dressStreamSpec(dataSpec, it.first)
                     }
                     Timber.tag(TAG).w("Ghost cache entry for $mediaId, re-fetching")
                     playerCache.removeResource(mediaId)
@@ -3220,7 +3227,7 @@ class MusicService :
 
                 songUrlCache["${mediaId}_${lockedQuality.name}"]?.takeIf { it.second > System.currentTimeMillis() }?.let {
                         scope.launch(Dispatchers.IO) { recoverSong(mediaId, isOfflinePlayback = true) }
-                        return@Factory dataSpec.withUri(it.first.toUri())
+                        return@Factory dressStreamSpec(dataSpec, it.first)
                 }
             } else {
                 Timber.tag("MusicService").i("BYPASSING CACHE for $mediaId due to quality change")
@@ -3316,11 +3323,32 @@ class MusicService :
 
                 songUrlCache["${mediaId}_${lockedQuality.name}"] =
                     streamUrl to System.currentTimeMillis() + (nonNullPlayback.streamExpiresInSeconds * 1000L)
-                
-                return@Factory dataSpec.buildUpon().setKey(targetCacheKey).setUri(streamUrl.toUri()).build()
+
+                return@Factory dressStreamSpec(
+                    dataSpec.buildUpon().setKey(targetCacheKey).build(),
+                    streamUrl
+                )
             }
         }
     }
+
+    /**
+     * Points [dataSpec] at [url] and dresses the request as the client that
+     * minted the URL (User-Agent / Origin / Referer).
+     *
+     * googlevideo compares the headers of the request fetching the bytes with
+     * the client baked into the URL (`c=`/`cver=`); a mismatch is reason enough
+     * to throttle the response to a crawl or refuse it with 403. Every stream
+     * fetch in this service goes through here so none of them can be mistaken
+     * for a client it is not.
+     */
+    private fun dressStreamSpec(dataSpec: DataSpec, url: String): DataSpec =
+        dataSpec.buildUpon()
+            .setUri(url.toUri())
+            .setHttpRequestHeaders(
+                com.epsilonmusic.app.utils.PlayerClient.forStreamUrl(url).mediaHeaders()
+            )
+            .build()
 
     private fun createMediaSourceFactory() =
         DefaultMediaSourceFactory(
@@ -4413,6 +4441,10 @@ class MusicService :
 
         preloadJob?.cancel()
         preloadJob = scope.launch(kotlinx.coroutines.Dispatchers.IO) {
+            // Grace period before prefetching: lets the current track's reads
+            // finish building their buffer first, so a prefetch never competes
+            // with the audio the listener is hearing right now.
+            kotlinx.coroutines.delay(8000L)
             for (mediaId in upcomingMediaIds) {
 
                 val isFullyDownloaded = downloadCache.getCachedSpans(mediaId).isNotEmpty()
@@ -4431,6 +4463,35 @@ class MusicService :
                         playbackData.getOrNull()?.streamUrl?.let { streamUrl ->
                             songUrlCache["${mediaId}_${audioQuality.name}"] = Pair(streamUrl, System.currentTimeMillis() + 1000 * 60 * 60)
                             Timber.tag(TAG).d("Preloaded stream for $mediaId")
+
+                            // AOT prefetch: write the whole track into the player
+                            // cache under the same key playback reads, so the
+                            // transition to this track starts from disk instead of
+                            // the network. Full-track (no byte cap) is affordable
+                            // because the chunked upstream serves at line rate.
+                            kotlin.runCatching {
+                                Timber.tag(TAG).d("AOT prefetching bytes for $mediaId")
+                                val prefetchSpec = DataSpec.Builder()
+                                    .setUri(android.net.Uri.parse(streamUrl))
+                                    .setKey(mediaId)
+                                    .setHttpRequestHeaders(
+                                        com.epsilonmusic.app.utils.PlayerClient.forStreamUrl(streamUrl).mediaHeaders()
+                                    )
+                                    .build()
+                                val cacheDataSource = createCacheDataSource().createDataSource()
+                                val cacheWriter = androidx.media3.datasource.cache.CacheWriter(
+                                    cacheDataSource,
+                                    prefetchSpec,
+                                    null,
+                                    null
+                                )
+                                cacheWriter.cache()
+                                Timber.tag(TAG).d("AOT prefetching bytes for $mediaId completed")
+                            }.onFailure { e ->
+                                if (e !is kotlinx.coroutines.CancellationException) {
+                                    Timber.tag(TAG).e(e, "AOT prefetching bytes failed for $mediaId")
+                                }
+                            }
                         }
                     }
                 }
