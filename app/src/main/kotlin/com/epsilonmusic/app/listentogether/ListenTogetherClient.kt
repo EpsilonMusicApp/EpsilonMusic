@@ -350,8 +350,9 @@ class ListenTogetherClient @Inject constructor(
         try {
             scope.launch {
                 context.dataStore.edit { preferences ->
-                    if (sessionToken != null) {
-                        preferences[ListenTogetherSessionTokenKey] = sessionToken!!
+                    val savedToken = sessionToken
+                    if (savedToken != null) {
+                        preferences[ListenTogetherSessionTokenKey] = savedToken
                         preferences[ListenTogetherRoomCodeKey] = storedRoomCode ?: ""
                         preferences[ListenTogetherUserIdKey] = _userId.value ?: ""
                         preferences[ListenTogetherIsHostKey] = wasHost
@@ -601,9 +602,14 @@ class ListenTogetherClient @Inject constructor(
                 
                 if (sessionToken != null && storedRoomCode != null) {
                     log(LogLevel.INFO, "Attempting to reconnect to previous session", "Room: $storedRoomCode")
-                    lastHandshakeAction = PendingAction.Reconnect(sessionToken!!)
-                    handshakeRetried = false
-                    sendMessage(MessageTypes.RECONNECT, ReconnectPayload(sessionToken!!))
+                    val reconnectToken = sessionToken
+                    if (reconnectToken != null) {
+                        lastHandshakeAction = PendingAction.Reconnect(reconnectToken)
+                        handshakeRetried = false
+                        sendMessage(MessageTypes.RECONNECT, ReconnectPayload(reconnectToken))
+                    } else {
+                        executePendingAction()
+                    }
                 } else {
                     
                     executePendingAction()
@@ -1035,9 +1041,12 @@ class ListenTogetherClient @Inject constructor(
                 
                 MessageTypes.USER_JOINED -> {
                     val payload = codec.decodePayload(msgType, payloadBytes, detectedFormat) as? UserJoinedPayload ?: return
-                    _roomState.value = _roomState.value?.copy(
-                        users = _roomState.value!!.users + UserInfo(payload.userId, payload.username, false)
-                    )
+                    val room = _roomState.value
+                    if (room != null) {
+                        _roomState.value = room.copy(
+                            users = room.users + UserInfo(payload.userId, payload.username, false)
+                        )
+                    }
                     _pendingJoinRequests.value = _pendingJoinRequests.value.filter { it.userId != payload.userId }
                     
                     
@@ -1051,21 +1060,27 @@ class ListenTogetherClient @Inject constructor(
                 
                 MessageTypes.USER_LEFT -> {
                     val payload = codec.decodePayload(msgType, payloadBytes, detectedFormat) as? UserLeftPayload ?: return
-                    _roomState.value = _roomState.value?.copy(
-                        users = _roomState.value!!.users.filter { it.userId != payload.userId }
-                    )
+                    val room = _roomState.value
+                    if (room != null) {
+                        _roomState.value = room.copy(
+                            users = room.users.filter { it.userId != payload.userId }
+                        )
+                    }
                     log(LogLevel.INFO, "User left", payload.username)
                     scope.launch { _events.emit(ListenTogetherEvent.UserLeft(payload.userId, payload.username)) }
                 }
                 
                 MessageTypes.HOST_CHANGED -> {
                     val payload = codec.decodePayload(msgType, payloadBytes, detectedFormat) as? HostChangedPayload ?: return
-                    _roomState.value = _roomState.value?.copy(
-                        hostId = payload.newHostId,
-                        users = _roomState.value!!.users.map { 
-                            it.copy(isHost = it.userId == payload.newHostId)
-                        }
-                    )
+                    val room = _roomState.value
+                    if (room != null) {
+                        _roomState.value = room.copy(
+                            hostId = payload.newHostId,
+                            users = room.users.map { 
+                                it.copy(isHost = it.userId == payload.newHostId)
+                            }
+                        )
+                    }
                     if (payload.newHostId == _userId.value) {
                         _role.value = RoomRole.HOST
                     } else if (_role.value == RoomRole.HOST) {
@@ -1093,21 +1108,30 @@ class ListenTogetherClient @Inject constructor(
                     
                     when (payload.action) {
                         PlaybackActions.PLAY -> {
-                            _roomState.value = _roomState.value?.copy(
-                                isPlaying = true,
-                                position = payload.position ?: _roomState.value!!.position
-                            )
+                            val room = _roomState.value
+                            if (room != null) {
+                                _roomState.value = room.copy(
+                                    isPlaying = true,
+                                    position = payload.position ?: room.position
+                                )
+                            }
                         }
                         PlaybackActions.PAUSE -> {
-                            _roomState.value = _roomState.value?.copy(
-                                isPlaying = false,
-                                position = payload.position ?: _roomState.value!!.position
-                            )
+                            val room = _roomState.value
+                            if (room != null) {
+                                _roomState.value = room.copy(
+                                    isPlaying = false,
+                                    position = payload.position ?: room.position
+                                )
+                            }
                         }
                         PlaybackActions.SEEK -> {
-                            _roomState.value = _roomState.value?.copy(
-                                position = payload.position ?: _roomState.value!!.position
-                            )
+                            val room = _roomState.value
+                            if (room != null) {
+                                _roomState.value = room.copy(
+                                    position = payload.position ?: room.position
+                                )
+                            }
                         }
                         PlaybackActions.CHANGE_TRACK -> {
                             _roomState.value = _roomState.value?.copy(
@@ -1238,15 +1262,20 @@ class ListenTogetherClient @Inject constructor(
                         }
                         "session_not_found" -> {
                             
-                            if (storedRoomCode != null && storedUsername != null && !wasHost) {
+                            // Snapshot before the delayed launch: these fields can be
+                            // cleared while the 500ms delay is in flight, and the force
+                            // unwrap would then crash a scope with no exception handler.
+                            val savedRoom = storedRoomCode
+                            val savedUser = storedUsername
+                            if (savedRoom != null && savedUser != null && !wasHost) {
                                 log(LogLevel.WARNING, "Session expired on server", 
                                     "Attempting automatic rejoin to room: $storedRoomCode")
                                 
                                 scope.launch {
                                     delay(500) 
-                                    joinRoom(storedRoomCode!!, storedUsername!!)
+                                    joinRoom(savedRoom, savedUser)
                                 }
-                            } else if (storedRoomCode != null && storedUsername != null) {
+                            } else if (savedRoom != null && savedUser != null) {
                                 
                                 log(LogLevel.WARNING, "Host session expired", 
                                     "Room: $storedRoomCode - manual intervention may be needed")
@@ -1299,11 +1328,14 @@ class ListenTogetherClient @Inject constructor(
                 MessageTypes.USER_RECONNECTED -> {
                     val payload = codec.decodePayload(msgType, payloadBytes, detectedFormat) as? UserReconnectedPayload ?: return
                     
-                    _roomState.value = _roomState.value?.copy(
-                        users = _roomState.value!!.users.map { user ->
-                            if (user.userId == payload.userId) user.copy(isConnected = true) else user
-                        }
-                    )
+                    val room = _roomState.value
+                    if (room != null) {
+                        _roomState.value = room.copy(
+                            users = room.users.map { user ->
+                                if (user.userId == payload.userId) user.copy(isConnected = true) else user
+                            }
+                        )
+                    }
                     log(LogLevel.INFO, "User reconnected", payload.username)
                     scope.launch { _events.emit(ListenTogetherEvent.UserReconnected(payload.userId, payload.username)) }
                 }
@@ -1311,11 +1343,14 @@ class ListenTogetherClient @Inject constructor(
                 MessageTypes.USER_DISCONNECTED -> {
                     val payload = codec.decodePayload(msgType, payloadBytes, detectedFormat) as? UserDisconnectedPayload ?: return
                     
-                    _roomState.value = _roomState.value?.copy(
-                        users = _roomState.value!!.users.map { user ->
-                            if (user.userId == payload.userId) user.copy(isConnected = false) else user
-                        }
-                    )
+                    val room = _roomState.value
+                    if (room != null) {
+                        _roomState.value = room.copy(
+                            users = room.users.map { user ->
+                                if (user.userId == payload.userId) user.copy(isConnected = false) else user
+                            }
+                        )
+                    }
                     log(LogLevel.INFO, "User temporarily disconnected", payload.username)
                     scope.launch { _events.emit(ListenTogetherEvent.UserDisconnected(payload.userId, payload.username)) }
                 }

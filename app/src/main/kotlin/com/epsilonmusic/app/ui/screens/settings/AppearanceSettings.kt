@@ -116,7 +116,6 @@ import com.epsilonmusic.app.utils.rememberPreference
 import com.epsilonmusic.app.utils.rememberEnumPreference
 import kotlin.math.roundToInt
 import com.epsilonmusic.app.constants.LyricsClickKey
-import com.epsilonmusic.app.constants.AppleMusicLyricsBlurKey
 import com.epsilonmusic.app.constants.LyricsGlowEffectKey
 import com.epsilonmusic.app.constants.LyricsLineSpacingKey
 import com.epsilonmusic.app.constants.LyricsScrollKey
@@ -211,7 +210,6 @@ highlightKey: String? = null) {
     val (lyricsTextSize, onLyricsTextSizeChange) = rememberPreference(LyricsTextSizeKey, defaultValue = 24f)
     val (lyricsLineSpacing, onLyricsLineSpacingChange) = rememberPreference(LyricsLineSpacingKey, defaultValue = 1.3f)
     val (lyricsGlowEffect, onLyricsGlowEffectChange) = rememberPreference(LyricsGlowEffectKey, defaultValue = false)
-    val (appleMusicLyricsBlur, onAppleMusicLyricsBlurChange) = rememberPreference(AppleMusicLyricsBlurKey, defaultValue = true)
     val (swipeLyrics, onSwipeLyricsChange) = rememberPreference(SwipeLyricsKey, defaultValue = false)
     val (enableLyricsThumbnailPlayPause, onEnableLyricsThumbnailPlayPauseChange) = rememberPreference(EnableLyricsThumbnailPlayPauseKey, defaultValue = false)
     val (hideStatusBarOnFullscreen, onHideStatusBarOnFullscreenChange) = rememberPreference(HideStatusBarOnFullscreenKey, defaultValue = false)
@@ -1546,30 +1544,10 @@ highlightKey: String? = null) {
                     },
                     onClick = { onLyricsGlowEffectChange(!lyricsGlowEffect) }
                 ),
-                if (lyricsAnimationStyle == LyricsAnimationStyle.epsilonmusic_1) {
-                    Material3SettingsItem(
-    isHighlighted = (highlightKey == stringResource(R.string.apple_music_lyrics_blur)),
-                        icon = painterResource(R.drawable.lyrics),
-                        title = { Text(stringResource(R.string.apple_music_lyrics_blur)) },
-                        description = { Text(stringResource(R.string.apple_music_lyrics_blur_desc)) },
-                        trailingContent = {
-                            Switch(
-                                checked = appleMusicLyricsBlur,
-                                onCheckedChange = onAppleMusicLyricsBlurChange,
-                                thumbContent = {
-                                    Icon(
-                                        painter = painterResource(
-                                            id = if (appleMusicLyricsBlur) R.drawable.check else R.drawable.close
-                                        ),
-                                        contentDescription = null,
-                                        modifier = Modifier.size(SwitchDefaults.IconSize)
-                                    )
-                                }
-                            )
-                        },
-                        onClick = { onAppleMusicLyricsBlurChange(!appleMusicLyricsBlur) }
-                    )
-                } else null,
+                // The old "blur inactive lyrics" toggle was removed together with the
+                // blur passes it controlled: they were GPU-heavy enough to shimmer
+                // during auto-scroll, so the Apple-style animation now uses a
+                // scale-and-opacity depth effect instead.
                 Material3SettingsItem(
     isHighlighted = (highlightKey == stringResource(R.string.lyrics_text_size)),
                     icon = painterResource(R.drawable.lyrics),

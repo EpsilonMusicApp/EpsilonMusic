@@ -61,7 +61,6 @@ import com.epsilonmusic.app.ui.component.NewAction
 import com.epsilonmusic.app.ui.component.NewActionGrid
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import java.time.LocalDateTime
 
@@ -545,11 +544,11 @@ fun SelectionMediaMetadataMenu(
     AddToPlaylistDialog(
         isVisible = showChoosePlaylistDialog,
         onGetSong = {
+            // onGetSong is already suspend and invoked on Dispatchers.IO by the
+            // dialog — no need (and no excuse) for a nested runBlocking here.
             songSelection.map {
-                runBlocking {
-                    withContext(Dispatchers.IO) {
-                        database.insert(it)
-                    }
+                withContext(Dispatchers.IO) {
+                    database.insert(it)
                 }
                 it.id
             }
