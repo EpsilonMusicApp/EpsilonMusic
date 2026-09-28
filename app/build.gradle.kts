@@ -33,15 +33,21 @@ android {
         applicationId = "com.epsilonmusic.app"
         minSdk = 26
         targetSdk = 36
-        versionCode = 7
-        versionName = "1.0.5"
+        versionCode = 8
+        versionName = "1.0.6"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
 
-        // LastFM API keys from GitHub Secrets
-        val lastFmKey = localProperties.getProperty("LASTFM_API_KEY") ?: System.getenv("LASTFM_API_KEY") ?: ""
-        val lastFmSecret = localProperties.getProperty("LASTFM_SECRET") ?: System.getenv("LASTFM_SECRET") ?: ""
+        // LastFM API credentials — embedded so every build (local, CI, release)
+        // ships a working Last.fm sign-in. Local properties / env vars still
+        // win when present so contributors can override them.
+        val lastFmKey = localProperties.getProperty("LASTFM_API_KEY")
+            ?: System.getenv("LASTFM_API_KEY")
+            ?: "266d77b5790e413ada7e41ef100d017a"
+        val lastFmSecret = localProperties.getProperty("LASTFM_SECRET")
+            ?: System.getenv("LASTFM_SECRET")
+            ?: "41d3ae3b039ddac06c37fb30055bf93b"
 
         buildConfigField("String", "LASTFM_API_KEY", "\"$lastFmKey\"")
         buildConfigField("String", "LASTFM_SECRET", "\"$lastFmSecret\"")

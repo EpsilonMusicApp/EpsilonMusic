@@ -1038,4 +1038,9 @@
     <string name="legacy_icon_2_desc">Deep purple note</string>
     <string name="legacy_icon_3">Legacy Icon 3</string>
     <string name="legacy_icon_3_desc">Red ring emblem</string>
+    <string name="audio_loudness_preset">Loudness Preset</string>
+    <string name="loudness_preset_quiet">Quiet</string>
+    <string name="loudness_preset_normal">Normal</string>
+    <string name="loudness_preset_loud">Loud</string>
+    <string name="loudness_preset_aggressive">Aggressive</string>
 </resources>

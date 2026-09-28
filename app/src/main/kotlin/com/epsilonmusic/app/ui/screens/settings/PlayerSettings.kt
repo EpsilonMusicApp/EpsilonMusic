@@ -35,6 +35,8 @@ import androidx.navigation.NavController
 import com.epsilonmusic.app.BuildConfig
 import com.epsilonmusic.app.LocalPlayerAwareWindowInsets
 import com.epsilonmusic.app.R
+import com.epsilonmusic.app.constants.AudioLoudnessPreset
+import com.epsilonmusic.app.constants.AudioLoudnessPresetKey
 import com.epsilonmusic.app.constants.AudioNormalizationKey
 import com.epsilonmusic.app.constants.AudioOffload
 import com.epsilonmusic.app.constants.AudioQuality
@@ -133,6 +135,11 @@ highlightKey: String? = null) {
         AudioNormalizationKey,
         defaultValue = true
     )
+    val (audioLoudnessPreset, onAudioLoudnessPresetChange) = rememberEnumPreference(
+        AudioLoudnessPresetKey,
+        defaultValue = AudioLoudnessPreset.NORMAL
+    )
+    var showLoudnessPresetDialog by remember { mutableStateOf(false) }
 
     val (audioOffload, onAudioOffloadChange) = rememberPreference(
         key = AudioOffload,
@@ -248,6 +255,32 @@ highlightKey: String? = null) {
         com.epsilonmusic.app.constants.DownloadQualityKey,
         defaultValue = com.epsilonmusic.app.constants.DownloadQuality.YOUTUBE
     )
+
+    if (showLoudnessPresetDialog) {
+        EnumDialog(
+            onDismiss = { showLoudnessPresetDialog = false },
+            onSelect = {
+                onAudioLoudnessPresetChange(it)
+                showLoudnessPresetDialog = false
+            },
+            title = stringResource(R.string.audio_loudness_preset),
+            current = audioLoudnessPreset,
+            values = listOf(
+                AudioLoudnessPreset.QUIET,
+                AudioLoudnessPreset.NORMAL,
+                AudioLoudnessPreset.LOUD,
+                AudioLoudnessPreset.AGGRESSIVE,
+            ),
+            valueText = {
+                when (it) {
+                    AudioLoudnessPreset.QUIET -> stringResource(R.string.loudness_preset_quiet)
+                    AudioLoudnessPreset.NORMAL -> stringResource(R.string.loudness_preset_normal)
+                    AudioLoudnessPreset.LOUD -> stringResource(R.string.loudness_preset_loud)
+                    AudioLoudnessPreset.AGGRESSIVE -> stringResource(R.string.loudness_preset_aggressive)
+                }
+            },
+        )
+    }
 
     if (showAudioQualityDialog) {
         EnumDialog(
@@ -664,6 +697,22 @@ highlightKey: String? = null) {
                         )
                     },
                     onClick = { onAudioNormalizationChange(!audioNormalization) }
+                ))
+                add(Material3SettingsItem(
+    isHighlighted = (highlightKey == stringResource(R.string.audio_loudness_preset)),
+                    icon = painterResource(R.drawable.volume_up),
+                    title = { Text(stringResource(R.string.audio_loudness_preset)) },
+                    description = {
+                        Text(
+                            when (audioLoudnessPreset) {
+                                AudioLoudnessPreset.QUIET -> stringResource(R.string.loudness_preset_quiet)
+                                AudioLoudnessPreset.NORMAL -> stringResource(R.string.loudness_preset_normal)
+                                AudioLoudnessPreset.LOUD -> stringResource(R.string.loudness_preset_loud)
+                                AudioLoudnessPreset.AGGRESSIVE -> stringResource(R.string.loudness_preset_aggressive)
+                            }
+                        )
+                    },
+                    onClick = { showLoudnessPresetDialog = true }
                 ))
                 add(Material3SettingsItem(
     isHighlighted = (highlightKey == stringResource(R.string.audio_offload)),

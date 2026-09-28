@@ -137,6 +137,20 @@ val ShuffleModeKey = booleanPreferencesKey("shuffleMode")
 val SkipSilenceKey = booleanPreferencesKey("skipSilence")
 val SkipSilenceInstantKey = booleanPreferencesKey("skipSilenceInstant")
 val AudioNormalizationKey = booleanPreferencesKey("audioNormalization")
+val AudioLoudnessPresetKey = stringPreferencesKey("audioLoudnessPreset")
+
+/**
+ * Flat loudness offset applied on top of track normalization, in millibels.
+ * Lets users pick an overall listening level: quieter, reference, or boosted.
+ * Presets still apply when a track has no loudness metadata.
+ */
+enum class AudioLoudnessPreset(val gainOffsetMb: Int) {
+    QUIET(-600),
+    NORMAL(0),
+    LOUD(300),
+    AGGRESSIVE(700),
+}
+
 val AutoLoadMoreKey = booleanPreferencesKey("autoLoadMore")
 val DisableLoadMoreWhenRepeatAllKey = booleanPreferencesKey("disableLoadMoreWhenRepeatAll")
 val AutoDownloadOnLikeKey = booleanPreferencesKey("autoDownloadOnLike")

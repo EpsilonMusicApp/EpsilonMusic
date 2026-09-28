@@ -98,6 +98,15 @@ fun WelcomeDialog(
                     )
                 }
 
+                WelcomeSectionCard(title = "Community") {
+                    WelcomeActionRow(
+                        icon = painterResource(R.drawable.ic_discord_new),
+                        title = "Discord",
+                        subtitle = "discord.gg/EcfV3AxH5c",
+                        onClick = { uriHandler.openUri("https://discord.gg/EcfV3AxH5c") }
+                    )
+                }
+
                 Spacer(modifier = Modifier.height(4.dp))
 
                 Button(
