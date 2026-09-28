@@ -176,6 +176,24 @@ highlightKey: String? = null) {
                 }
             }
 
+            item {
+                AboutSectionCard(title = "Community") {
+                    AboutActionRow(
+                        icon = painterResource(R.drawable.ic_discord_new),
+                        title = "Discord",
+                        subtitle = "discord.gg/EcfV3AxH5c",
+                        onClick = { uriHandler.openUri("https://discord.gg/EcfV3AxH5c") },
+                    )
+                    AboutDivider()
+                    AboutActionRow(
+                        icon = painterResource(R.drawable.ic_telegram_new),
+                        title = "Telegram",
+                        subtitle = "t.me/epsilonmusicapp",
+                        onClick = { uriHandler.openUri("https://t.me/epsilonmusicapp") },
+                    )
+                }
+            }
+
             /* item {
                 AboutSectionCard(title = "App") {
                     AboutActionRow(

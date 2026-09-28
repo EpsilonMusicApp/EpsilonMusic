@@ -7,6 +7,8 @@ package com.epsilonmusic.app.ui.screens.settings
 import android.content.Intent
 import android.net.Uri
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.animateContentSize
+
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
@@ -22,6 +24,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
@@ -54,6 +57,7 @@ import com.epsilonmusic.app.ui.component.ListPreference
 import com.epsilonmusic.app.ui.component.PreferenceEntry
 
 import com.epsilonmusic.app.ui.component.SwitchPreference
+import com.epsilonmusic.app.ui.component.PreferenceGroupTitle
 import com.epsilonmusic.app.ui.theme.PlayerColorExtractor
 import com.epsilonmusic.app.ui.theme.extractThemeColor
 import com.epsilonmusic.app.ui.utils.backToMain
@@ -338,8 +342,7 @@ fun DiscordSettings(
     Scaffold(
         modifier =
             Modifier
-                .fillMaxSize()
-                .nestedScroll(scrollBehavior.nestedScrollConnection),
+                .fillMaxSize(),
         containerColor = MaterialTheme.colorScheme.surface,
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -405,7 +408,8 @@ fun DiscordSettings(
                         LocalPlayerAwareWindowInsets.current.only(
                             WindowInsetsSides.Horizontal,
                         ),
-                    ),
+                    )
+                    .padding(horizontal = 16.dp),
             contentPadding =
                 PaddingValues(
                     top = innerPadding.calculateTopPadding() + 16.dp,
@@ -414,30 +418,27 @@ fun DiscordSettings(
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             item {
-                PreferenceGroup(title = stringResource(R.string.account)) {
-                    item {
-                        DiscordAccountGroupCard(
-                            displayName = accountDisplayName,
-                            username = activeDiscordUsername,
-                            avatarUrl = activeDiscordAvatarUrl.takeIf { it.isNotBlank() },
-                            isLoggedIn = isLoggedIn,
-                            authorizationUiMode = authorizationUiMode,
-                            authorizationMessage = authorizationMessage,
-                            isAccessTokenExpired = isAccessTokenExpired,
-                            discordRpcEnabled = discordRPC,
-                            onDiscordRpcEnabledChange = onDiscordRPCChange,
-                            onReauthorize = launchAuthorization,
-                            onPrimaryAction = {
-                                if (isLoggedIn) {
-                                    showLogoutConfirm = true
-                                } else {
-                                    launchAuthorization()
-                                }
-                            },
-                            primaryActionEnabled = authorizationUiMode != DiscordAuthorizationUiMode.Waiting,
-                        )
-                    }
-                }
+                PreferenceGroupTitle(title = stringResource(R.string.account))
+                DiscordAccountGroupCard(
+                    displayName = accountDisplayName,
+                    username = activeDiscordUsername,
+                    avatarUrl = activeDiscordAvatarUrl.takeIf { it.isNotBlank() },
+                    isLoggedIn = isLoggedIn,
+                    authorizationUiMode = authorizationUiMode,
+                    authorizationMessage = authorizationMessage,
+                    isAccessTokenExpired = isAccessTokenExpired,
+                    discordRpcEnabled = discordRPC,
+                    onDiscordRpcEnabledChange = onDiscordRPCChange,
+                    onReauthorize = launchAuthorization,
+                    onPrimaryAction = {
+                        if (isLoggedIn) {
+                            showLogoutConfirm = true
+                        } else {
+                            launchAuthorization()
+                        }
+                    },
+                    primaryActionEnabled = authorizationUiMode != DiscordAuthorizationUiMode.Waiting,
+                )
             }
 
             item {
@@ -803,22 +804,17 @@ private fun DiscordAccountGroupCard(
             DiscordAuthorizationUiMode.Idle -> MaterialTheme.colorScheme.onSurfaceVariant
         }
 
-    Card(
+    Box(
         modifier = Modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.extraLarge,
-        colors =
-            CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-            ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {
         Column(
-            modifier = Modifier.padding(20.dp),
+            modifier = Modifier.padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                 verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(bottom = 8.dp)
             ) {
                 Box(
                     modifier =
@@ -874,16 +870,14 @@ private fun DiscordAccountGroupCard(
                         Text(
                             text = "@$username",
                             style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.primary,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
                 }
             }
 
             AnimatedVisibility(
-                visible =
-                    authorizationUiMode != DiscordAuthorizationUiMode.Idle ||
-                        (isLoggedIn && !isAccessTokenExpired),
+                visible = authorizationUiMode != DiscordAuthorizationUiMode.Idle,
             ) {
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
@@ -925,84 +919,86 @@ private fun DiscordAccountGroupCard(
                 }
             }
 
-            Surface(
+            Row(
                 modifier = Modifier.fillMaxWidth(),
-                shape = MaterialTheme.shapes.large,
-                color =
-                    if (discordRpcEnabled && isLoggedIn) {
-                        MaterialTheme.colorScheme.primaryContainer
-                    } else {
-                        MaterialTheme.colorScheme.surfaceContainerHighest
-                    },
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(
-                    modifier =
-                        Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 14.dp),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
+                Surface(
+                    modifier = Modifier.weight(1f),
+                    shape = MaterialTheme.shapes.large,
+                    color = MaterialTheme.colorScheme.surfaceContainerHigh,
                 ) {
-                    Surface(
-                        shape = MaterialTheme.shapes.medium,
-                        color = MaterialTheme.colorScheme.surface,
+                    Row(
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .heightIn(min = 56.dp)
+                                .padding(horizontal = 16.dp, vertical = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Box(
-                            modifier = Modifier.size(44.dp),
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            Icon(
-                                painter = painterResource(R.drawable.info),
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary,
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                            Surface(
+                                shape = MaterialTheme.shapes.medium,
+                                color = MaterialTheme.colorScheme.surface,
+                                modifier = Modifier.size(36.dp)
+                            ) {
+                                Box(contentAlignment = Alignment.Center) {
+                                    Icon(
+                                        painter = painterResource(R.drawable.info),
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                }
+                            }
+
+                            Text(
+                                text = "RPC",
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.SemiBold,
                             )
                         }
-                    }
 
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = stringResource(R.string.enable_discord_rpc),
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.SemiBold,
+                        Switch(
+                            checked = discordRpcEnabled,
+                            onCheckedChange = { isChecked ->
+                                onDiscordRpcEnabledChange(isChecked)
+                                if (isChecked && !isLoggedIn) {
+                                    onPrimaryAction()
+                                }
+                            },
+                            modifier = Modifier.scale(0.8f),
+                            enabled = true,
+                            colors = SwitchDefaults.colors(
+                                checkedThumbColor = MaterialTheme.colorScheme.surface,
+                                checkedTrackColor = MaterialTheme.colorScheme.onSurface,
+                                uncheckedThumbColor = MaterialTheme.colorScheme.outline,
+                                uncheckedTrackColor = MaterialTheme.colorScheme.surfaceContainerHighest
+                            )
                         )
                     }
-
-                    Switch(
-                        checked = discordRpcEnabled,
-                        onCheckedChange = { isChecked ->
-                            onDiscordRpcEnabledChange(isChecked)
-                            if (isChecked && !isLoggedIn) {
-                                onPrimaryAction()
-                            }
-                        },
-                        enabled = true,
-                    )
                 }
-            }
 
-            if (isLoggedIn) {
-                OutlinedButton(
-                    onClick = onPrimaryAction,
-                    enabled = primaryActionEnabled,
-                    modifier =
-                        Modifier
-                            .fillMaxWidth()
-                            .heightIn(min = 56.dp),
-                    shapes = ButtonDefaults.shapes(),
-                ) {
-                    Text(stringResource(R.string.action_logout))
-                }
-            } else {
-                Button(
-                    onClick = onPrimaryAction,
-                    enabled = primaryActionEnabled,
-                    modifier =
-                        Modifier
-                            .fillMaxWidth()
-                            .heightIn(min = 56.dp),
-                    shapes = ButtonDefaults.shapes(),
-                ) {
-                    Text(stringResource(R.string.discord_open_authorization))
+                if (isLoggedIn) {
+                    OutlinedButton(
+                        onClick = onPrimaryAction,
+                        enabled = primaryActionEnabled,
+                        modifier = Modifier.weight(1f).heightIn(min = 56.dp),
+                        shapes = ButtonDefaults.shapes(),
+                    ) {
+                        Text(stringResource(R.string.action_logout))
+                    }
+                } else {
+                    Button(
+                        onClick = onPrimaryAction,
+                        enabled = primaryActionEnabled,
+                        modifier = Modifier.weight(1f).heightIn(min = 56.dp),
+                        shapes = ButtonDefaults.shapes(),
+                    ) {
+                        Text(stringResource(R.string.discord_open_authorization))
+                    }
                 }
             }
 
@@ -1505,17 +1501,42 @@ fun PreferenceGroup(
 
     if (scope.items.isEmpty()) return
 
-    androidx.compose.foundation.layout.Column(modifier = modifier.padding(vertical = 8.dp)) {
+    androidx.compose.foundation.layout.Column(modifier = modifier.fillMaxWidth()) {
         if (title != null) {
             androidx.compose.material3.Text(
-                text = title,
-                style = androidx.compose.material3.MaterialTheme.typography.titleSmall,
-                color = androidx.compose.material3.MaterialTheme.colorScheme.primary,
-                modifier = androidx.compose.ui.Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                text = title.uppercase(),
+                style = androidx.compose.material3.MaterialTheme.typography.labelLarge.copy(
+                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+                ),
+                color = androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = androidx.compose.ui.Modifier.padding(bottom = 8.dp, top = 8.dp, start = 8.dp)
             )
         }
-        scope.items.forEach { item ->
-            item()
+        androidx.compose.foundation.layout.Column(
+            modifier = androidx.compose.ui.Modifier.fillMaxWidth(),
+            verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(2.dp)
+        ) {
+            scope.items.forEachIndexed { index, item ->
+                val shape = when {
+                    scope.items.size == 1 -> androidx.compose.foundation.shape.RoundedCornerShape(24.dp)
+                    index == 0 -> androidx.compose.foundation.shape.RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp, bottomStart = 4.dp, bottomEnd = 4.dp)
+                    index == scope.items.size - 1 -> androidx.compose.foundation.shape.RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp, bottomStart = 24.dp, bottomEnd = 24.dp)
+                    else -> androidx.compose.foundation.shape.RoundedCornerShape(4.dp)
+                }
+
+                androidx.compose.material3.Card(
+                    modifier = androidx.compose.ui.Modifier
+                        .fillMaxWidth()
+                        .animateContentSize(),
+                    shape = shape,
+                    colors = androidx.compose.material3.CardDefaults.cardColors(
+                        containerColor = androidx.compose.material3.MaterialTheme.colorScheme.surfaceContainerHigh
+                    ),
+                    elevation = androidx.compose.material3.CardDefaults.cardElevation(defaultElevation = 0.dp)
+                ) {
+                    item()
+                }
+            }
         }
     }
 }
