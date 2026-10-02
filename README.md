@@ -41,30 +41,43 @@ Epsilon Music delivers a seamless, premium listening experience by leveraging Yo
   <table style="margin: 0 auto; border-collapse: collapse;">
     <tr>
       <td align="center" style="padding: 15px; border: none;">
-        <b>Home Screen</b><br><br>
-        <img src="Screenshots/sc_1.png" alt="Home Screen" width="220" style="border-radius: 12px; box-shadow: 0 8px 16px rgba(0,0,0,0.2);"/>
+        <b>Home</b><br>
+        <sub>Discovery, playlists and your next listen</sub><br><br>
+        <img src="Screenshots/home.jpg" alt="Home Screen" width="220" style="border-radius: 12px; box-shadow: 0 8px 16px rgba(0,0,0,0.2);"/>
       </td>
       <td align="center" style="padding: 15px; border: none;">
-        <b>Music Player</b><br><br>
-        <img src="Screenshots/sc_2.png" alt="Music Player" width="220" style="border-radius: 12px; box-shadow: 0 8px 16px rgba(0,0,0,0.2);"/>
+        <b>Search</b><br>
+        <sub>Find songs, artists and albums instantly</sub><br><br>
+        <img src="Screenshots/search.jpg" alt="Search Screen" width="220" style="border-radius: 12px; box-shadow: 0 8px 16px rgba(0,0,0,0.2);"/>
       </td>
       <td align="center" style="padding: 15px; border: none;">
-        <b>Synchronized Lyrics</b><br><br>
-        <img src="Screenshots/sc_3.png" alt="Synchronized Lyrics" width="220" style="border-radius: 12px; box-shadow: 0 8px 16px rgba(0,0,0,0.2);"/>
+        <b>Epsilon Chart</b><br>
+        <sub>Browse the trending Apple Music Top 100</sub><br><br>
+        <img src="Screenshots/epsilon-chart.jpg" alt="Epsilon Chart" width="220" style="border-radius: 12px; box-shadow: 0 8px 16px rgba(0,0,0,0.2);"/>
       </td>
     </tr>
     <tr>
       <td align="center" style="padding: 15px; border: none;">
-        <b>Search & Explore</b><br><br>
-        <img src="Screenshots/sc_4.png" alt="Search & Explore" width="220" style="border-radius: 12px; box-shadow: 0 8px 16px rgba(0,0,0,0.2);"/>
+        <b>Lyrics</b><br>
+        <sub>Follow synchronized lyrics as the track plays</sub><br><br>
+        <img src="Screenshots/lyrics.jpg" alt="Synchronized Lyrics" width="220" style="border-radius: 12px; box-shadow: 0 8px 16px rgba(0,0,0,0.2);"/>
       </td>
       <td align="center" style="padding: 15px; border: none;">
-        <b>Music Library</b><br><br>
-        <img src="Screenshots/sc_5.png" alt="Music Library" width="220" style="border-radius: 12px; box-shadow: 0 8px 16px rgba(0,0,0,0.2);"/>
+        <b>Player</b><br>
+        <sub>Card-style now playing with all controls</sub><br><br>
+        <img src="Screenshots/player-classic.jpg" alt="Classic Player" width="220" style="border-radius: 12px; box-shadow: 0 8px 16px rgba(0,0,0,0.2);"/>
       </td>
       <td align="center" style="padding: 15px; border: none;">
-        <b>Epsilon Find (Recognition)</b><br><br>
-        <img src="Screenshots/sc_6.png" alt="Epsilon Find" width="220" style="border-radius: 12px; box-shadow: 0 8px 16px rgba(0,0,0,0.2);"/>
+        <b>Immersive Player</b><br>
+        <sub>Full-screen player with album art backdrop</sub><br><br>
+        <img src="Screenshots/player-immersive.jpg" alt="Immersive Player" width="220" style="border-radius: 12px; box-shadow: 0 8px 16px rgba(0,0,0,0.2);"/>
+      </td>
+    </tr>
+    <tr>
+      <td colspan="3" align="center" style="padding: 15px; border: none;">
+        <b>Library</b><br>
+        <sub>Playlists, liked songs, downloads and local files</sub><br><br>
+        <img src="Screenshots/library.jpg" alt="Music Library" width="220" style="border-radius: 12px; box-shadow: 0 8px 16px rgba(0,0,0,0.2);"/>
       </td>
     </tr>
   </table>
