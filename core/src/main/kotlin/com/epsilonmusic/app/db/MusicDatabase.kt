@@ -41,6 +41,7 @@ import com.epsilonmusic.app.db.entities.SpeedDialItem
 import com.epsilonmusic.app.db.entities.SortedSongAlbumMap
 import com.epsilonmusic.app.db.entities.SortedSongArtistMap
 import com.epsilonmusic.app.extensions.toSQLiteQuery
+import kotlin.concurrent.thread
 import timber.log.Timber
 import java.time.Instant
 import java.time.LocalDateTime
@@ -158,55 +159,91 @@ abstract class InternalDatabase : RoomDatabase() {
     companion object {
         const val DB_NAME = "song.db"
 
-        fun newInstance(context: Context): MusicDatabase =
-            MusicDatabase(
-                delegate =
-                    Room
-                        .databaseBuilder(context, InternalDatabase::class.java, DB_NAME)
-                        .addMigrations(
-                            MIGRATION_1_2,
-                            MIGRATION_21_24,
-                            MIGRATION_22_24,
-                            MIGRATION_24_25,
-                            MIGRATION_27_28,
-                            MIGRATION_28_29,
-                            MIGRATION_29_30,
-                            MIGRATION_31_32,
-                            MIGRATION_36_37,
-                            MIGRATION_37_38,
-                            MIGRATION_38_39,
-                            MIGRATION_39_40,
-                            MIGRATION_40_41,
-                            MIGRATION_41_42,
-                            MIGRATION_42_43,
-                            MIGRATION_43_44,
-                            MIGRATION_44_45,
-                        )
-                        .setJournalMode(RoomDatabase.JournalMode.WRITE_AHEAD_LOGGING)
-                        // A device whose database is stamped with a NEWER schema version than
-                        // this build (e.g. rolling back to an older build during testing, or a
-                        // leftover database from a newer install) would otherwise crash with
-                        // "Room cannot downgrade" and brick the app until data is cleared.
-                        // Upgrade paths are NOT affected — the 1..45 migration chain above
-                        // stays the single source of truth for forward upgrades.
-                        .fallbackToDestructiveMigrationOnDowngrade()
-                        .setTransactionExecutor(java.util.concurrent.Executors.newFixedThreadPool(4))
-                        .setQueryExecutor(java.util.concurrent.Executors.newFixedThreadPool(4))
-                        .addCallback(object : RoomDatabase.Callback() {
-                            override fun onOpen(db: SupportSQLiteDatabase) {
-                                super.onOpen(db)
-                                try {
-                                    db.query("PRAGMA busy_timeout = 60000").close()
-                                    db.query("PRAGMA cache_size = -16000").close()
-                                    db.query("PRAGMA wal_autocheckpoint = 1000").close()
-                                    db.query("PRAGMA synchronous = NORMAL").close()
-                                } catch (e: Exception) {
-                                    Timber.tag("MusicDatabase").e(e, "Failed to set PRAGMA settings")
-                                }
+        fun newInstance(context: Context): MusicDatabase {
+            val delegate =
+                Room
+                    .databaseBuilder(context, InternalDatabase::class.java, DB_NAME)
+                    .addMigrations(
+                        MIGRATION_1_2,
+                        MIGRATION_21_24,
+                        MIGRATION_22_24,
+                        MIGRATION_24_25,
+                        MIGRATION_27_28,
+                        MIGRATION_28_29,
+                        MIGRATION_29_30,
+                        MIGRATION_31_32,
+                        MIGRATION_36_37,
+                        MIGRATION_37_38,
+                        MIGRATION_38_39,
+                        MIGRATION_39_40,
+                        MIGRATION_40_41,
+                        MIGRATION_41_42,
+                        MIGRATION_42_43,
+                        MIGRATION_43_44,
+                        MIGRATION_44_45,
+                    )
+                    .setJournalMode(RoomDatabase.JournalMode.WRITE_AHEAD_LOGGING)
+                    // A device whose database is stamped with a NEWER schema version than
+                    // this build (e.g. rolling back to an older build during testing, or a
+                    // leftover database from a newer install) would otherwise crash with
+                    // "Room cannot downgrade" and brick the app until data is cleared.
+                    // Upgrade paths are NOT affected — the 1..45 migration chain above
+                    // stays the single source of truth for forward upgrades.
+                    .fallbackToDestructiveMigrationOnDowngrade()
+                    .setTransactionExecutor(java.util.concurrent.Executors.newFixedThreadPool(4))
+                    .setQueryExecutor(java.util.concurrent.Executors.newFixedThreadPool(4))
+                    .addCallback(object : RoomDatabase.Callback() {
+                        override fun onOpen(db: SupportSQLiteDatabase) {
+                            super.onOpen(db)
+                            try {
+                                db.query("PRAGMA busy_timeout = 60000").close()
+                                db.query("PRAGMA cache_size = -16000").close()
+                                db.query("PRAGMA wal_autocheckpoint = 1000").close()
+                                db.query("PRAGMA synchronous = NORMAL").close()
+                            } catch (e: Exception) {
+                                Timber.tag("MusicDatabase").e(e, "Failed to set PRAGMA settings")
                             }
-                        })
-                        .build(),
-            )
+                        }
+                    })
+                    .build()
+
+            // Last-resort recovery so a broken database can never crash-loop the app.
+            //
+            // Room opens (and migrates) the database lazily on the first query, which is
+            // normally fine — but when that open throws (corrupted file, interrupted
+            // upgrade, leftover database in an unexpected schema state) the exception
+            // surfaces on whatever screen touched the database first, and because the
+            // database is still broken on the next launch the app appears to crash on
+            // open forever.
+            //
+            // Instead, force the initial open on a background thread the moment the
+            // database is constructed. If opening fails for ANY reason, close it, wipe
+            // the file, and recreate it from scratch. Healthy installs are unaffected:
+            // the open happens exactly once either way, and it now overlaps activity
+            // inflation instead of landing on the first frame that touches the DB.
+            thread(name = "MusicDatabaseRecovery", isDaemon = true) {
+                try {
+                    delegate.openHelper.writableDatabase
+                } catch (t: Throwable) {
+                    Timber.tag("MusicDatabase").e(t, "Database open failed; recreating from scratch")
+                    try {
+                        delegate.openHelper.close()
+                    } catch (_: Throwable) {
+                    }
+                    try {
+                        context.deleteDatabase(DB_NAME)
+                    } catch (_: Throwable) {
+                    }
+                    try {
+                        delegate.openHelper.writableDatabase
+                    } catch (t2: Throwable) {
+                        Timber.tag("MusicDatabase").e(t2, "Database could not be recreated")
+                    }
+                }
+            }
+
+            return MusicDatabase(delegate = delegate)
+        }
     }
 }
 
@@ -990,35 +1027,50 @@ val MIGRATION_43_44 =
     }
 
 /**
- * Migration 44 → 45: Guard against duplicate `isLocal` column crash.
+ * Migration 44 → 45: guard against duplicate `isLocal` columns AND the schema
+ * validation crash.
  *
- * Some users arrive at v44 via upgrade paths (e.g. old fork builds) where the
- * `isLocal` column was already present on `song`, `artist`, or `playlist` from
- * an earlier schema version. A later migration that tried to ADD the column
- * via ALTER TABLE would crash with:
- *   SQLiteException: duplicate column name: isLocal (code 1 SQLITE_ERROR)
+ * Two hazards are handled here:
  *
- * That crash happens inside Room's SQLiteOpenHelper.onUpgrade(), which prevents
- * the database from opening at all — making the app unlaunchable for affected
- * users. This migration is a no-op for healthy databases and a targeted
- * recovery for affected ones: it only ALTERs a table when the column is provably
- * absent.
+ * 1. Some users arrive at v44 via upgrade paths (e.g. old fork builds) where the
+ *    `isLocal` column was already present on `song`, `artist`, or `playlist` from
+ *    an earlier schema version. A migration that tried to ADD the column via
+ *    ALTER TABLE would crash with:
+ *      SQLiteException: duplicate column name: isLocal (code 1 SQLITE_ERROR)
+ *    So each ALTER only runs when the column is provably absent.
+ *
+ * 2. Room validates the migrated schema against the entities AFTER the migration
+ *    runs, comparing each column's DEFAULT value **literally** (see
+ *    TableInfo.defaultValueEquals in androidx.room 2.8.x — there is no boolean
+ *    normalization). The entities declare
+ *      @ColumnInfo(name = "isLocal", defaultValue = false.toString())
+ *    i.e. the literal string "false", so the SQL below must say `DEFAULT false`
+ *    — NOT `DEFAULT 0`. Using `DEFAULT 0` produced:
+ *      IllegalStateException: Migration didn't properly handle: song
+ *        (… defaultValue='false' expected, '0' found …)
+ *    on every device that actually executed the ALTER, which crash-looped the
+ *    app on open (the failed upgrade transaction rolls back, so the same broken
+ *    migration was retried — and crashed — on every launch).
+ *
+ * RULE FOR FUTURE VERSION BUMPS: any column added in a migration must use the
+ * byte-for-byte same literal in its `DEFAULT` clause as the entity's
+ * `@ColumnInfo(defaultValue = …)` string ("false"/"true", not 0/1).
  */
 val MIGRATION_44_45 = object : Migration(44, 45) {
     override fun migrate(db: SupportSQLiteDatabase) {
-        // song.isLocal
+        // song.isLocal — `DEFAULT false` matches SongEntity's defaultValue string exactly
         if (!hasColumn(db, "song", "isLocal")) {
-            db.execSQL("ALTER TABLE `song` ADD COLUMN `isLocal` INTEGER NOT NULL DEFAULT 0")
+            db.execSQL("ALTER TABLE `song` ADD COLUMN `isLocal` INTEGER NOT NULL DEFAULT false")
             Timber.tag("MIGRATION_44_45").i("Added missing isLocal column to song")
         }
-        // artist.isLocal
+        // artist.isLocal — must match ArtistEntity's defaultValue string
         if (!hasColumn(db, "artist", "isLocal")) {
-            db.execSQL("ALTER TABLE `artist` ADD COLUMN `isLocal` INTEGER NOT NULL DEFAULT 0")
+            db.execSQL("ALTER TABLE `artist` ADD COLUMN `isLocal` INTEGER NOT NULL DEFAULT false")
             Timber.tag("MIGRATION_44_45").i("Added missing isLocal column to artist")
         }
-        // playlist.isLocal
+        // playlist.isLocal — must match PlaylistEntity's defaultValue string
         if (!hasColumn(db, "playlist", "isLocal")) {
-            db.execSQL("ALTER TABLE `playlist` ADD COLUMN `isLocal` INTEGER NOT NULL DEFAULT 0")
+            db.execSQL("ALTER TABLE `playlist` ADD COLUMN `isLocal` INTEGER NOT NULL DEFAULT false")
             Timber.tag("MIGRATION_44_45").i("Added missing isLocal column to playlist")
         }
     }

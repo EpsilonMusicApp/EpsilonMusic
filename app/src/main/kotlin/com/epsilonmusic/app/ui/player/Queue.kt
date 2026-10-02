@@ -1202,6 +1202,8 @@ fun Queue(
                                         isActive = isActive,
                                         isPlaying = isPlaying && isActive,
                                         shape = listItemShape(index, mutableQueueWindows.size),
+                                        color = MaterialTheme.colorScheme.surfaceVariant,
+                                        verticalPadding = 0.dp,
                                         trailingContent = {
                                             if (inSelectMode) {
                                                 Checkbox(
@@ -1336,6 +1338,8 @@ fun Queue(
                                 MediaMetadataListItem(
                                     mediaMetadata = item.metadata!!,
                                     shape = listItemShape(index, automix.size),
+                                    color = MaterialTheme.colorScheme.surfaceVariant,
+                                    verticalPadding = 0.dp,
                                     trailingContent = {
                                         if (!isListenTogetherGuest) {
                                             IconButton(

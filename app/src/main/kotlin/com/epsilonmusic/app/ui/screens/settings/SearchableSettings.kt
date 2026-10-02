@@ -23,6 +23,8 @@ fun getAllSearchableSettings(): List<SearchableSetting> {
             SearchableSetting("Instagram", "@epsilonmusic.app", "About", "settings/about"),
             SearchableSetting("Buy Me a Coffee", "Support development", "About", "settings/about"),
             SearchableSetting("Star on GitHub", "EpsilonMusicApp/EpsilonMusic", "About", "settings/about"),
+            SearchableSetting("Discord", "Join the community server", "About", "settings/about"),
+            SearchableSetting("Blocked Artists", "Manage hidden artists", "Content", "blocked_artists"),
             SearchableSetting(stringResource(R.string.account), null, "Account", "settings/account"),
             SearchableSetting(stringResource(R.string.action_exported), stringResource(R.string.action_exported_desc), "Appearance", "settings/appearance"),
             SearchableSetting(stringResource(R.string.action_logout), stringResource(R.string.action_logout_desc), "Account", "settings/account"),

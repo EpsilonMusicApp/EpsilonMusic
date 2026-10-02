@@ -826,3 +826,9 @@ val LiquidGlassPlayerEnabledKey = booleanPreferencesKey("liquidGlassPlayerEnable
 val LiquidGlassMiniPlayerEnabledKey = booleanPreferencesKey("liquidGlassMiniPlayerEnabled")
 val LiquidGlassNavBarEnabledKey = booleanPreferencesKey("liquidGlassNavBarEnabled")
 val UseFloatingNavBarKey = booleanPreferencesKey("useFloatingNavBar")
+
+/** When enabled (default), downloading a song also fetches and stores its lyrics. */
+val DownloadWithMetadataKey = booleanPreferencesKey("downloadWithMetadata")
+
+/** Blocked artists, stored as `artistId||artistName` entries. */
+val BlockedArtistsKey = stringSetPreferencesKey("blockedArtists")

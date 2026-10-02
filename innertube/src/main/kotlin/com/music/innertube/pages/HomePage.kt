@@ -11,6 +11,7 @@ import com.music.innertube.models.PlaylistItem
 import com.music.innertube.models.SectionListRenderer
 import com.music.innertube.models.SongItem
 import com.music.innertube.models.YTItem
+import com.music.innertube.models.filterBlockedArtists
 import com.music.innertube.models.oddElements
 import com.music.innertube.models.filterExplicit
 import com.music.innertube.models.filterVideoSongs
@@ -174,4 +175,9 @@ data class HomePage(
                 section.copy(items = section.items.filterVideoSongs(true))
             })
         } else this
+
+    fun filterBlockedArtists() =
+        copy(sections = sections.map { section ->
+            section.copy(items = section.items.filterBlockedArtists())
+        })
 }

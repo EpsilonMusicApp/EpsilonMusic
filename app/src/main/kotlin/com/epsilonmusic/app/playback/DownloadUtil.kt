@@ -34,6 +34,8 @@ import com.epsilonmusic.app.di.DownloadCache
 import com.epsilonmusic.app.di.PlayerCache
 import com.epsilonmusic.app.ui.utils.resize
 import com.epsilonmusic.app.utils.YTPlayerUtils
+import com.epsilonmusic.app.constants.DownloadWithMetadataKey
+import com.epsilonmusic.app.utils.dataStore
 import com.epsilonmusic.app.utils.enumPreference
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
@@ -44,6 +46,8 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -152,7 +156,50 @@ constructor(
 
                 upsert(updatedSong)
 
-                
+                // Download with metadata: fetch and cache lyrics alongside the audio so
+                // offline playback keeps working with lyrics. Runs off the critical
+                // path; skipped entirely when the toggle is off or lyrics already exist.
+                scope.launch {
+                    try {
+                        val downloadWithMetadata =
+                            context.dataStore.data.first()[DownloadWithMetadataKey] ?: true
+                        if (!downloadWithMetadata) return@launch
+                        if (database.lyrics(mediaId).firstOrNull() != null) return@launch
+
+                        val songWithArtists = getSongByIdBlocking(mediaId)
+                        val metadata = com.epsilonmusic.app.models.MediaMetadata(
+                            id = mediaId,
+                            title = updatedSong.title,
+                            artists = songWithArtists?.artists?.map {
+                                com.epsilonmusic.app.models.MediaMetadata.Artist(it.id, it.name)
+                            } ?: listOf(
+                                com.epsilonmusic.app.models.MediaMetadata.Artist(
+                                    id = "",
+                                    name = playbackData.videoDetails?.author ?: ""
+                                )
+                            ),
+                            duration = updatedSong.duration,
+                            thumbnailUrl = updatedSong.thumbnailUrl
+                        )
+                        val entryPoint = dagger.hilt.android.EntryPointAccessors.fromApplication(
+                            context.applicationContext,
+                            com.epsilonmusic.app.di.LyricsHelperEntryPoint::class.java
+                        )
+                        val fetched = entryPoint.lyricsHelper().getLyrics(metadata)
+                        database.query {
+                            upsert(
+                                com.epsilonmusic.app.db.entities.LyricsEntity(
+                                    id = mediaId,
+                                    lyrics = fetched.lyrics ?: "",
+                                    provider = fetched.providerName
+                                )
+                            )
+                        }
+                    } catch (e: Exception) {
+                        // Lyrics are best-effort: never fail a download because of them.
+                    }
+                }
+
                 updatedSong.thumbnailUrl?.let { url ->
                     val request = ImageRequest.Builder(context)
                         .data(url)

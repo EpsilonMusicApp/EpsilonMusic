@@ -15,6 +15,8 @@ import com.epsilonmusic.app.R
 import com.epsilonmusic.app.constants.ChipSortTypeKey
 import com.epsilonmusic.app.constants.LibraryFilter
 import com.epsilonmusic.app.ui.component.ChipsRow
+import com.epsilonmusic.app.ui.component.Material3SettingsGroup
+import com.epsilonmusic.app.ui.component.Material3SettingsItem
 import com.epsilonmusic.app.utils.rememberEnumPreference
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
@@ -26,8 +28,9 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -51,6 +54,7 @@ import com.epsilonmusic.app.constants.MiniPlayerHeight
 import com.epsilonmusic.app.constants.NavigationBarHeight
 import com.epsilonmusic.app.ui.component.TextFieldDialog
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LibraryScreen(navController: NavController) {
     var filterType by rememberEnumPreference(ChipSortTypeKey, LibraryFilter.LIBRARY)
@@ -155,45 +159,52 @@ fun LibraryScreen(navController: NavController) {
                     contentColor = MaterialTheme.colorScheme.onSurface
                 )
                 
-                Box {
-                    ExtendedFloatingActionButton(
-                        text = { Text(stringResource(R.string.import_playlist)) },
-                        icon = { Icon(painter = painterResource(R.drawable.download), contentDescription = "Import playlist") },
-                        onClick = { showImportMenu = true },
-                        shape = androidx.compose.foundation.shape.CircleShape,
-                        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-                        contentColor = MaterialTheme.colorScheme.onSurface
-                    )
-                    
-                    DropdownMenu(
-                        expanded = showImportMenu,
-                        onDismissRequest = { showImportMenu = false }
-                    ) {
-                        androidx.compose.material3.DropdownMenuItem(
-                            text = { Text("Import from Spotify") },
-                            leadingIcon = {
-                                Icon(
-                                    painter = painterResource(R.drawable.ic_spotify),
-                                    contentDescription = "Spotify",
-                                    tint = Color(0xFF1DB954) // Spotify green
-                                )
-                            },
+                ExtendedFloatingActionButton(
+                    text = { Text(stringResource(R.string.import_playlist)) },
+                    icon = { Icon(painter = painterResource(R.drawable.download), contentDescription = "Import playlist") },
+                    onClick = { showImportMenu = true },
+                    shape = androidx.compose.foundation.shape.CircleShape,
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    contentColor = MaterialTheme.colorScheme.onSurface
+                )
+            }
+        }
+    }
+
+    if (showImportMenu) {
+        ModalBottomSheet(
+            onDismissRequest = { showImportMenu = false },
+            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+        ) {
+            Column(
+                modifier = Modifier
+                    .padding(start = 16.dp, end = 16.dp)
+                    .padding(bottom = 24.dp)
+            ) {
+                Material3SettingsGroup(
+                    compact = true,
+                    items = listOf(
+                        Material3SettingsItem(
+                            icon = painterResource(R.drawable.ic_spotify),
+                            tintIcon = false,
+                            title = { Text("Import from Spotify") },
                             onClick = {
                                 showImportMenu = false
                                 // Navigate to Backup & Restore where the full Spotify import
                                 // flow lives (authenticate, select playlists, import).
                                 navController.navigate("settings/backup_restore?highlightKey=spotify_import")
                             }
-                        )
-                        androidx.compose.material3.DropdownMenuItem(
-                            text = { Text("Import from YouTube Music") },
+                        ),
+                        Material3SettingsItem(
+                            icon = painterResource(R.drawable.download),
+                            title = { Text("Import from YouTube Music") },
                             onClick = {
                                 showImportMenu = false
                                 showYoutubeImportDialog = true
                             }
                         )
-                    }
-                }
+                    )
+                )
             }
         }
     }

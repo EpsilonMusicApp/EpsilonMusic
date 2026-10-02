@@ -36,6 +36,7 @@ import com.epsilonmusic.app.ui.screens.playlist.OnlinePlaylistScreen
 import com.epsilonmusic.app.ui.screens.playlist.TopPlaylistScreen
 import com.epsilonmusic.app.ui.screens.search.OnlineSearchResult
 import com.epsilonmusic.app.ui.screens.search.SearchScreen
+import com.epsilonmusic.app.ui.screens.settings.BlockedArtistsScreen
 import com.epsilonmusic.app.ui.screens.settings.AboutScreen
 import com.epsilonmusic.app.ui.screens.settings.AppearanceSettings
 import com.epsilonmusic.app.ui.screens.settings.GlassEffectSettings
@@ -324,6 +325,10 @@ fun NavGraphBuilder.navigationBuilder(
 
     composable("settings") {
         SettingsScreen(navController, scrollBehavior)
+    }
+
+    composable("blocked_artists") {
+        BlockedArtistsScreen(navController)
     }
 
 
