@@ -42,6 +42,7 @@ import com.epsilonmusic.app.constants.AudioOffload
 import com.epsilonmusic.app.constants.AudioQuality
 import com.epsilonmusic.app.constants.AudioQualityKey
 import com.epsilonmusic.app.constants.AutoDownloadOnLikeKey
+import com.epsilonmusic.app.constants.DownloadWithMetadataKey
 import com.epsilonmusic.app.constants.AutomixCrossfadeKey
 import com.epsilonmusic.app.constants.AutomixDebugOverlayKey
 import com.epsilonmusic.app.constants.CrossfadeDurationKey
@@ -195,6 +196,10 @@ highlightKey: String? = null) {
     val (autoDownloadOnLike, onAutoDownloadOnLikeChange) = rememberPreference(
         AutoDownloadOnLikeKey,
         defaultValue = false
+    )
+    val (downloadWithMetadata, onDownloadWithMetadataChange) = rememberPreference(
+        DownloadWithMetadataKey,
+        defaultValue = true
     )
     val (similarContentEnabled, similarContentEnabledChange) = rememberPreference(
         key = SimilarContent,
@@ -959,6 +964,28 @@ highlightKey: String? = null) {
                         )
                     },
                     onClick = { onAutoDownloadOnLikeChange(!autoDownloadOnLike) }
+                ),
+                Material3SettingsItem(
+                    isHighlighted = (highlightKey == "Download with metadata"),
+                    icon = painterResource(R.drawable.download),
+                    title = { Text("Download with metadata") },
+                    description = { Text("Also downloads lyrics when downloading a song") },
+                    trailingContent = {
+                        Switch(
+                            checked = downloadWithMetadata,
+                            onCheckedChange = onDownloadWithMetadataChange,
+                            thumbContent = {
+                                Icon(
+                                    painter = painterResource(
+                                        id = if (downloadWithMetadata) R.drawable.check else R.drawable.close
+                                    ),
+                                    contentDescription = null,
+                                    modifier = Modifier.size(SwitchDefaults.IconSize)
+                                )
+                            }
+                        )
+                    },
+                    onClick = { onDownloadWithMetadataChange(!downloadWithMetadata) }
                 ),
                 Material3SettingsItem(
     isHighlighted = (highlightKey == stringResource(R.string.enable_similar_content)),

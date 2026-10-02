@@ -31,6 +31,8 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Block
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Slider
@@ -613,6 +615,26 @@ highlightKey: String? = null) {
         Spacer(Modifier.windowInsetsPadding(LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Top)))
 
         Spacer(modifier = Modifier.height(16.dp))
+
+        Material3SettingsGroup(
+            scrollState = scrollState,
+            title = "Privacy",
+            items = listOf(
+                Material3SettingsItem(
+                    isHighlighted = false,
+                    customIcon = {
+                        Icon(
+                            Icons.Default.Block,
+                            contentDescription = null,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    },
+                    title = { Text("Blocked Artists") },
+                    description = { Text("Manage hidden artists") },
+                    onClick = { navController.navigate("blocked_artists") }
+                )
+            )
+        )
 
         Material3SettingsGroup(scrollState = scrollState, 
             title = stringResource(R.string.general),

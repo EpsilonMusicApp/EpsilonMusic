@@ -2,6 +2,7 @@ package com.music.innertube
 
 import com.music.innertube.models.AccountInfo
 import com.music.innertube.models.YTItem
+import com.music.innertube.models.filterBlockedArtists
 import com.music.innertube.models.AlbumItem
 import com.music.innertube.models.Artist
 import com.music.innertube.models.ArtistItem
@@ -80,6 +81,12 @@ import kotlin.random.Random
  * Modified from [ViMusic](https://github.com/vfsfitvnm/ViMusic)
  */
 object YouTube {
+    /**
+     * Artist ids/names (entries of the form `artistId||artistName`) the user has
+     * blocked. Pushed from the app's UI layer; applied to search, home and
+     * related-content results via [filterBlockedArtists].
+     */
+    var blockedArtists: Set<String> = emptySet()
     private val innerTube = InnerTube()
 
     var locale: YouTubeLocale
@@ -144,7 +151,7 @@ object YouTube {
                 it.musicResponsiveListItemRenderer?.let { renderer ->
                     SearchSuggestionPage.fromMusicResponsiveListItemRenderer(renderer)
                 }
-            }.orEmpty()
+            }.orEmpty().filterBlockedArtists()
         )
     }
 
@@ -217,7 +224,7 @@ object YouTube {
 
         SearchSummaryPage(
             summaries = shelfSummaries + groupedSummaries
-        )
+        ).filterBlockedArtists()
     }
 
     suspend fun search(query: String, filter: SearchFilter): Result<SearchResult> = runCatching {
@@ -229,7 +236,7 @@ object YouTube {
         SearchResult(
             items = musicShelfRenderer?.contents?.getItems()?.mapNotNull {
                 SearchPage.toYTItem(it)
-            }.orEmpty(),
+            }.orEmpty().filterBlockedArtists(),
             continuation = musicShelfRenderer?.continuations?.getContinuation()
         )
     }
@@ -241,7 +248,7 @@ object YouTube {
                 SearchPage.toYTItem(it.musicResponsiveListItemRenderer)
             } ?: emptyList()
         SearchResult(
-            items = items,
+            items = items.filterBlockedArtists(),
             continuation = if (items.isEmpty()) null else response.continuationContents?.musicShelfContinuation?.continuations?.getContinuation()
         )
     }
@@ -686,7 +693,7 @@ object YouTube {
                 HomePage.Section.fromMusicCarouselShelfRenderer(it)
             }.toMutableList()
         val chips = sectionListRender?.header?.chipCloudRenderer?.chips?.mapNotNull { HomePage.Chip.fromChipCloudChipRenderer(it) }
-        HomePage(chips, sections, continuation)
+        HomePage(chips, sections, continuation).filterBlockedArtists()
     }
 
     private suspend fun homeContinuation(continuation: String): Result<HomePage> = runCatching {
@@ -1258,7 +1265,7 @@ object YouTube {
         }
         NextResult(
             title = title,
-            items = songs,
+            items = songs.filterBlockedArtists(),
             currentIndex = currentIndex,
             lyricsEndpoint = response.contents.singleColumnMusicWatchNextResultsRenderer?.tabbedRenderer?.watchNextTabbedResultsRenderer?.tabs?.getOrNull(1)?.tabRenderer?.endpoint?.browseEndpoint,
             relatedEndpoint = response.contents.singleColumnMusicWatchNextResultsRenderer?.tabbedRenderer?.watchNextTabbedResultsRenderer?.tabs?.getOrNull(2)?.tabRenderer?.endpoint?.browseEndpoint,

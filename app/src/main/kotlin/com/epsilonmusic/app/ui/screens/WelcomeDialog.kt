@@ -93,8 +93,8 @@ fun WelcomeDialog(
                     WelcomeActionRow(
                         icon = painterResource(R.drawable.coffee),
                         title = "Buy Me a Coffee",
-                        subtitle = "buymeacoffee.com/vihaanangag",
-                        onClick = { uriHandler.openUri("https://buymeacoffee.com/vihaanangag") }
+                        subtitle = "buymeacoffee.com/vihaanangaria",
+                        onClick = { uriHandler.openUri("https://buymeacoffee.com/vihaanangaria") }
                     )
                 }
 
@@ -102,8 +102,8 @@ fun WelcomeDialog(
                     WelcomeActionRow(
                         icon = painterResource(R.drawable.ic_discord_new),
                         title = "Discord",
-                        subtitle = "discord.gg/EcfV3AxH5c",
-                        onClick = { uriHandler.openUri("https://discord.gg/EcfV3AxH5c") }
+                        subtitle = "discord.gg/sQxjHvQu4",
+                        onClick = { uriHandler.openUri("https://discord.gg/sQxjHvQu4") }
                     )
                 }
 

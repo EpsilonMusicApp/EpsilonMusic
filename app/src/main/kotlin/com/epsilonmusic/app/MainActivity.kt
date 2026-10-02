@@ -8,6 +8,7 @@ import com.epsilonmusic.app.ui.component.RingtoneTrimmerDialog
 import com.epsilonmusic.app.ui.component.RingtoneProgressDialog
 import com.epsilonmusic.app.ui.component.AppFloatingNavBar
 import com.epsilonmusic.app.ui.component.floatingtabbar.rememberFloatingTabBarScrollConnection
+import com.epsilonmusic.app.constants.BlockedArtistsKey
 import com.epsilonmusic.app.constants.UseFloatingNavBarKey
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.runtime.compositionLocalOf
@@ -691,6 +692,14 @@ class MainActivity : ComponentActivity() {
                 val bottomInsetDp = WindowInsets.systemBars.asPaddingValues().calculateBottomPadding()
 
                 val navController = rememberNavController()
+
+                // Keep the innertube layer's blocked-artist set in sync with the stored
+                // preference so search, home, suggestions and related content all filter
+                // blocked artists.
+                val blockedArtists by dataStore.data
+                    .map { it[BlockedArtistsKey] ?: emptySet() }
+                    .collectAsState(initial = emptySet())
+                LaunchedEffect(blockedArtists) { YouTube.blockedArtists = blockedArtists }
 
                 // Screen-view analytics: one listener for the whole nav graph, reported
                 // through the flavor-agnostic Analytics facade (no-op on foss builds).

@@ -51,6 +51,8 @@ import androidx.compose.material3.ToggleButtonDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Block
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -97,7 +99,10 @@ import com.epsilonmusic.app.LocalPlayerAwareWindowInsets
 import com.epsilonmusic.app.LocalPlayerConnection
 import com.epsilonmusic.app.R
 import com.epsilonmusic.app.constants.AppBarHeight
+import androidx.datastore.preferences.core.edit
+import com.epsilonmusic.app.constants.BlockedArtistsKey
 import com.epsilonmusic.app.constants.HideExplicitKey
+import com.epsilonmusic.app.utils.dataStore
 import com.epsilonmusic.app.constants.ShowArtistDescriptionKey
 import com.epsilonmusic.app.constants.ShowArtistSubscriberCountKey
 import com.epsilonmusic.app.constants.ShowMonthlyListenersKey
@@ -141,6 +146,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonDefaults
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import com.epsilonmusic.app.canvas.AppleMusicArtistBackgroundProvider
@@ -157,6 +163,9 @@ fun ArtistScreen(
     val menuState = LocalMenuState.current
     val haptic = LocalHapticFeedback.current
     val coroutineScope = rememberCoroutineScope()
+    val blockedArtists by context.dataStore.data
+        .map { it[BlockedArtistsKey] ?: emptySet() }
+        .collectAsState(initial = emptySet())
     val playerConnection = LocalPlayerConnection.current ?: return
     val listenTogetherManager = LocalListenTogetherManager.current
     val isGuest = listenTogetherManager?.isGuestPlaybackRestricted == true
@@ -512,13 +521,11 @@ fun ArtistScreen(
                                 }
 
                                 
-                                Row(
+                                Column(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .padding(top = 8.dp),
-                                    horizontalArrangement = Arrangement.spacedBy(
-                                        ButtonGroupDefaults.ConnectedSpaceBetween
-                                    )
+                                    verticalArrangement = Arrangement.spacedBy(8.dp)
                                 ) {
                                     
                                     ToggleButton(
@@ -543,7 +550,7 @@ fun ArtistScreen(
                                             }
                                         },
                                         modifier = Modifier
-                                            .weight(1f)
+                                            .fillMaxWidth()
                                             .height(52.dp)
                                             .semantics { role = Role.Button },
                                         shapes = ButtonGroupDefaults.connectedLeadingButtonShapes()
@@ -579,7 +586,12 @@ fun ArtistScreen(
                                         )
                                     }
 
-                                    
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.spacedBy(
+                                            ButtonGroupDefaults.ConnectedSpaceBetween
+                                        )
+                                    ) {
                                     if (!showLocal && !isGuest) {
                                         artistPage?.artist?.radioEndpoint?.let { radioEndpoint ->
                                             ToggleButton(
@@ -591,7 +603,7 @@ fun ArtistScreen(
                                                     .weight(1f)
                                                     .height(52.dp)
                                                     .semantics { role = Role.Button },
-                                                shapes = ButtonGroupDefaults.connectedMiddleButtonShapes()
+                                                shapes = ButtonGroupDefaults.connectedLeadingButtonShapes()
                                             ) {
                                                 Icon(
                                                     painter = painterResource(R.drawable.radio),
@@ -621,11 +633,7 @@ fun ArtistScreen(
                                                     .weight(1f)
                                                     .height(52.dp)
                                                     .semantics { role = Role.Button },
-                                                shapes = if (artistPage?.artist?.radioEndpoint != null) {
-                                                    ButtonGroupDefaults.connectedTrailingButtonShapes()
-                                                } else {
-                                                    ButtonGroupDefaults.connectedTrailingButtonShapes()
-                                                }
+                                                shapes = ButtonGroupDefaults.connectedMiddleButtonShapes()
                                             ) {
                                                 Icon(
                                                     painter = painterResource(R.drawable.shuffle),
@@ -659,7 +667,7 @@ fun ArtistScreen(
                                                 .weight(1f)
                                                 .height(52.dp)
                                                 .semantics { role = Role.Button },
-                                            shapes = ButtonGroupDefaults.connectedTrailingButtonShapes()
+                                            shapes = ButtonGroupDefaults.connectedMiddleButtonShapes()
                                         ) {
                                             Icon(
                                                 painter = painterResource(R.drawable.shuffle),
@@ -669,6 +677,48 @@ fun ArtistScreen(
                                             Spacer(Modifier.size(ToggleButtonDefaults.IconSpacing))
                                             Text(
                                                 text = stringResource(R.string.shuffle),
+                                                style = MaterialTheme.typography.labelMedium,
+                                                maxLines = 1,
+                                                overflow = TextOverflow.Ellipsis
+                                            )
+                                        }
+                                    }
+
+                                        val blockedEntry = blockedArtists.find { it.startsWith("${viewModel.artistId}||") }
+                                        val isBlocked = blockedEntry != null || blockedArtists.contains(viewModel.artistId)
+
+                                        ToggleButton(
+                                            checked = isBlocked,
+                                            onCheckedChange = {
+                                                coroutineScope.launch {
+                                                    context.dataStore.edit { prefs ->
+                                                        val current = prefs[BlockedArtistsKey] ?: emptySet()
+                                                        if (isBlocked) {
+                                                            val toRemove = current.filter {
+                                                                it == viewModel.artistId || it.startsWith("${viewModel.artistId}||")
+                                                            }
+                                                            prefs[BlockedArtistsKey] = current - toRemove.toSet()
+                                                        } else {
+                                                            val name = artistPage?.artist?.title ?: "Unknown Artist"
+                                                            prefs[BlockedArtistsKey] = current + "${viewModel.artistId}||$name"
+                                                        }
+                                                    }
+                                                }
+                                            },
+                                            modifier = Modifier
+                                                .weight(1f)
+                                                .height(52.dp)
+                                                .semantics { role = Role.Button },
+                                            shapes = ButtonGroupDefaults.connectedTrailingButtonShapes()
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.Block,
+                                                contentDescription = null,
+                                                modifier = Modifier.size(20.dp)
+                                            )
+                                            Spacer(Modifier.size(ToggleButtonDefaults.IconSpacing))
+                                            Text(
+                                                text = if (isBlocked) "Blocked" else "Block",
                                                 style = MaterialTheme.typography.labelMedium,
                                                 maxLines = 1,
                                                 overflow = TextOverflow.Ellipsis

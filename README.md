@@ -228,6 +228,7 @@ Epsilon Music is community-translated. If you'd like to contribute a translation
 
 ## Community & Support
 
+- **Discord**: [Join our community server](https://discord.gg/sQxjHvQu4)
 - **GitHub Issues**: [Report a bug or request a feature](https://github.com/EpsilonMusicApp/EpsilonMusic/issues)
 - **GitHub Discussions**: [Join the conversation](https://github.com/EpsilonMusicApp/EpsilonMusic/discussions)
 - **Email**: [ownerepsilon@zohomail.com](mailto:ownerepsilon@zohomail.com)
@@ -239,7 +240,7 @@ Epsilon Music is community-translated. If you'd like to contribute a translation
 If Epsilon Music has been useful to you, consider supporting its development.
 
 <div align="center">
-  <a href="https://buymeacoffee.com/vihaanangag" style="text-decoration:none;">
+  <a href="https://buymeacoffee.com/vihaanangaria" style="text-decoration:none;">
     <img src="assets/bmac.png" alt="Buy Me A Coffee" width="180" style="border-radius: 12px; box-shadow: 0 8px 16px rgba(0,0,0,0.2);"/>
   </a>
 </div>

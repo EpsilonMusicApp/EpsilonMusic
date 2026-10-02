@@ -111,3 +111,34 @@ fun <T : YTItem> List<T>.filterYoutubeShorts(enabled: Boolean = false) =
     } else {
         this
     }
+
+/**
+ * Filters out items whose artist is in the user's blocked-artists set.
+ *
+ * The set is stored as DataStore string entries of the form `artistId||artistName`
+ * and pushed into [com.music.innertube.YouTube.blockedArtists] by the UI layer.
+ * Both the id and the display name are matched so that blocking keeps working
+ * even when an item only carries one of the two.
+ */
+fun <T : YTItem> List<T>.filterBlockedArtists(
+    blockedArtists: Set<String> = com.music.innertube.YouTube.blockedArtists,
+): List<T> =
+    if (blockedArtists.isNotEmpty()) {
+        val blockedIds = blockedArtists.map { it.substringBefore("||") }.toSet()
+        val blockedNames =
+            blockedArtists
+                .mapNotNull { if (it.contains("||")) it.substringAfter("||") else null }
+                .toSet()
+
+        filterNot { item ->
+            when (item) {
+                is ArtistItem -> blockedIds.contains(item.id) || blockedIds.contains(item.channelId) || blockedNames.contains(item.title)
+                is SongItem -> item.artists.any { blockedIds.contains(it.id) || blockedNames.contains(it.name) }
+                is AlbumItem -> item.artists?.any { blockedIds.contains(it.id) || blockedNames.contains(it.name) } ?: false
+                is PlaylistItem -> blockedIds.contains(item.author?.id) || blockedNames.contains(item.author?.name)
+                else -> false
+            }
+        }
+    } else {
+        this
+    }
