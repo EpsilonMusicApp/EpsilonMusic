@@ -1043,4 +1043,24 @@
     <string name="loudness_preset_normal">Normal</string>
     <string name="loudness_preset_loud">Loud</string>
     <string name="loudness_preset_aggressive">Aggressive</string>
+
+    <string name="app_font">App Font</string>
+    <string name="font_selection">Font Selection</string>
+    <string name="font_system">System Default</string>
+    <string name="font_system_desc">Use the default system font</string>
+    <string name="font_google_sans">Google Sans</string>
+    <string name="font_google_sans_desc">Use the Google Sans font</string>
+    <string name="font_sans_flex">Sans Flex</string>
+    <string name="font_sans_flex_desc">Use the Sans Flex font</string>
+    <string name="font_outfit">Outfit</string>
+    <string name="font_outfit_desc">Use the Outfit font</string>
+    <string name="font_plus_jakarta_sans">Plus Jakarta Sans</string>
+    <string name="font_plus_jakarta_sans_desc">Use the Plus Jakarta Sans font</string>
+    <string name="font_custom">Custom</string>
+    <string name="font_custom_desc">Use a font file from your device</string>
+    <string name="import_custom_font">Import</string>
+    <string name="typography_preview">Typography Preview</string>
+    <string name="preview_text_quote">The quick brown fox jumps over the lazy dog</string>
+    <string name="font_picker_unavailable">System picker is not available on this device.</string>
+    <string name="font_preview_note">The selected typeface is applied across the app.</string>
 </resources>
