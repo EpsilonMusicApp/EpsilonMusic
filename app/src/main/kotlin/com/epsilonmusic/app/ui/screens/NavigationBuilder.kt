@@ -27,6 +27,7 @@ import com.epsilonmusic.app.ui.screens.artist.ArtistItemsScreen
 import com.epsilonmusic.app.ui.screens.artist.ArtistScreen
 import com.epsilonmusic.app.ui.screens.artist.ArtistSongsScreen
 import com.epsilonmusic.app.ui.screens.equalizer.EqScreen
+import com.epsilonmusic.app.ui.screens.generate.GenerateScreen
 import com.epsilonmusic.app.ui.screens.library.LibraryScreen
 import com.epsilonmusic.app.ui.screens.library.LocalSongScreen
 import com.epsilonmusic.app.ui.screens.playlist.AutoPlaylistScreen
@@ -52,6 +53,7 @@ import com.epsilonmusic.app.ui.screens.settings.AccountSettingsScreen
 import com.epsilonmusic.app.ui.screens.settings.StorageSettings
 import com.epsilonmusic.app.ui.screens.settings.ThemeScreen
 import com.epsilonmusic.app.ui.screens.settings.LegacyIconScreen
+import com.epsilonmusic.app.ui.screens.settings.FontSelectionScreen
 import com.epsilonmusic.app.ui.screens.settings.AiSettings
 
 import com.epsilonmusic.app.ui.screens.settings.integrations.ListenTogetherSettings
@@ -65,6 +67,7 @@ import com.epsilonmusic.app.epsilonmusic.changelog.ChangelogScreen
 import com.epsilonmusic.app.epsilonmusic.commitscreen.CommitScreen
 import com.epsilonmusic.app.ui.screens.equalizer.axion.AxionEqScreen
 import com.epsilonmusic.app.ui.screens.ambient.AmbientModeScreen
+import com.epsilonmusic.app.ui.screens.settings.AmbientSettingsScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 fun NavGraphBuilder.navigationBuilder(
@@ -119,12 +122,20 @@ fun NavGraphBuilder.navigationBuilder(
         AmbientModeScreen(navController)
     }
 
+    composable("ambient_settings") {
+        AmbientSettingsScreen(navController)
+    }
+
     composable("local_songs") {
         LocalSongScreen(navController)
     }
 
     composable("stats") {
         StatsScreen(navController)
+    }
+
+    composable("generate") {
+        GenerateScreen(navController)
     }
 
     composable("mood_and_genres") {
@@ -363,6 +374,10 @@ fun NavGraphBuilder.navigationBuilder(
 
     composable("settings/appearance/legacyicon") {
         LegacyIconScreen(navController, activity, snackbarHostState)
+    }
+
+    composable("settings/appearance/font") {
+        FontSelectionScreen(navController)
     }
 
     composable(
