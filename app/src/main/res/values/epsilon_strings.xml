@@ -1044,6 +1044,14 @@
     <string name="loudness_preset_loud">Loud</string>
     <string name="loudness_preset_aggressive">Aggressive</string>
 
+    <string name="song_story">Song Story</string>
+    <string name="song_story_desc">Backstory, meaning and artist bio</string>
+    <string name="song_story_album">Album</string>
+    <string name="song_story_about_song">About the Song</string>
+    <string name="song_story_about_artist">About the Artist</string>
+    <string name="song_story_loading">Fetching…</string>
+    <string name="song_story_not_found">Not found.</string>
+    <string name="song_story_failed">Couldn\'t load song info.</string>
     <string name="autoeq_profiles">AutoEq Profiles</string>
     <string name="autoeq_profiles_desc">Find optimal EQ for your headphones</string>
     <string name="autoeq_search_hint">Search your headphones…</string>
