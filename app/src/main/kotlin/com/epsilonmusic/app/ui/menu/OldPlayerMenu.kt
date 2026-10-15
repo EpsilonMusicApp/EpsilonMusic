@@ -173,6 +173,7 @@ fun OldPlayerMenu(
     }
 
     var showChoosePlaylistDialog by rememberSaveable { mutableStateOf(false) }
+    var showSongStoryDialog by rememberSaveable { mutableStateOf(false) }
     var showListenTogetherDialog by rememberSaveable { mutableStateOf(false) }
     var showSelectArtistDialog by rememberSaveable { mutableStateOf(false) }
     var showPitchTempoDialog by rememberSaveable { mutableStateOf(false) }
@@ -199,6 +200,13 @@ fun OldPlayerMenu(
         mediaMetadata = mediaMetadata,
         onDismiss = { showListenTogetherDialog = false }
     )
+
+    if (showSongStoryDialog) {
+        SongStoryDialog(
+            mediaMetadata = mediaMetadata,
+            onDismiss = { showSongStoryDialog = false }
+        )
+    }
 
     if (showSelectArtistDialog) {
         ListDialog(onDismiss = { showSelectArtistDialog = false }) {
@@ -756,6 +764,23 @@ fun OldPlayerMenu(
                             onClick = {
                                 onShowDetailsDialog()
                                 onDismiss()
+                            }
+                        )
+                    )
+
+                    add(
+                        Material3MenuItemData(
+                            title = { Text(text = stringResource(R.string.song_story)) },
+                            description = { Text(text = stringResource(R.string.song_story_desc)) },
+                            icon = {
+                                Icon(
+                                    painter = painterResource(R.drawable.sparks),
+                                    contentDescription = null,
+                                    modifier = Modifier.size(24.dp)
+                                )
+                            },
+                            onClick = {
+                                showSongStoryDialog = true
                             }
                         )
                     )
