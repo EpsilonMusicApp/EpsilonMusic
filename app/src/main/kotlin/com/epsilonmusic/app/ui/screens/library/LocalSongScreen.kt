@@ -138,7 +138,7 @@ fun LocalSongScreen(
     val songs by viewModel.songs.collectAsState()
     val scanState by viewModel.scanState.collectAsState()
     val listState = rememberLazyListState()
-    val scanSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val scanSheetState = rememberModalBottomSheetState()
     var showScanSheet by rememberSaveable { mutableStateOf(false) }
     var isSearchActive by rememberSaveable { mutableStateOf(false) }
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
