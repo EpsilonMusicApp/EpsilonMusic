@@ -65,6 +65,7 @@ import com.epsilonmusic.app.epsilonmusic.changelog.ChangelogScreen
 import com.epsilonmusic.app.epsilonmusic.commitscreen.CommitScreen
 import com.epsilonmusic.app.ui.screens.equalizer.axion.AxionEqScreen
 import com.epsilonmusic.app.ui.screens.ambient.AmbientModeScreen
+import com.epsilonmusic.app.ui.screens.settings.AmbientSettingsScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 fun NavGraphBuilder.navigationBuilder(
@@ -117,6 +118,10 @@ fun NavGraphBuilder.navigationBuilder(
 
     composable("ambient_mode") {
         AmbientModeScreen(navController)
+    }
+
+    composable("ambient_settings") {
+        AmbientSettingsScreen(navController)
     }
 
     composable("local_songs") {
