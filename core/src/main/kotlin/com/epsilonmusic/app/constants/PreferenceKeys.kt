@@ -528,6 +528,15 @@ enum class LyricsAnimationStyle {
 val LyricsTextSizeKey = floatPreferencesKey("lyricsTextSize")
 val LyricsLineSpacingKey = floatPreferencesKey("lyricsLineSpacing")
 
+// Ambient mode
+val AmbientArtScaleKey = floatPreferencesKey("ambient_art_scale")
+val AmbientShowTitleKey = booleanPreferencesKey("ambient_show_title")
+val AmbientShowArtistKey = booleanPreferencesKey("ambient_show_artist")
+val AmbientShowLyricsKey = booleanPreferencesKey("ambient_show_lyrics")
+val AmbientShowArtKey = booleanPreferencesKey("ambient_show_art")
+val AmbientFullScreenArtKey = booleanPreferencesKey("ambient_full_screen_art")
+val AmbientSpacingKey = floatPreferencesKey("ambient_spacing")
+
 val PlayerVolumeKey = floatPreferencesKey("playerVolume")
 val RepeatModeKey = intPreferencesKey("repeatMode")
 

@@ -1043,4 +1043,22 @@
     <string name="loudness_preset_normal">Normal</string>
     <string name="loudness_preset_loud">Loud</string>
     <string name="loudness_preset_aggressive">Aggressive</string>
+
+    <string name="ambient_settings">Ambient Mode Settings</string>
+    <string name="ambient_display_options">Display Options</string>
+    <string name="ambient_show_art">Show Music Art</string>
+    <string name="ambient_show_art_desc">Display the album artwork</string>
+    <string name="ambient_art_size">Music Art Size</string>
+    <string name="ambient_spacing">Spacing Between Art and Lyrics</string>
+    <string name="ambient_show_title">Show Song Name</string>
+    <string name="ambient_show_title_desc">Display the current song title</string>
+    <string name="ambient_show_artist">Show Artist Name</string>
+    <string name="ambient_show_artist_desc">Display the current artist name</string>
+    <string name="ambient_show_lyrics">Show Lyrics</string>
+    <string name="ambient_show_lyrics_desc">Display synchronized lyrics if available</string>
+    <string name="ambient_lyrics_customization">Lyrics Customization</string>
+    <string name="ambient_lyrics_font_size">Lyrics Font Size</string>
+    <string name="ambient_lyrics_line_spacing">Lyrics Line Spacing</string>
+    <string name="ambient_lyrics_animation_style">Lyrics Animation Style</string>
+    <string name="ambient_lyrics_animation_next">Next</string>
 </resources>
