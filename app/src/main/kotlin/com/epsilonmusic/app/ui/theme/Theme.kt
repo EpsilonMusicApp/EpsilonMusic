@@ -10,6 +10,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.unit.dp
 import androidx.compose.runtime.saveable.Saver
@@ -19,6 +20,10 @@ import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.palette.graphics.Palette
+import com.epsilonmusic.app.constants.CustomFontPathKey
+import com.epsilonmusic.app.constants.FontChoice
+import com.epsilonmusic.app.constants.SelectedFontKey
+import com.epsilonmusic.app.utils.rememberPreference
 import com.materialkolor.PaletteStyle
 import com.materialkolor.dynamiccolor.ColorSpec
 import com.materialkolor.rememberDynamicColorScheme
@@ -34,7 +39,13 @@ fun epsilonmusicTheme(
     content: @Composable () -> Unit,
 ) {
     val context = LocalContext.current
-    
+
+    val selectedFont by rememberPreference(SelectedFontKey, FontChoice.SYSTEM.value)
+    val customFontPath by rememberPreference(CustomFontPathKey, "")
+    val brandFont = remember(selectedFont, customFontPath) {
+        resolveFontFamily(selectedFont, customFontPath)
+    }
+
     val useSystemDynamicColor = (themeColor == DefaultThemeColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
 
     
@@ -63,7 +74,7 @@ fun epsilonmusicTheme(
     
         MaterialTheme(
         colorScheme = colorScheme,
-        typography = AppTypography,
+        typography = getTypography(brandFont),
         shapes = androidx.compose.material3.MaterialTheme.shapes.copy(
             extraSmall = androidx.compose.foundation.shape.RoundedCornerShape(24.dp)
         ),

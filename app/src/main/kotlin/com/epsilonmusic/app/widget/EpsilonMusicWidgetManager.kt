@@ -12,16 +12,23 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapShader
+import android.graphics.Rect
+import android.graphics.SweepGradient
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.RectF
 import android.graphics.Shader
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.util.SizeF
+import android.view.View
 import android.widget.RemoteViews
 import coil3.ImageLoader
 import coil3.request.ImageRequest
 import coil3.request.allowHardware
 import coil3.request.crossfade
+import androidx.media3.common.Player
 import coil3.toBitmap
 import com.epsilonmusic.app.MainActivity
 import com.epsilonmusic.app.R
@@ -31,6 +38,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
+
+data class WidgetQueueItem(
+    val index: Int,
+    val title: String,
+    val artist: String,
+    val isCurrent: Boolean,
+)
 
 @Singleton
 class EpsilonMusicWidgetManager @Inject constructor(
@@ -48,6 +62,8 @@ class EpsilonMusicWidgetManager @Inject constructor(
     private var cachedArtworkUri: String? = null
     private var cachedAlbumArt: Bitmap? = null
     private var cachedCircularAlbumArt: Bitmap? = null
+    private var cachedRoundedAlbumArt: Bitmap? = null
+    private var cachedBannerAlbumArt: Bitmap? = null
 
     suspend fun updateWidgets(
         title: String,
@@ -56,24 +72,35 @@ class EpsilonMusicWidgetManager @Inject constructor(
         isPlaying: Boolean,
         isLiked: Boolean,
         duration: Long = 0,
-        currentPosition: Long = 0
+        currentPosition: Long = 0,
+        isShuffle: Boolean = false,
+        repeatMode: Int = 0,
+        queueItems: List<WidgetQueueItem> = emptyList()
     ) {
         val appWidgetManager = AppWidgetManager.getInstance(context)
 
         // Use cached album art if URI hasn't changed, otherwise load new one
         val albumArt: Bitmap?
         val circularAlbumArt: Bitmap?
-        
+        val roundedAlbumArt: Bitmap?
+        val bannerAlbumArt: Bitmap?
+
         if (artworkUri != null && artworkUri == cachedArtworkUri && cachedAlbumArt != null) {
             albumArt = cachedAlbumArt
             circularAlbumArt = cachedCircularAlbumArt
+            roundedAlbumArt = cachedRoundedAlbumArt
+            bannerAlbumArt = cachedBannerAlbumArt
         } else {
             albumArt = artworkUri?.let { loadAlbumArt(it, 300) }
             circularAlbumArt = albumArt?.let { getCircularBitmap(it) }
+            roundedAlbumArt = albumArt?.let { getRoundedCornerBitmap(it, 36f) }
+            bannerAlbumArt = albumArt?.let { getRoundedCornerBitmap(it, 44f) }
             // Update cache
             cachedArtworkUri = artworkUri
             cachedAlbumArt = albumArt
             cachedCircularAlbumArt = circularAlbumArt
+            cachedRoundedAlbumArt = roundedAlbumArt
+            cachedBannerAlbumArt = bannerAlbumArt
         }
 
         // Update main music player widgets
@@ -107,6 +134,116 @@ class EpsilonMusicWidgetManager @Inject constructor(
             )
             turntableWidgetIds.forEach { widgetId ->
                 appWidgetManager.updateAppWidget(widgetId, turntableViews)
+            }
+        }
+
+        // Modern player widgets (4x2)
+        val modernComponent = ComponentName(context, EpsilonModernWidgetReceiver::class.java)
+        val modernWidgetIds = appWidgetManager.getAppWidgetIds(modernComponent)
+        if (modernWidgetIds.isNotEmpty()) {
+            val modernViews = createModernFlowRemoteViews(
+                title, artist, roundedAlbumArt, isPlaying, isLiked, duration, currentPosition
+            )
+            modernWidgetIds.forEach { widgetId ->
+                appWidgetManager.updateAppWidget(widgetId, modernViews)
+            }
+        }
+
+        // Compact player widgets (2x2)
+        val squareComponent = ComponentName(context, EpsilonSquareWidgetReceiver::class.java)
+        val squareWidgetIds = appWidgetManager.getAppWidgetIds(squareComponent)
+        if (squareWidgetIds.isNotEmpty()) {
+            val squareViews = createCompactGlowRemoteViews(
+                title, artist, roundedAlbumArt, isPlaying
+            )
+            squareWidgetIds.forEach { widgetId ->
+                appWidgetManager.updateAppWidget(widgetId, squareViews)
+            }
+        }
+
+        // Showcase player widgets (4x4)
+        val showcaseComponent = ComponentName(context, EpsilonShowcaseWidgetReceiver::class.java)
+        val showcaseWidgetIds = appWidgetManager.getAppWidgetIds(showcaseComponent)
+        if (showcaseWidgetIds.isNotEmpty()) {
+            val showcaseViews = createShowcaseCardRemoteViews(
+                title, artist, bannerAlbumArt, isPlaying, isLiked, duration, currentPosition
+            )
+            showcaseWidgetIds.forEach { widgetId ->
+                appWidgetManager.updateAppWidget(widgetId, showcaseViews)
+            }
+        }
+
+        // Pill player widgets (4x1)
+        val slimComponent = ComponentName(context, EpsilonSlimWidgetReceiver::class.java)
+        val slimWidgetIds = appWidgetManager.getAppWidgetIds(slimComponent)
+        if (slimWidgetIds.isNotEmpty()) {
+            val slimViews = createSlimStripRemoteViews(
+                title, artist, roundedAlbumArt, isPlaying, duration, currentPosition
+            )
+            slimWidgetIds.forEach { widgetId ->
+                appWidgetManager.updateAppWidget(widgetId, slimViews)
+            }
+        }
+
+        // Vinyl rotation: 33 1/3 RPM = one full spin every 1.8 seconds
+        val vinylAngle = if (isPlaying && duration > 0) {
+            ((currentPosition % 1800L).toFloat() / 1800f * 360f)
+        } else 0f
+        val vinylDisc = createVinylDiscBitmap(albumArt, vinylAngle, 320, false)
+        val vintageVinylDisc = createVinylDiscBitmap(albumArt, vinylAngle, 260, true)
+
+        // Vinyl disc widgets (3x3)
+        val vinylComponent = ComponentName(context, EpsilonVinylWidgetReceiver::class.java)
+        val vinylWidgetIds = appWidgetManager.getAppWidgetIds(vinylComponent)
+        if (vinylWidgetIds.isNotEmpty()) {
+            val vinylViews = createVinylSquareRemoteViews(
+                title, artist, vinylDisc, isPlaying, duration, currentPosition, vinylAngle
+            )
+            vinylWidgetIds.forEach { widgetId ->
+                appWidgetManager.updateAppWidget(widgetId, vinylViews)
+            }
+        }
+
+        // Vintage turntable widgets (4x2)
+        val vintageComponent = ComponentName(context, EpsilonVintageWidgetReceiver::class.java)
+        val vintageWidgetIds = appWidgetManager.getAppWidgetIds(vintageComponent)
+        if (vintageWidgetIds.isNotEmpty()) {
+            val vintageViews = createVintageTurntableRemoteViews(
+                title, artist, vintageVinylDisc, isPlaying, duration, currentPosition, vinylAngle
+            )
+            vintageWidgetIds.forEach { widgetId ->
+                appWidgetManager.updateAppWidget(widgetId, vintageViews)
+            }
+        }
+
+        // Adaptive player widgets (compact <-> expanded queue)
+        val adaptiveComponent = ComponentName(context, EpsilonAdaptiveWidgetReceiver::class.java)
+        val adaptiveWidgetIds = appWidgetManager.getAppWidgetIds(adaptiveComponent)
+        if (adaptiveWidgetIds.isNotEmpty()) {
+            AdaptiveQueueWidgetService.queueData = queueItems
+            val adaptiveAlbumArt = albumArt?.let { getRoundedCornerBitmap(it, 28f) }
+            adaptiveWidgetIds.forEach { widgetId ->
+                val options = appWidgetManager.getAppWidgetOptions(widgetId)
+                val minHeight = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT, 100)
+
+                val compactViews = createAdaptiveCompactRemoteViews(
+                    title, artist, adaptiveAlbumArt, isPlaying, isShuffle, repeatMode
+                )
+                val expandedViews = createAdaptiveExpandedRemoteViews(
+                    widgetId, title, artist, adaptiveAlbumArt, isPlaying, isShuffle, repeatMode
+                )
+                val finalViews = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    RemoteViews(
+                        mapOf(
+                            SizeF(200f, 80f) to compactViews,
+                            SizeF(200f, 150f) to expandedViews
+                        )
+                    )
+                } else {
+                    if (minHeight >= 130) expandedViews else compactViews
+                }
+                appWidgetManager.updateAppWidget(widgetId, finalViews)
+                appWidgetManager.notifyAppWidgetViewDataChanged(widgetId, R.id.widget_queue_list)
             }
         }
 
@@ -449,4 +586,540 @@ class EpsilonMusicWidgetManager @Inject constructor(
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
     }
+
+    // region Additional widget designs
+
+    private fun createModernFlowRemoteViews(
+        title: String,
+        artist: String,
+        roundedAlbumArt: Bitmap?,
+        isPlaying: Boolean,
+        isLiked: Boolean,
+        duration: Long,
+        currentPosition: Long
+    ): RemoteViews {
+        val views = RemoteViews(context.packageName, R.layout.widget_modern_flow)
+
+        views.setTextViewText(R.id.widget_song_title, title)
+        views.setTextViewText(R.id.widget_artist_name, artist)
+
+        views.setImageViewBitmap(
+            R.id.widget_album_art,
+            roundedAlbumArt ?: getRoundedDefaultIcon(36f)
+        )
+
+        val playIcon = if (isPlaying) R.drawable.ic_widget_pause else R.drawable.ic_widget_play
+        views.setImageViewResource(R.id.widget_play_pause, playIcon)
+
+        val likeIcon = if (isLiked) R.drawable.ic_widget_heart_nav else R.drawable.ic_widget_heart_outline_nav
+        views.setImageViewResource(R.id.widget_like_icon, likeIcon)
+
+        if (duration > 0) {
+            val level = ((currentPosition.toDouble() / duration.toDouble()) * 10000).toInt().coerceIn(0, 10000)
+            views.setInt(R.id.widget_progress_fill, "setImageLevel", level)
+            views.setTextViewText(R.id.widget_time_current, formatDuration(currentPosition))
+            views.setTextViewText(R.id.widget_time_duration, formatDuration(duration))
+        } else {
+            views.setInt(R.id.widget_progress_fill, "setImageLevel", 0)
+            views.setTextViewText(R.id.widget_time_current, "0:00")
+            views.setTextViewText(R.id.widget_time_duration, "0:00")
+        }
+
+        views.setOnClickPendingIntent(R.id.widget_album_art, getNowPlayingIntent())
+        views.setOnClickPendingIntent(R.id.widget_song_title, getNowPlayingIntent())
+        views.setOnClickPendingIntent(R.id.widget_artist_name, getNowPlayingIntent())
+        views.setOnClickPendingIntent(R.id.widget_cast_button, getOutputSwitcherIntent())
+        views.setOnClickPendingIntent(R.id.widget_like_button, getLikeIntent())
+        views.setOnClickPendingIntent(R.id.widget_prev_button, getPreviousIntent())
+        views.setOnClickPendingIntent(R.id.widget_play_pause_container, getPlayPauseIntent())
+        views.setOnClickPendingIntent(R.id.widget_next_button, getNextIntent())
+        views.setOnClickPendingIntent(R.id.widget_queue_button, getQueueIntent())
+
+        return views
+    }
+
+    private fun createCompactGlowRemoteViews(
+        title: String,
+        artist: String,
+        roundedAlbumArt: Bitmap?,
+        isPlaying: Boolean
+    ): RemoteViews {
+        val views = RemoteViews(context.packageName, R.layout.widget_compact_glow)
+
+        views.setTextViewText(R.id.widget_song_title, title)
+        views.setTextViewText(R.id.widget_artist_name, artist)
+
+        views.setImageViewBitmap(
+            R.id.widget_album_art,
+            roundedAlbumArt ?: getRoundedDefaultIcon(36f)
+        )
+
+        val playIcon = if (isPlaying) R.drawable.ic_widget_pause else R.drawable.ic_widget_play
+        views.setImageViewResource(R.id.widget_play_pause, playIcon)
+
+        views.setOnClickPendingIntent(R.id.widget_album_art, getNowPlayingIntent())
+        views.setOnClickPendingIntent(R.id.widget_song_title, getNowPlayingIntent())
+        views.setOnClickPendingIntent(R.id.widget_artist_name, getNowPlayingIntent())
+        views.setOnClickPendingIntent(R.id.widget_prev_button, getPreviousIntent())
+        views.setOnClickPendingIntent(R.id.widget_play_pause_container, getPlayPauseIntent())
+        views.setOnClickPendingIntent(R.id.widget_next_button, getNextIntent())
+
+        return views
+    }
+
+    private fun createShowcaseCardRemoteViews(
+        title: String,
+        artist: String,
+        bannerAlbumArt: Bitmap?,
+        isPlaying: Boolean,
+        isLiked: Boolean,
+        duration: Long,
+        currentPosition: Long
+    ): RemoteViews {
+        val views = RemoteViews(context.packageName, R.layout.widget_showcase_card)
+
+        views.setTextViewText(R.id.widget_song_title, title)
+        views.setTextViewText(R.id.widget_artist_name, artist)
+
+        views.setImageViewBitmap(
+            R.id.widget_album_art,
+            bannerAlbumArt ?: getRoundedDefaultIcon(44f)
+        )
+
+        val playIcon = if (isPlaying) R.drawable.ic_widget_pause else R.drawable.ic_widget_play
+        views.setImageViewResource(R.id.widget_play_pause, playIcon)
+
+        val likeIcon = if (isLiked) R.drawable.ic_widget_heart_nav else R.drawable.ic_widget_heart_outline_nav
+        views.setImageViewResource(R.id.widget_like_icon, likeIcon)
+
+        if (duration > 0) {
+            val level = ((currentPosition.toDouble() / duration.toDouble()) * 10000).toInt().coerceIn(0, 10000)
+            views.setInt(R.id.widget_progress_fill, "setImageLevel", level)
+            views.setTextViewText(R.id.widget_time_current, formatDuration(currentPosition))
+            views.setTextViewText(R.id.widget_time_duration, formatDuration(duration))
+        } else {
+            views.setInt(R.id.widget_progress_fill, "setImageLevel", 0)
+            views.setTextViewText(R.id.widget_time_current, "0:00")
+            views.setTextViewText(R.id.widget_time_duration, "0:00")
+        }
+
+        views.setOnClickPendingIntent(R.id.widget_soundwave_logo, getNowPlayingIntent())
+        views.setOnClickPendingIntent(R.id.widget_album_art, getNowPlayingIntent())
+        views.setOnClickPendingIntent(R.id.widget_song_title, getNowPlayingIntent())
+        views.setOnClickPendingIntent(R.id.widget_artist_name, getNowPlayingIntent())
+        views.setOnClickPendingIntent(R.id.widget_cast_button, getOutputSwitcherIntent())
+        views.setOnClickPendingIntent(R.id.widget_like_button, getLikeIntent())
+        views.setOnClickPendingIntent(R.id.widget_prev_button, getPreviousIntent())
+        views.setOnClickPendingIntent(R.id.widget_play_pause_container, getPlayPauseIntent())
+        views.setOnClickPendingIntent(R.id.widget_next_button, getNextIntent())
+        views.setOnClickPendingIntent(R.id.widget_options_button, getSongOptionsIntent())
+
+        return views
+    }
+
+    private fun createSlimStripRemoteViews(
+        title: String,
+        artist: String,
+        roundedAlbumArt: Bitmap?,
+        isPlaying: Boolean,
+        duration: Long,
+        currentPosition: Long
+    ): RemoteViews {
+        val views = RemoteViews(context.packageName, R.layout.widget_slim_strip)
+
+        views.setTextViewText(R.id.widget_song_title, title)
+        views.setTextViewText(R.id.widget_artist_name, artist)
+
+        views.setImageViewBitmap(
+            R.id.widget_album_art,
+            roundedAlbumArt ?: getRoundedDefaultIcon(32f)
+        )
+
+        val playIcon = if (isPlaying) R.drawable.ic_widget_pause else R.drawable.ic_widget_play
+        views.setImageViewResource(R.id.widget_play_pause, playIcon)
+
+        if (duration > 0) {
+            val level = ((currentPosition.toDouble() / duration.toDouble()) * 10000).toInt().coerceIn(0, 10000)
+            views.setInt(R.id.widget_progress_fill, "setImageLevel", level)
+            views.setTextViewText(R.id.widget_time_current, formatDuration(currentPosition))
+            views.setTextViewText(R.id.widget_time_duration, formatDuration(duration))
+        } else {
+            views.setInt(R.id.widget_progress_fill, "setImageLevel", 0)
+            views.setTextViewText(R.id.widget_time_current, "0:00")
+            views.setTextViewText(R.id.widget_time_duration, "0:00")
+        }
+
+        views.setOnClickPendingIntent(R.id.widget_album_art, getNowPlayingIntent())
+        views.setOnClickPendingIntent(R.id.widget_song_title, getNowPlayingIntent())
+        views.setOnClickPendingIntent(R.id.widget_artist_name, getNowPlayingIntent())
+        views.setOnClickPendingIntent(R.id.widget_prev_button, getPreviousIntent())
+        views.setOnClickPendingIntent(R.id.widget_play_pause_container, getPlayPauseIntent())
+        views.setOnClickPendingIntent(R.id.widget_next_button, getNextIntent())
+        views.setOnClickPendingIntent(R.id.widget_cast_button, getOutputSwitcherIntent())
+
+        return views
+    }
+
+    private fun createVinylSquareRemoteViews(
+        title: String,
+        artist: String,
+        vinylDisc: Bitmap,
+        isPlaying: Boolean,
+        duration: Long,
+        currentPosition: Long,
+        vinylAngle: Float
+    ): RemoteViews {
+        val views = RemoteViews(context.packageName, R.layout.widget_vinyl_square)
+
+        views.setTextViewText(R.id.widget_song_title, title)
+        views.setTextViewText(R.id.widget_artist_name, artist)
+        views.setImageViewBitmap(R.id.widget_vinyl_disc, vinylDisc)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            views.setFloat(R.id.widget_vinyl_disc, "setRotation", vinylAngle)
+            views.setFloat(R.id.widget_tonearm, "setRotation", if (isPlaying) 0f else -18f)
+        }
+
+        val playIcon = if (isPlaying) R.drawable.ic_widget_pause else R.drawable.ic_widget_play
+        views.setImageViewResource(R.id.widget_play_pause, playIcon)
+
+        if (duration > 0) {
+            val level = ((currentPosition.toDouble() / duration.toDouble()) * 10000).toInt().coerceIn(0, 10000)
+            views.setInt(R.id.widget_progress_fill, "setImageLevel", level)
+            views.setTextViewText(R.id.widget_time_current, formatDuration(currentPosition))
+            views.setTextViewText(R.id.widget_time_duration, formatDuration(duration))
+        } else {
+            views.setInt(R.id.widget_progress_fill, "setImageLevel", 0)
+            views.setTextViewText(R.id.widget_time_current, "0:00")
+            views.setTextViewText(R.id.widget_time_duration, "0:00")
+        }
+
+        views.setOnClickPendingIntent(R.id.widget_vinyl_container, getNowPlayingIntent())
+        views.setOnClickPendingIntent(R.id.widget_vinyl_disc, getNowPlayingIntent())
+        views.setOnClickPendingIntent(R.id.widget_song_title, getNowPlayingIntent())
+        views.setOnClickPendingIntent(R.id.widget_artist_name, getNowPlayingIntent())
+        views.setOnClickPendingIntent(R.id.widget_prev_button, getPreviousIntent())
+        views.setOnClickPendingIntent(R.id.widget_play_pause_container, getPlayPauseIntent())
+        views.setOnClickPendingIntent(R.id.widget_next_button, getNextIntent())
+
+        return views
+    }
+
+    private fun createVintageTurntableRemoteViews(
+        title: String,
+        artist: String,
+        vintageVinylDisc: Bitmap,
+        isPlaying: Boolean,
+        duration: Long,
+        currentPosition: Long,
+        vinylAngle: Float
+    ): RemoteViews {
+        val views = RemoteViews(context.packageName, R.layout.widget_vintage_turntable)
+
+        views.setTextViewText(R.id.widget_song_title, title)
+        views.setTextViewText(R.id.widget_artist_name, artist)
+        views.setImageViewBitmap(R.id.widget_vinyl_disc, vintageVinylDisc)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            views.setFloat(R.id.widget_vinyl_disc, "setRotation", vinylAngle)
+            views.setFloat(R.id.widget_tonearm, "setRotation", if (isPlaying) 0f else -18f)
+        }
+
+        val playIcon = if (isPlaying) R.drawable.ic_widget_pause_brown else R.drawable.ic_widget_play_brown
+        views.setImageViewResource(R.id.widget_play_pause, playIcon)
+
+        if (duration > 0) {
+            val level = ((currentPosition.toDouble() / duration.toDouble()) * 10000).toInt().coerceIn(0, 10000)
+            views.setInt(R.id.widget_progress_fill, "setImageLevel", level)
+            views.setTextViewText(R.id.widget_time_current, formatDuration(currentPosition))
+            views.setTextViewText(R.id.widget_time_duration, formatDuration(duration))
+        } else {
+            views.setInt(R.id.widget_progress_fill, "setImageLevel", 0)
+            views.setTextViewText(R.id.widget_time_current, "0:00")
+            views.setTextViewText(R.id.widget_time_duration, "0:00")
+        }
+
+        views.setOnClickPendingIntent(R.id.widget_vinyl_disc, getNowPlayingIntent())
+        views.setOnClickPendingIntent(R.id.widget_song_title, getNowPlayingIntent())
+        views.setOnClickPendingIntent(R.id.widget_artist_name, getNowPlayingIntent())
+        views.setOnClickPendingIntent(R.id.widget_prev_button, getPreviousIntent())
+        views.setOnClickPendingIntent(R.id.widget_play_pause_container, getPlayPauseIntent())
+        views.setOnClickPendingIntent(R.id.widget_next_button, getNextIntent())
+
+        return views
+    }
+
+    private fun createAdaptiveCompactRemoteViews(
+        title: String,
+        artist: String,
+        albumArt: Bitmap?,
+        isPlaying: Boolean,
+        isShuffle: Boolean,
+        repeatMode: Int
+    ): RemoteViews {
+        val views = RemoteViews(context.packageName, R.layout.widget_adaptive_compact)
+
+        views.setTextViewText(R.id.widget_song_title, title)
+        views.setTextViewText(R.id.widget_artist_name, artist)
+
+        if (albumArt != null) {
+            views.setImageViewBitmap(R.id.widget_album_art, albumArt)
+            views.setViewVisibility(R.id.widget_album_art, View.VISIBLE)
+            views.setViewVisibility(R.id.widget_placeholder_icon, View.GONE)
+        } else {
+            views.setViewVisibility(R.id.widget_album_art, View.GONE)
+            views.setViewVisibility(R.id.widget_placeholder_icon, View.VISIBLE)
+        }
+
+        val shuffleIcon = if (isShuffle) R.drawable.shuffle_on else R.drawable.shuffle
+        views.setImageViewResource(R.id.widget_shuffle_icon, shuffleIcon)
+        views.setOnClickPendingIntent(R.id.widget_shuffle_button, getShuffleIntent())
+
+        views.setOnClickPendingIntent(R.id.widget_prev_button, getPreviousIntent())
+
+        val playIcon = if (isPlaying) R.drawable.ic_widget_pause else R.drawable.ic_widget_play
+        views.setImageViewResource(R.id.widget_play_pause_icon, playIcon)
+        views.setOnClickPendingIntent(R.id.widget_play_pause_button, getPlayPauseIntent())
+
+        views.setOnClickPendingIntent(R.id.widget_next_button, getNextIntent())
+
+        val repeatIcon = when (repeatMode) {
+            Player.REPEAT_MODE_ALL -> R.drawable.repeat_on
+            Player.REPEAT_MODE_ONE -> R.drawable.repeat_one_on
+            else -> R.drawable.repeat
+        }
+        views.setImageViewResource(R.id.widget_repeat_icon, repeatIcon)
+        views.setOnClickPendingIntent(R.id.widget_repeat_button, getRepeatIntent())
+
+        views.setOnClickPendingIntent(R.id.widget_adaptive_root, getNowPlayingIntent())
+        views.setOnClickPendingIntent(R.id.widget_album_art_container, getNowPlayingIntent())
+        views.setOnClickPendingIntent(R.id.widget_song_title, getNowPlayingIntent())
+        views.setOnClickPendingIntent(R.id.widget_artist_name, getNowPlayingIntent())
+
+        return views
+    }
+
+    private fun createAdaptiveExpandedRemoteViews(
+        widgetId: Int,
+        title: String,
+        artist: String,
+        albumArt: Bitmap?,
+        isPlaying: Boolean,
+        isShuffle: Boolean,
+        repeatMode: Int
+    ): RemoteViews {
+        val views = RemoteViews(context.packageName, R.layout.widget_adaptive_expanded)
+
+        views.setTextViewText(R.id.widget_song_title, title)
+        views.setTextViewText(R.id.widget_artist_name, artist)
+
+        if (albumArt != null) {
+            views.setImageViewBitmap(R.id.widget_album_art, albumArt)
+            views.setViewVisibility(R.id.widget_album_art, View.VISIBLE)
+            views.setViewVisibility(R.id.widget_placeholder_icon, View.GONE)
+        } else {
+            views.setViewVisibility(R.id.widget_album_art, View.GONE)
+            views.setViewVisibility(R.id.widget_placeholder_icon, View.VISIBLE)
+        }
+
+        val shuffleIcon = if (isShuffle) R.drawable.shuffle_on else R.drawable.shuffle
+        views.setImageViewResource(R.id.widget_shuffle_icon, shuffleIcon)
+        views.setOnClickPendingIntent(R.id.widget_shuffle_button, getShuffleIntent())
+
+        views.setOnClickPendingIntent(R.id.widget_prev_button, getPreviousIntent())
+
+        val playIcon = if (isPlaying) R.drawable.ic_widget_pause else R.drawable.ic_widget_play
+        views.setImageViewResource(R.id.widget_play_pause_icon, playIcon)
+        views.setOnClickPendingIntent(R.id.widget_play_pause_button, getPlayPauseIntent())
+
+        views.setOnClickPendingIntent(R.id.widget_next_button, getNextIntent())
+
+        val repeatIcon = when (repeatMode) {
+            Player.REPEAT_MODE_ALL -> R.drawable.repeat_on
+            Player.REPEAT_MODE_ONE -> R.drawable.repeat_one_on
+            else -> R.drawable.repeat
+        }
+        views.setImageViewResource(R.id.widget_repeat_icon, repeatIcon)
+        views.setOnClickPendingIntent(R.id.widget_repeat_button, getRepeatIntent())
+
+        views.setOnClickPendingIntent(R.id.widget_album_art_container, getNowPlayingIntent())
+        views.setOnClickPendingIntent(R.id.widget_song_title, getNowPlayingIntent())
+        views.setOnClickPendingIntent(R.id.widget_artist_name, getNowPlayingIntent())
+
+        // Scrollable upcoming-songs list backed by AdaptiveQueueWidgetService
+        val serviceIntent = Intent(context, AdaptiveQueueWidgetService::class.java).apply {
+            putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId)
+            data = Uri.parse("widget://adaptive/queue/$widgetId")
+        }
+        views.setRemoteAdapter(R.id.widget_queue_list, serviceIntent)
+        views.setEmptyView(R.id.widget_queue_list, R.id.widget_queue_empty)
+
+        // Tapping a queue row skips to that item
+        val clickIntent = Intent(context, MusicWidgetReceiver::class.java).apply {
+            action = MusicWidgetReceiver.ACTION_SKIP_TO_QUEUE_ITEM
+        }
+        val flags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
+        } else {
+            PendingIntent.FLAG_UPDATE_CURRENT
+        }
+        val clickPendingIntent = PendingIntent.getBroadcast(context, 920, clickIntent, flags)
+        views.setPendingIntentTemplate(R.id.widget_queue_list, clickPendingIntent)
+
+        return views
+    }
+
+    private fun createVinylDiscBitmap(
+        centerArt: Bitmap?,
+        rotationDegrees: Float,
+        discSize: Int = 300,
+        hasShadow: Boolean = false
+    ): Bitmap {
+        val bitmap = Bitmap.createBitmap(discSize, discSize, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+        val center = discSize / 2f
+        val radius = center - if (hasShadow) 14f else 8f
+
+        if (hasShadow) {
+            val shadowPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                color = 0x30000000.toInt()
+            }
+            canvas.drawCircle(center + 2f, center + 4f, radius, shadowPaint)
+        }
+
+        canvas.save()
+        canvas.rotate(rotationDegrees, center, center)
+
+        // Outer vinyl record disc
+        val discPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = 0xFF141517.toInt()
+            style = Paint.Style.FILL
+        }
+        canvas.drawCircle(center, center, radius, discPaint)
+
+        // Concentric grooves
+        val groovePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            style = Paint.Style.STROKE
+            strokeWidth = 1.2f
+            color = 0x22FFFFFF.toInt()
+        }
+        val minGroove = radius * 0.48f
+        val maxGroove = radius * 0.94f
+        var r = minGroove
+        while (r < maxGroove) {
+            canvas.drawCircle(center, center, r, groovePaint)
+            r += (radius * 0.05f)
+        }
+
+        // Specular light sheen sweep
+        val sheenPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            shader = SweepGradient(
+                center, center,
+                intArrayOf(0x00FFFFFF, 0x1EFFFFFF.toInt(), 0x00FFFFFF, 0x1EFFFFFF.toInt(), 0x00FFFFFF),
+                floatArrayOf(0f, 0.25f, 0.5f, 0.75f, 1f)
+            )
+            style = Paint.Style.FILL
+        }
+        canvas.drawCircle(center, center, radius, sheenPaint)
+
+        // Center label with circular album artwork
+        val labelRadius = radius * 0.44f
+        if (centerArt != null) {
+            val circularArt = getCircularBitmap(centerArt)
+            val src = Rect(0, 0, circularArt.width, circularArt.height)
+            val dst = RectF(center - labelRadius, center - labelRadius, center + labelRadius, center + labelRadius)
+            val artPaint = Paint(Paint.ANTI_ALIAS_FLAG or Paint.FILTER_BITMAP_FLAG)
+            canvas.drawBitmap(circularArt, src, dst, artPaint)
+        } else {
+            val fallbackPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                color = 0xFF7C3AED.toInt()
+            }
+            canvas.drawCircle(center, center, labelRadius, fallbackPaint)
+        }
+
+        // Outer center ring rim
+        val rimPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            style = Paint.Style.STROKE
+            strokeWidth = 2.5f
+            color = 0x55FFFFFF.toInt()
+        }
+        canvas.drawCircle(center, center, labelRadius, rimPaint)
+
+        // Center spindle hole
+        val holePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            style = Paint.Style.FILL
+            color = 0xFF0D0E10.toInt()
+        }
+        val holeBezelPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            style = Paint.Style.STROKE
+            strokeWidth = 2f
+            color = 0x99D1D5DB.toInt()
+        }
+        val holeRadius = radius * 0.075f
+        canvas.drawCircle(center, center, holeRadius, holePaint)
+        canvas.drawCircle(center, center, holeRadius, holeBezelPaint)
+
+        canvas.restore()
+        return bitmap
+    }
+
+    private fun formatDuration(ms: Long): String {
+        val totalSeconds = (ms / 1000).coerceAtLeast(0)
+        val minutes = totalSeconds / 60
+        val seconds = totalSeconds % 60
+        return "%d:%02d".format(minutes, seconds)
+    }
+
+    private fun getPreviousIntent(): PendingIntent {
+        val intent = Intent(context, MusicWidgetReceiver::class.java).apply {
+            action = MusicWidgetReceiver.ACTION_PREVIOUS
+        }
+        return PendingIntent.getBroadcast(
+            context, 10, intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+    }
+
+    private fun getNextIntent(): PendingIntent {
+        val intent = Intent(context, MusicWidgetReceiver::class.java).apply {
+            action = MusicWidgetReceiver.ACTION_NEXT
+        }
+        return PendingIntent.getBroadcast(
+            context, 11, intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+    }
+
+    // Deep-link actions below fall back to opening the app: the in-app
+    // now-playing/queue/options/output destinations are not exposed as
+    // intent actions, matching the behavior of the existing widgets.
+    private fun getNowPlayingIntent(): PendingIntent = getOpenAppIntent()
+
+    private fun getQueueIntent(): PendingIntent = getOpenAppIntent()
+
+    private fun getSongOptionsIntent(): PendingIntent = getOpenAppIntent()
+
+    private fun getOutputSwitcherIntent(): PendingIntent = getOpenAppIntent()
+
+    private fun getShuffleIntent(): PendingIntent {
+        val intent = Intent(context, MusicWidgetReceiver::class.java).apply {
+            action = MusicWidgetReceiver.ACTION_SHUFFLE
+        }
+        return PendingIntent.getBroadcast(
+            context, 901, intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+    }
+
+    private fun getRepeatIntent(): PendingIntent {
+        val intent = Intent(context, MusicWidgetReceiver::class.java).apply {
+            action = MusicWidgetReceiver.ACTION_REPEAT
+        }
+        return PendingIntent.getBroadcast(
+            context, 905, intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+    }
+
+    // endregion
 }
