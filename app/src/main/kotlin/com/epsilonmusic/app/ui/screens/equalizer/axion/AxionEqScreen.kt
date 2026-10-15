@@ -99,6 +99,30 @@ fun AxionEqScreen(
                 )
             )
 
+            var showAutoEqSheet by remember { mutableStateOf(false) }
+
+            Material3SettingsGroup(
+                items = listOf(
+                    Material3SettingsItem(
+                        icon = painterResource(R.drawable.search),
+                        title = { Text(stringResource(R.string.autoeq_profiles)) },
+                        description = { Text(stringResource(R.string.autoeq_profiles_desc)) },
+                        onClick = { showAutoEqSheet = true }
+                    )
+                )
+            )
+
+            if (showAutoEqSheet) {
+                AutoEqBottomSheet(
+                    onDismissRequest = { showAutoEqSheet = false },
+                    onApplyEq = { newGains ->
+                        viewModel.setEnabled(true)
+                        viewModel.setMode(1) // Advanced mode
+                        viewModel.setBandsGains(newGains, fromUser = true)
+                    }
+                )
+            }
+
             Row(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
                 horizontalArrangement = Arrangement.spacedBy(ButtonGroupDefaults.ConnectedSpaceBetween),

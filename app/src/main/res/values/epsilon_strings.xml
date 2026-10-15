@@ -1043,4 +1043,8 @@
     <string name="loudness_preset_normal">Normal</string>
     <string name="loudness_preset_loud">Loud</string>
     <string name="loudness_preset_aggressive">Aggressive</string>
+
+    <string name="autoeq_profiles">AutoEq Profiles</string>
+    <string name="autoeq_profiles_desc">Find optimal EQ for your headphones</string>
+    <string name="autoeq_search_hint">Search your headphones…</string>
 </resources>
