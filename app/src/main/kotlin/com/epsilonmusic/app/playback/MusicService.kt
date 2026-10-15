@@ -2552,6 +2552,25 @@ class MusicService :
         return error.errorCode == PlaybackException.ERROR_CODE_REMOTE_ERROR
     }
 
+    override fun onAudioSessionIdChanged(audioSessionId: Int) {
+        super.onAudioSessionIdChanged(audioSessionId)
+        Timber.tag(TAG).d("onAudioSessionIdChanged: $audioSessionId")
+        // player.prepare() creates a new AudioTrack with a new audio session id (e.g.
+        // after network-error recovery). Rebind the LoudnessEnhancer to the fresh
+        // session, otherwise the recovered stream plays at a much lower volume.
+        if (isAudioEffectSessionOpened) {
+            releaseLoudnessEnhancer()
+            setupLoudnessEnhancer()
+            sendBroadcast(
+                Intent(AudioEffect.ACTION_OPEN_AUDIO_EFFECT_CONTROL_SESSION).apply {
+                    putExtra(AudioEffect.EXTRA_AUDIO_SESSION, audioSessionId)
+                    putExtra(AudioEffect.EXTRA_PACKAGE_NAME, packageName)
+                    putExtra(AudioEffect.EXTRA_CONTENT_TYPE, AudioEffect.CONTENT_TYPE_MUSIC)
+                },
+            )
+        }
+    }
+
     override fun onPlayerError(error: PlaybackException) {
         super.onPlayerError(error)
 
@@ -2965,6 +2984,11 @@ class MusicService :
 
             player.seekTo(retryIndex, retryPosition)
             player.prepare()
+            // prepare() alone can leave the player stuck paused after a network
+            // error; explicitly resume when playback was requested.
+            if (player.playWhenReady) {
+                player.play()
+            }
 
             Timber.tag(TAG).d("Retrying playback for $mediaId after generic IO error")
         }
