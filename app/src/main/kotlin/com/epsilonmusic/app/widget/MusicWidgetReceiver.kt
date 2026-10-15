@@ -59,7 +59,8 @@ class MusicWidgetReceiver : AppWidgetProvider() {
         super.onReceive(context, intent)
 
         when (intent.action) {
-            ACTION_PLAY_PAUSE, ACTION_LIKE, ACTION_NEXT, ACTION_PREVIOUS -> {
+            ACTION_PLAY_PAUSE, ACTION_LIKE, ACTION_NEXT, ACTION_PREVIOUS,
+            ACTION_SHUFFLE, ACTION_REPEAT, ACTION_SKIP_TO_QUEUE_ITEM -> {
                 // User interactions from widget buttons can start the service
                 // Android allows starting FGS from widget PendingIntent clicks
                 val serviceIntent = Intent(context, MusicService::class.java).apply {
@@ -84,6 +85,10 @@ class MusicWidgetReceiver : AppWidgetProvider() {
         const val ACTION_LIKE = "com.epsilonmusic.app.widget.LIKE"
         const val ACTION_NEXT = "com.epsilonmusic.app.widget.NEXT"
         const val ACTION_PREVIOUS = "com.epsilonmusic.app.widget.PREVIOUS"
+        const val ACTION_SHUFFLE = "com.epsilonmusic.app.widget.SHUFFLE"
+        const val ACTION_REPEAT = "com.epsilonmusic.app.widget.REPEAT"
+        const val ACTION_SKIP_TO_QUEUE_ITEM = "com.epsilonmusic.app.widget.SKIP_TO_QUEUE_ITEM"
         const val ACTION_UPDATE_WIDGET = "com.epsilonmusic.app.widget.UPDATE_WIDGET"
+        const val EXTRA_QUEUE_INDEX = "extra_queue_index"
     }
 }
