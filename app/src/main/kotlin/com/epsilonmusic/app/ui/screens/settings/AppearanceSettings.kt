@@ -82,6 +82,8 @@ import com.epsilonmusic.app.constants.PlayerButtonsStyle
 import com.epsilonmusic.app.constants.PlayerButtonsStyleKey
 
 import com.epsilonmusic.app.constants.RotatingThumbnailKey
+import com.epsilonmusic.app.constants.FontChoice
+import com.epsilonmusic.app.constants.SelectedFontKey
 import com.epsilonmusic.app.constants.SelectedThemeColorKey
 import com.epsilonmusic.app.constants.ShowCachedPlaylistKey
 import com.epsilonmusic.app.constants.ShowExportedPlaylistKey
@@ -148,6 +150,10 @@ highlightKey: String? = null) {
     val (selectedThemeColorInt) = rememberPreference(
         SelectedThemeColorKey,
         defaultValue = DefaultThemeColor.toArgb()
+    )
+    val (selectedFontValue) = rememberPreference(
+        SelectedFontKey,
+        defaultValue = FontChoice.SYSTEM.value
     )
     
     val isUsingCustomColor = selectedThemeColorInt != DefaultThemeColor.toArgb()
@@ -997,6 +1003,25 @@ highlightKey: String? = null) {
                         title = { Text(stringResource(R.string.theme)) },
                         description = { Text(stringResource(R.string.theme_desc)) },
                         onClick = { navController.navigate("settings/appearance/theme") }
+                    )
+                )
+                add(
+                    Material3SettingsItem(
+                        icon = painterResource(R.drawable.alphabet_cyrillic),
+                        title = { Text(stringResource(R.string.app_font)) },
+                        description = {
+                            Text(
+                                text = when (FontChoice.fromValue(selectedFontValue)) {
+                                    FontChoice.SYSTEM -> stringResource(R.string.font_system)
+                                    FontChoice.GOOGLE_SANS -> stringResource(R.string.font_google_sans)
+                                    FontChoice.SANS_FLEX -> stringResource(R.string.font_sans_flex)
+                                    FontChoice.OUTFIT -> stringResource(R.string.font_outfit)
+                                    FontChoice.PLUS_JAKARTA_SANS -> stringResource(R.string.font_plus_jakarta_sans)
+                                    FontChoice.CUSTOM -> stringResource(R.string.font_custom)
+                                }
+                            )
+                        },
+                        onClick = { navController.navigate("settings/appearance/font") }
                     )
                 )
                 add(
