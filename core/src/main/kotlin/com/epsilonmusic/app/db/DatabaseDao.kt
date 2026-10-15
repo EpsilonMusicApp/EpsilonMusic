@@ -285,9 +285,9 @@ interface DatabaseDao {
                          SELECT id
                          FROM (SELECT id
                                FROM song
-                               ORDER BY totalPlayTime DESC
+                               ORDER BY RANDOM()
                                LIMIT 10))
-        ORDER BY referredCount DESC
+        ORDER BY RANDOM()
         LIMIT 100
     """,
     )
@@ -537,6 +537,7 @@ interface DatabaseDao {
               ORDER BY oldPlayTime) AS t
                  JOIN song on song.id = t.eid
         WHERE 0.2 * t.oldPlayTime > t.newPlayTime
+        ORDER BY RANDOM()
         LIMIT 100
     """
     )
