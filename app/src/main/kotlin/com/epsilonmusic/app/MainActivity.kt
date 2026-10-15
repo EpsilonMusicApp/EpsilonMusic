@@ -967,11 +967,14 @@ class MainActivity : ComponentActivity() {
                 val snackbarHostState = remember { SnackbarHostState() }
                 var showSettingDialoge by remember { mutableStateOf(false) }
 
-                val (lastOpenedVersionCode, setLastOpenedVersionCode) = rememberPreference(com.epsilonmusic.app.constants.LastOpenedVersionCodeKey, -1)
                 var showWelcomeDialog by remember { mutableStateOf(false) }
 
-                LaunchedEffect(lastOpenedVersionCode) {
-                    if (lastOpenedVersionCode < BuildConfig.VERSION_CODE) {
+                LaunchedEffect(Unit) {
+                    // Read synchronously: rememberPreference loads async, so keying
+                    // on it would briefly see the default (-1) and pop the welcome
+                    // dialog on every launch.
+                    val lastOpened = context.dataStore.data.first()[com.epsilonmusic.app.constants.LastOpenedVersionCodeKey] ?: -1
+                    if (lastOpened < BuildConfig.VERSION_CODE) {
                         showWelcomeDialog = true
                     }
                 }
@@ -1520,7 +1523,9 @@ class MainActivity : ComponentActivity() {
                         WelcomeDialog(
                             onDismissRequest = {
                                 showWelcomeDialog = false
-                                setLastOpenedVersionCode(BuildConfig.VERSION_CODE)
+                                coroutineScope.launch {
+                                    context.dataStore.edit { it[com.epsilonmusic.app.constants.LastOpenedVersionCodeKey] = BuildConfig.VERSION_CODE }
+                                }
                             }
                         )
                     }
