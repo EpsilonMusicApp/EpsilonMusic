@@ -13,7 +13,7 @@ import android.os.Build
 import android.os.Bundle
 import com.epsilonmusic.app.playback.MusicService
 
-class MusicWidgetReceiver : AppWidgetProvider() {
+open class MusicWidgetReceiver : AppWidgetProvider() {
 
     override fun onUpdate(
         context: Context,
