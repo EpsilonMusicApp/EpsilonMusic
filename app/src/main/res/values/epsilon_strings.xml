@@ -1043,4 +1043,25 @@
     <string name="loudness_preset_normal">Normal</string>
     <string name="loudness_preset_loud">Loud</string>
     <string name="loudness_preset_aggressive">Aggressive</string>
+
+    <string name="generate_title">Create with AI</string>
+    <string name="generate_header_title">Describe your playlist</string>
+    <string name="generate_header_desc">Tell the AI what you\'re in the mood for. It will pick the songs, match them online, and save the playlist to your library.</string>
+    <string name="generate_how_it_works">How it works</string>
+    <string name="generate_how_1">• The AI suggests songs matching your description</string>
+    <string name="generate_how_2">• Suggestions are matched to playable tracks</string>
+    <string name="generate_how_3">• The finished playlist is saved to your library</string>
+    <string name="generate_prompt_label">What kind of playlist do you want?</string>
+    <string name="generate_prompt_placeholder">e.g. upbeat workout pop songs</string>
+    <string name="generate_song_count">Number of songs: %1$d</string>
+    <string name="generate_song_count_value">%1$d songs</string>
+    <string name="generate_provider_label">AI Provider</string>
+    <string name="generate_length_label">Playlist length</string>
+    <string name="generate_button">Generate Playlist</string>
+    <string name="generate_another">Generate Another</string>
+    <string name="generate_open_playlist">Open Playlist</string>
+    <string name="generate_success_title">Playlist Ready!</string>
+    <string name="generate_success_desc">Your AI-generated playlist has been saved to your library.</string>
+    <string name="generate_error_title">Generation Failed</string>
+    <string name="generate_error_default">Something went wrong while generating the playlist. Check your AI settings and try again.</string>
 </resources>

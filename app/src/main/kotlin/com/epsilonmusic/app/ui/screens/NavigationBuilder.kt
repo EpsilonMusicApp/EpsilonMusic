@@ -27,6 +27,7 @@ import com.epsilonmusic.app.ui.screens.artist.ArtistItemsScreen
 import com.epsilonmusic.app.ui.screens.artist.ArtistScreen
 import com.epsilonmusic.app.ui.screens.artist.ArtistSongsScreen
 import com.epsilonmusic.app.ui.screens.equalizer.EqScreen
+import com.epsilonmusic.app.ui.screens.generate.GenerateScreen
 import com.epsilonmusic.app.ui.screens.library.LibraryScreen
 import com.epsilonmusic.app.ui.screens.library.LocalSongScreen
 import com.epsilonmusic.app.ui.screens.playlist.AutoPlaylistScreen
@@ -125,6 +126,10 @@ fun NavGraphBuilder.navigationBuilder(
 
     composable("stats") {
         StatsScreen(navController)
+    }
+
+    composable("generate") {
+        GenerateScreen(navController)
     }
 
     composable("mood_and_genres") {
