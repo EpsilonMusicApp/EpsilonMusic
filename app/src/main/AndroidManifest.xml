@@ -449,6 +449,130 @@
 
         <!-- Music Recognizer Widget -->
         <receiver
+            android:name=".widget.EpsilonModernWidgetReceiver"
+            android:exported="true"
+            android:label="@string/widget_modern_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="com.epsilonmusic.app.widget.PLAY_PAUSE" />
+                <action android:name="com.epsilonmusic.app.widget.LIKE" />
+                <action android:name="com.epsilonmusic.app.widget.NEXT" />
+                <action android:name="com.epsilonmusic.app.widget.PREVIOUS" />
+                <action android:name="com.epsilonmusic.app.widget.UPDATE_WIDGET" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/modern_widget_info" />
+        </receiver>
+
+        <receiver
+            android:name=".widget.EpsilonSquareWidgetReceiver"
+            android:exported="true"
+            android:label="@string/widget_square_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="com.epsilonmusic.app.widget.PLAY_PAUSE" />
+                <action android:name="com.epsilonmusic.app.widget.NEXT" />
+                <action android:name="com.epsilonmusic.app.widget.PREVIOUS" />
+                <action android:name="com.epsilonmusic.app.widget.UPDATE_WIDGET" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/square_widget_info" />
+        </receiver>
+
+        <receiver
+            android:name=".widget.EpsilonShowcaseWidgetReceiver"
+            android:exported="true"
+            android:label="@string/widget_showcase_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="com.epsilonmusic.app.widget.PLAY_PAUSE" />
+                <action android:name="com.epsilonmusic.app.widget.LIKE" />
+                <action android:name="com.epsilonmusic.app.widget.NEXT" />
+                <action android:name="com.epsilonmusic.app.widget.PREVIOUS" />
+                <action android:name="com.epsilonmusic.app.widget.UPDATE_WIDGET" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/showcase_widget_info" />
+        </receiver>
+
+        <receiver
+            android:name=".widget.EpsilonSlimWidgetReceiver"
+            android:exported="true"
+            android:label="@string/widget_slim_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="com.epsilonmusic.app.widget.PLAY_PAUSE" />
+                <action android:name="com.epsilonmusic.app.widget.NEXT" />
+                <action android:name="com.epsilonmusic.app.widget.PREVIOUS" />
+                <action android:name="com.epsilonmusic.app.widget.UPDATE_WIDGET" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/slim_widget_info" />
+        </receiver>
+
+        <receiver
+            android:name=".widget.EpsilonVinylWidgetReceiver"
+            android:exported="true"
+            android:label="@string/widget_vinyl_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="com.epsilonmusic.app.widget.PLAY_PAUSE" />
+                <action android:name="com.epsilonmusic.app.widget.NEXT" />
+                <action android:name="com.epsilonmusic.app.widget.PREVIOUS" />
+                <action android:name="com.epsilonmusic.app.widget.UPDATE_WIDGET" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/vinyl_widget_info" />
+        </receiver>
+
+        <receiver
+            android:name=".widget.EpsilonVintageWidgetReceiver"
+            android:exported="true"
+            android:label="@string/widget_vintage_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="com.epsilonmusic.app.widget.PLAY_PAUSE" />
+                <action android:name="com.epsilonmusic.app.widget.NEXT" />
+                <action android:name="com.epsilonmusic.app.widget.PREVIOUS" />
+                <action android:name="com.epsilonmusic.app.widget.UPDATE_WIDGET" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/vintage_widget_info" />
+        </receiver>
+
+        <receiver
+            android:name=".widget.EpsilonAdaptiveWidgetReceiver"
+            android:exported="true"
+            android:label="@string/widget_adaptive_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="com.epsilonmusic.app.widget.PLAY_PAUSE" />
+                <action android:name="com.epsilonmusic.app.widget.NEXT" />
+                <action android:name="com.epsilonmusic.app.widget.PREVIOUS" />
+                <action android:name="com.epsilonmusic.app.widget.SHUFFLE" />
+                <action android:name="com.epsilonmusic.app.widget.REPEAT" />
+                <action android:name="com.epsilonmusic.app.widget.SKIP_TO_QUEUE_ITEM" />
+                <action android:name="com.epsilonmusic.app.widget.UPDATE_WIDGET" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/adaptive_widget_info" />
+        </receiver>
+
+        <receiver
             android:name=".widget.MusicRecognizerWidgetReceiver"
             android:exported="true"
             android:label="@string/widget_recognizer_name">
@@ -463,6 +587,11 @@
                 android:name="android.appwidget.provider"
                 android:resource="@xml/recognizer_widget_info" />
         </receiver>
+
+        <service
+            android:name=".widget.AdaptiveQueueWidgetService"
+            android:exported="false"
+            android:permission="android.permission.BIND_REMOTEVIEWS" />
 
         <service
             android:name=".widget.MusicRecognizerWidgetService"

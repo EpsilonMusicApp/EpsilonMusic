@@ -1043,4 +1043,22 @@
     <string name="loudness_preset_normal">Normal</string>
     <string name="loudness_preset_loud">Loud</string>
     <string name="loudness_preset_aggressive">Aggressive</string>
+    <string name="widget_modern_name">Modern Player (4×2)</string>
+    <string name="widget_modern_desc">Sleek player with progress bar and favorite control</string>
+    <string name="widget_square_name">Compact Player (2×2)</string>
+    <string name="widget_square_desc">Minimal square player with glowing controls</string>
+    <string name="widget_showcase_name">Showcase Player (4×4)</string>
+    <string name="widget_showcase_desc">Expanded hero card with full artwork banner</string>
+    <string name="widget_slim_name">Pill Player (4×1)</string>
+    <string name="widget_slim_desc">Ultra-compact horizontal strip with live progress</string>
+    <string name="widget_vinyl_name">Vinyl Disc (3×3)</string>
+    <string name="widget_vinyl_desc">Spinning vinyl turntable with tonearm</string>
+    <string name="widget_vintage_name">Vintage Turntable (4×2)</string>
+    <string name="widget_vintage_desc">Retro turntable with spinning vinyl disc</string>
+    <string name="widget_adaptive_name">Adaptive Player</string>
+    <string name="widget_adaptive_desc">Player that expands to show the upcoming queue</string>
+    <string name="widget_cast">Cast</string>
+    <string name="widget_queue">Queue</string>
+    <string name="widget_queue_empty">No upcoming songs</string>
+    <string name="widget_options">Options</string>
 </resources>
