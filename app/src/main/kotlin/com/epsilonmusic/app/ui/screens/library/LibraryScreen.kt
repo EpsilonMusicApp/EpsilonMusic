@@ -62,7 +62,6 @@ fun LibraryScreen(navController: NavController) {
     var showYoutubeImportDialog by remember { mutableStateOf(false) }
     var showCreatePlaylistDialog by rememberSaveable { mutableStateOf(false) }
     var showCreatePlaylistOptionsDialog by rememberSaveable { mutableStateOf(false) }
-    var showAiPlaylistDialog by rememberSaveable { mutableStateOf(false) }
     val context = LocalContext.current
 
     BackHandler(enabled = filterType != LibraryFilter.LIBRARY) {
@@ -259,7 +258,7 @@ fun LibraryScreen(navController: NavController) {
             confirmButton = {
                 androidx.compose.material3.TextButton(onClick = {
                     showCreatePlaylistOptionsDialog = false
-                    showAiPlaylistDialog = true
+                    navController.navigate("generate")
                 }) {
                     Text("Create with AI")
                 }
@@ -271,16 +270,6 @@ fun LibraryScreen(navController: NavController) {
                 }) {
                     Text("Normally")
                 }
-            }
-        )
-    }
-
-    if (showAiPlaylistDialog) {
-        com.epsilonmusic.app.ui.component.CreateAiPlaylistDialog(
-            onDismiss = { showAiPlaylistDialog = false },
-            onPlaylistCreated = { playlistId ->
-                showAiPlaylistDialog = false
-                navController.navigate("local_playlist/$playlistId")
             }
         )
     }
