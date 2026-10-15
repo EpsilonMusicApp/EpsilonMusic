@@ -832,3 +832,19 @@ val DownloadWithMetadataKey = booleanPreferencesKey("downloadWithMetadata")
 
 /** Blocked artists, stored as `artistId||artistName` entries. */
 val BlockedArtistsKey = stringSetPreferencesKey("blockedArtists")
+
+enum class FontChoice(val value: String) {
+    SYSTEM("system"),
+    GOOGLE_SANS("google_sans"),
+    SANS_FLEX("sans_flex"),
+    OUTFIT("outfit"),
+    PLUS_JAKARTA_SANS("plus_jakarta_sans"),
+    CUSTOM("custom");
+
+    companion object {
+        fun fromValue(value: String): FontChoice = entries.find { it.value == value } ?: SYSTEM
+    }
+}
+
+val SelectedFontKey = stringPreferencesKey("selected_app_font")
+val CustomFontPathKey = stringPreferencesKey("custom_font_path")
