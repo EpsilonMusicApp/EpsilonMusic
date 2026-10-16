@@ -21,6 +21,14 @@ val SpotifyAccountNameKey = stringPreferencesKey("spotify_account_name")
 val SpotifyAccountAvatarUrlKey = stringPreferencesKey("spotify_account_avatar_url")
 val SpotifyAccessTokenKey = stringPreferencesKey("spotify_access_token")
 val SpotifyAccessTokenExpiresAtKey = longPreferencesKey("spotify_access_token_expires_at")
+
+// Recommendation source (YouTube Music / Spotify)
+val RecommendationSourceKey = stringPreferencesKey("recommendation_source")
+
+enum class RecommendationSource {
+    YOUTUBE,
+    SPOTIFY
+}
 val EnableDynamicIconKey = booleanPreferencesKey("enableDynamicIcon")
 val EnableLegacyIconKey = booleanPreferencesKey("enableLegacyIcon")
 /**
@@ -287,7 +295,6 @@ val PlaylistViewTypeKey = stringPreferencesKey("playlistViewType")
 
 val PlaylistEditLockKey = booleanPreferencesKey("playlistEditLock")
 val QuickPicksKey = stringPreferencesKey("discover")
-val RecommendationSourceKey = stringPreferencesKey("recommendation_source")
 val PreferredLyricsProviderKey = stringPreferencesKey("lyricsProvider")
 val LyricsProviderOrderKey = stringPreferencesKey("lyricsProviderOrder")
 val QueueEditLockKey = booleanPreferencesKey("queueEditLockV2")
@@ -333,11 +340,6 @@ enum class AlbumFilter {
     LIBRARY,
     LIKED,
     UPLOADED
-}
-
-enum class RecommendationSource {
-    YOUTUBE,
-    SPOTIFY
 }
 
 enum class SongSortType {
@@ -533,6 +535,15 @@ enum class LyricsAnimationStyle {
 
 val LyricsTextSizeKey = floatPreferencesKey("lyricsTextSize")
 val LyricsLineSpacingKey = floatPreferencesKey("lyricsLineSpacing")
+
+// Ambient mode
+val AmbientArtScaleKey = floatPreferencesKey("ambient_art_scale")
+val AmbientShowTitleKey = booleanPreferencesKey("ambient_show_title")
+val AmbientShowArtistKey = booleanPreferencesKey("ambient_show_artist")
+val AmbientShowLyricsKey = booleanPreferencesKey("ambient_show_lyrics")
+val AmbientShowArtKey = booleanPreferencesKey("ambient_show_art")
+val AmbientFullScreenArtKey = booleanPreferencesKey("ambient_full_screen_art")
+val AmbientSpacingKey = floatPreferencesKey("ambient_spacing")
 
 val PlayerVolumeKey = floatPreferencesKey("playerVolume")
 val RepeatModeKey = intPreferencesKey("repeatMode")
@@ -838,3 +849,19 @@ val DownloadWithMetadataKey = booleanPreferencesKey("downloadWithMetadata")
 
 /** Blocked artists, stored as `artistId||artistName` entries. */
 val BlockedArtistsKey = stringSetPreferencesKey("blockedArtists")
+
+enum class FontChoice(val value: String) {
+    SYSTEM("system"),
+    GOOGLE_SANS("google_sans"),
+    SANS_FLEX("sans_flex"),
+    OUTFIT("outfit"),
+    PLUS_JAKARTA_SANS("plus_jakarta_sans"),
+    CUSTOM("custom");
+
+    companion object {
+        fun fromValue(value: String): FontChoice = entries.find { it.value == value } ?: SYSTEM
+    }
+}
+
+val SelectedFontKey = stringPreferencesKey("selected_app_font")
+val CustomFontPathKey = stringPreferencesKey("custom_font_path")
