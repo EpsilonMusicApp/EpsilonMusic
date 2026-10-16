@@ -26,9 +26,6 @@
     <string name="mood_and_genres">Mood and Genres</string>
     <string name="account">Account</string>
     <string name="quick_picks">Quick picks</string>
-    <string name="recommendation_source">Recommendation source</string>
-    <string name="youtube_music">YouTube Music</string>
-    <string name="spotify">Spotify</string>
     <string name="quick_picks_empty">Listen to songs to generate your quick picks</string>
     <string name="forgotten_favorites">Forgotten favorites</string>
     <string name="keep_listening">Keep listening</string>
@@ -166,6 +163,8 @@
     <string name="lyrics_thumbnail_play_pause_desc">Show a play/pause button overlay on the song thumbnail in full-screen lyrics</string>
 
     <string name="picker_not_available">Document picker is not available on this device. Using app\'s default export directory.</string>
+    <string name="system_picker_unavailable">System picker is not available on this device.</string>
+    <string name="invalid_playlist_url">Invalid playlist URL.</string>
     <string name="edit_song">Edit song</string>
     <string name="song_title">Song title</string>
     <string name="song_artists">Song artists</string>
@@ -825,4 +824,38 @@
     <string name="listen_together_server_url_desc">Manage Server URL settings</string>
     <string name="listen_together_logs_desc">Manage Connection logs settings</string>
     <string name="listen_together_choose_server_desc">Manage Choose server settings</string>
+    <!-- Recommendation source -->
+    <string name="recommendation_source">Recommendation source</string>
+    <string name="youtube_music">YouTube Music</string>
+    <string name="spotify">Spotify</string>
+    <string name="spotify_import_title">Import From Spotify</string>
+    <string name="spotify_import_desc">Connect Spotify, choose playlists, and mirror them into local Epsilon Music playlists.</string>
+    <string name="spotify_connect">Connect Spotify</string>
+    <string name="spotify_refresh">Refresh Spotify library</string>
+    <string name="spotify_select_sources">Select Spotify playlists</string>
+    <string name="spotify_import_by_link">Import playlist by link</string>
+    <string name="spotify_import_by_link_desc">Paste a Spotify playlist link to import it — even playlists you don\'t own</string>
+    <string name="spotify_import_by_link_hint">https://open.spotify.com/playlist/…</string>
+    <string name="spotify_add">Add</string>
+    <string name="spotify_invalid_playlist_link">That doesn\'t look like a Spotify playlist link. Use a link like https://open.spotify.com/playlist/…</string>
+    <string name="spotify_import_selected">Import selected</string>
+    <string name="spotify_selected_count">%1$d selected</string>
+    <string name="spotify_available_count">%1$d sources available</string>
+    <string name="spotify_connected_as">Connected as %1$s</string>
+    <string name="spotify_not_connected">Spotify is not connected</string>
+    <string name="spotify_liked_songs">Spotify Liked Songs</string>
+    <string name="spotify_liked_songs_desc">Saved tracks from your Spotify library</string>
+    <string name="spotify_track_count">%1$d tracks</string>
+    <string name="spotify_login_title">Spotify login</string>
+    <string name="spotify_loading_library">Loading Spotify library</string>
+    <string name="spotify_no_sources">No Spotify playlists found</string>
+    <string name="spotify_import_in_progress">Importing Spotify playlists</string>
+    <string name="spotify_import_progress_step">%1$s • %2$d/%3$d sources • %4$d/%5$d tracks</string>
+    <string name="spotify_import_complete">Spotify import complete</string>
+    <string name="spotify_import_summary">%1$d sources • %2$d imported • %3$d failed</string>
+    <string name="spotify_source_summary">%1$s: %2$d/%3$d imported</string>
+    <string name="spotify_select_all">Select all</string>
+    <string name="spotify_clear_selection">Clear</string>
+    <string name="spotify_account">Spotify account</string>
+    <string name="spotify_waiting_for_login">Waiting for Spotify login</string>
 </resources>
