@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="assets/Epsilon-new.png" alt="Epsilon Music Logo" width="120"/>
+  <img src="assets/Bold ring emblem — final.png" alt="Epsilon Music Logo" width="120"/>
 
   <h1>Epsilon Music</h1>
 
