@@ -17,6 +17,8 @@ import com.epsilonmusic.app.constants.LibraryFilter
 import com.epsilonmusic.app.ui.component.ChipsRow
 import com.epsilonmusic.app.ui.component.Material3SettingsGroup
 import com.epsilonmusic.app.ui.component.Material3SettingsItem
+import com.epsilonmusic.app.utils.onlinePlaylistIdFromUrl
+import com.epsilonmusic.app.utils.onlinePlaylistRoute
 import com.epsilonmusic.app.utils.rememberEnumPreference
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
@@ -62,6 +64,7 @@ fun LibraryScreen(navController: NavController) {
     var showYoutubeImportDialog by remember { mutableStateOf(false) }
     var showCreatePlaylistDialog by rememberSaveable { mutableStateOf(false) }
     var showCreatePlaylistOptionsDialog by rememberSaveable { mutableStateOf(false) }
+    var showAiPlaylistDialog by rememberSaveable { mutableStateOf(false) }
     val context = LocalContext.current
 
     BackHandler(enabled = filterType != LibraryFilter.LIBRARY) {
@@ -227,9 +230,9 @@ fun LibraryScreen(navController: NavController) {
             autoFocus = true,
             onDismiss = { showYoutubeImportDialog = false },
             onDone = { finalUrl ->
-                val listId = Regex("[?&]list=([a-zA-Z0-9_-]+)").find(finalUrl)?.groupValues?.get(1)
-                if (listId != null) {
-                    navController.navigate("online_playlist/$listId")
+                val route = onlinePlaylistRoute(onlinePlaylistIdFromUrl(finalUrl))
+                if (route != null) {
+                    navController.navigate(route)
                 } else {
                     android.widget.Toast.makeText(context, "Invalid playlist URL", android.widget.Toast.LENGTH_SHORT).show()
                 }
@@ -258,7 +261,7 @@ fun LibraryScreen(navController: NavController) {
             confirmButton = {
                 androidx.compose.material3.TextButton(onClick = {
                     showCreatePlaylistOptionsDialog = false
-                    navController.navigate("generate")
+                    showAiPlaylistDialog = true
                 }) {
                     Text("Create with AI")
                 }
@@ -270,6 +273,16 @@ fun LibraryScreen(navController: NavController) {
                 }) {
                     Text("Normally")
                 }
+            }
+        )
+    }
+
+    if (showAiPlaylistDialog) {
+        com.epsilonmusic.app.ui.component.CreateAiPlaylistDialog(
+            onDismiss = { showAiPlaylistDialog = false },
+            onPlaylistCreated = { playlistId ->
+                showAiPlaylistDialog = false
+                navController.navigate("local_playlist/$playlistId")
             }
         )
     }

@@ -29,6 +29,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
 import android.view.View
+import android.widget.Toast
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -223,10 +224,12 @@ import com.epsilonmusic.app.utils.IconUtils
 import com.epsilonmusic.app.utils.SyncUtils
 import com.epsilonmusic.app.utils.dataStore
 import com.epsilonmusic.app.utils.get
+import com.epsilonmusic.app.utils.onlinePlaylistRoute
 import com.epsilonmusic.app.utils.rememberEnumPreference
 import com.epsilonmusic.app.utils.rememberPreference
 import com.epsilonmusic.app.utils.reportException
 import com.epsilonmusic.app.utils.setAppLocale
+import com.epsilonmusic.app.utils.validOnlinePlaylistId
 import com.epsilonmusic.app.viewmodels.HomeViewModel
 import com.valentinilk.shimmer.LocalShimmerTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -967,14 +970,11 @@ class MainActivity : ComponentActivity() {
                 val snackbarHostState = remember { SnackbarHostState() }
                 var showSettingDialoge by remember { mutableStateOf(false) }
 
+                val (lastOpenedVersionCode, setLastOpenedVersionCode) = rememberPreference(com.epsilonmusic.app.constants.LastOpenedVersionCodeKey, -1)
                 var showWelcomeDialog by remember { mutableStateOf(false) }
 
-                LaunchedEffect(Unit) {
-                    // Read synchronously: rememberPreference loads async, so keying
-                    // on it would briefly see the default (-1) and pop the welcome
-                    // dialog on every launch.
-                    val lastOpened = context.dataStore.data.first()[com.epsilonmusic.app.constants.LastOpenedVersionCodeKey] ?: -1
-                    if (lastOpened < BuildConfig.VERSION_CODE) {
+                LaunchedEffect(lastOpenedVersionCode) {
+                    if (lastOpenedVersionCode < BuildConfig.VERSION_CODE) {
                         showWelcomeDialog = true
                     }
                 }
@@ -1523,9 +1523,7 @@ class MainActivity : ComponentActivity() {
                         WelcomeDialog(
                             onDismissRequest = {
                                 showWelcomeDialog = false
-                                coroutineScope.launch {
-                                    context.dataStore.edit { it[com.epsilonmusic.app.constants.LastOpenedVersionCodeKey] = BuildConfig.VERSION_CODE }
-                                }
+                                setLastOpenedVersionCode(BuildConfig.VERSION_CODE)
                             }
                         )
                     }
@@ -1564,19 +1562,24 @@ class MainActivity : ComponentActivity() {
         }
 
         when (val path = uri.pathSegments.firstOrNull()) {
-            "playlist" -> uri.getQueryParameter("list")?.let { playlistId ->
-                if (playlistId.startsWith("OLAK5uy_")) {
-                    coroutineScope.launch(Dispatchers.IO) {
-                        YouTube.albumSongs(playlistId).onSuccess { songs ->
-                            songs.firstOrNull()?.album?.id?.let { browseId ->
-                                withContext(Dispatchers.Main) {
-                                    navController.navigate("album/$browseId")
-                                }
-                            }
-                        }.onFailure { reportException(it) }
-                    }
+            "playlist" -> {
+                val playlistId = validOnlinePlaylistId(uri.getQueryParameter("list"))
+                if (playlistId == null) {
+                    Toast.makeText(this, R.string.invalid_playlist_url, Toast.LENGTH_SHORT).show()
                 } else {
-                    navController.navigate("online_playlist/$playlistId")
+                    if (playlistId.startsWith("OLAK5uy_")) {
+                        coroutineScope.launch(Dispatchers.IO) {
+                            YouTube.albumSongs(playlistId).onSuccess { songs ->
+                                songs.firstOrNull()?.album?.id?.let { browseId ->
+                                    withContext(Dispatchers.Main) {
+                                        navController.navigate("album/$browseId")
+                                    }
+                                }
+                            }.onFailure { reportException(it) }
+                        }
+                    } else {
+                        onlinePlaylistRoute(playlistId)?.let { navController.navigate(it) }
+                    }
                 }
             }
 

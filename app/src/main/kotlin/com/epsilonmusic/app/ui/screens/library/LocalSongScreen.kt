@@ -104,6 +104,7 @@ import com.epsilonmusic.app.extensions.toMediaItem
 import com.epsilonmusic.app.extensions.togglePlayPause
 import com.epsilonmusic.app.localmedia.LocalSongScanConfig
 import com.epsilonmusic.app.localmedia.SupportedLocalAudio
+import com.epsilonmusic.app.utils.launchSafely
 import com.epsilonmusic.app.playback.queues.ListQueue
 import com.epsilonmusic.app.ui.component.LocalMenuState
 import com.epsilonmusic.app.ui.component.SongListItem
@@ -138,7 +139,7 @@ fun LocalSongScreen(
     val songs by viewModel.songs.collectAsState()
     val scanState by viewModel.scanState.collectAsState()
     val listState = rememberLazyListState()
-    val scanSheetState = rememberModalBottomSheetState()
+    val scanSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var showScanSheet by rememberSaveable { mutableStateOf(false) }
     var isSearchActive by rememberSaveable { mutableStateOf(false) }
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
@@ -244,7 +245,7 @@ fun LocalSongScreen(
             onMinimumDurationSecondsChange = onMinimumDurationSecondsChange,
             excludedFolders = excludedFolders,
             onExcludedFoldersChange = onExcludedFoldersChange,
-            onAddExcludedFolder = { excludedFolderPickerLauncher.launch(null) },
+            onAddExcludedFolder = { excludedFolderPickerLauncher.launchSafely(null, context) },
             sheetState = scanSheetState,
             onDismiss = { showScanSheet = false },
             onPrimaryAction = {
