@@ -257,14 +257,6 @@ fun LibraryScreen(navController: NavController) {
             onDismissRequest = { showCreatePlaylistOptionsDialog = false },
             title = { Text(stringResource(R.string.create_playlist)) },
             text = { Text("How would you like to create your playlist?") },
-            confirmButton = {
-                androidx.compose.material3.TextButton(onClick = {
-                    showCreatePlaylistOptionsDialog = false
-                    showAiPlaylistDialog = true
-                }) {
-                    Text("Create with AI")
-                }
-            },
             dismissButton = {
                 androidx.compose.material3.TextButton(onClick = {
                     showCreatePlaylistOptionsDialog = false
