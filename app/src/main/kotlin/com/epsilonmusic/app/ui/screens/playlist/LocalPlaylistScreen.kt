@@ -155,6 +155,7 @@ import com.epsilonmusic.app.ui.menu.SongMenu
 import com.epsilonmusic.app.ui.screens.settings.DarkMode
 import com.epsilonmusic.app.ui.utils.backToMain
 import com.epsilonmusic.app.utils.listItemShape
+import com.epsilonmusic.app.utils.launchSafely
 import com.epsilonmusic.app.utils.makeTimeString
 import com.epsilonmusic.app.utils.rememberEnumPreference
 import com.epsilonmusic.app.utils.rememberPreference
@@ -538,7 +539,7 @@ fun LocalPlaylistScreen(
                                 onShowRemoveDownloadDialog = { showRemoveDownloadDialog = true },
                                 onshowDeletePlaylistDialog = { showDeletePlaylistDialog = true },
                                 onStartSearch = { isSearching = true },
-                                onExport = { exportCsvLauncher.launch("${playlist.playlist.name}_export.csv") },
+                                onExport = { exportCsvLauncher.launchSafely("${playlist.playlist.name}_export.csv", context) },
                                 snackbarHostState = snackbarHostState,
                                 modifier = Modifier.animateItem()
                             )
@@ -698,13 +699,15 @@ fun LocalPlaylistScreen(
                                     }
 
                                     if (sortType == PlaylistSongSortType.CUSTOM && !locked && !inSelectMode && !isSearching && editable) {
-                                        Icon(
-                                            painter = painterResource(R.drawable.drag_handle),
-                                            contentDescription = null,
-                                            modifier = Modifier
-                                                .draggableHandle()
-                                                .padding(12.dp)
-                                        )
+                                        IconButton(
+                                            onClick = { },
+                                            modifier = Modifier.draggableHandle(),
+                                        ) {
+                                            Icon(
+                                                painter = painterResource(R.drawable.drag_handle),
+                                                contentDescription = null,
+                                            )
+                                        }
                                     }
                                 }
                             },
@@ -1069,8 +1072,9 @@ fun LocalPlaylistHeader(
                 onDismiss = { showEditNoteDialog = false },
                 onConfirm = {
                     showEditNoteDialog = false
-                    pickLauncher.launch(
-                        PickVisualMediaRequest(mediaType = ActivityResultContracts.PickVisualMedia.ImageOnly)
+                    pickLauncher.launchSafely(
+                        PickVisualMediaRequest(mediaType = ActivityResultContracts.PickVisualMedia.ImageOnly),
+                        context,
                     )
                 },
                 onCancel = { showEditNoteDialog = false }
@@ -1138,8 +1142,9 @@ fun LocalPlaylistHeader(
                                         {
                                             CustomThumbnailMenu(
                                                 onEdit = {
-                                                    pickLauncher.launch(
-                                                        PickVisualMediaRequest(mediaType = ActivityResultContracts.PickVisualMedia.ImageOnly)
+                                                    pickLauncher.launchSafely(
+                                                        PickVisualMediaRequest(mediaType = ActivityResultContracts.PickVisualMedia.ImageOnly),
+                                                        context,
                                                     )
                                                 },
                                                 onRemove = {
@@ -1207,8 +1212,9 @@ fun LocalPlaylistHeader(
                                         {
                                             CustomThumbnailMenu(
                                                 onEdit = {
-                                                    pickLauncher.launch(
-                                                        PickVisualMediaRequest(mediaType = ActivityResultContracts.PickVisualMedia.ImageOnly)
+                                                    pickLauncher.launchSafely(
+                                                        PickVisualMediaRequest(mediaType = ActivityResultContracts.PickVisualMedia.ImageOnly),
+                                                        context,
                                                     )
                                                 },
                                                 onRemove = {

@@ -51,6 +51,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.epsilonmusic.app.LocalPlayerConnection
 import com.epsilonmusic.app.R
+import com.epsilonmusic.app.utils.launchSafely
 import com.epsilonmusic.app.eq.data.SavedEQProfile
 import timber.log.Timber
 
@@ -123,7 +124,7 @@ fun EqScreen(
         onProfileSelected = { viewModel.selectProfile(it) },
         onImportCustomEQ = {
             
-            filePickerLauncher.launch("text/plain")
+            filePickerLauncher.launchSafely("text/plain", context)
         },
         onOpenSystemEqualizer = {
             playerConnection?.let { connection ->

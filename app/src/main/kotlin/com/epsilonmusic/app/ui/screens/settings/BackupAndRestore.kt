@@ -48,10 +48,12 @@ import com.epsilonmusic.app.ui.menu.CsvColumnMappingDialog
 import com.epsilonmusic.app.ui.menu.CsvImportProgressDialog
 import com.epsilonmusic.app.ui.menu.LoadingScreen
 import com.epsilonmusic.app.ui.utils.backToMain
+import com.epsilonmusic.app.utils.launchSafely
 import com.epsilonmusic.app.viewmodels.BackupRestoreViewModel
 import com.epsilonmusic.app.viewmodels.ConvertedSongLog
 import com.epsilonmusic.app.viewmodels.CsvImportState
-import com.epsilonmusic.app.utils.rememberPreference
+-import com.epsilonmusic.app.utils.launchSafely
+ import com.epsilonmusic.app.utils.rememberPreference
 import android.app.backup.BackupManager
 import android.content.Intent
 import android.provider.Settings
@@ -180,10 +182,11 @@ fun BackupAndRestore(
                                 icon = painterResource(R.drawable.backup),
                                 onClick = {
                                     val formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss")
-                                    backupLauncher.launch(
+                                    backupLauncher.launchSafely(
                                         "${context.getString(R.string.app_name)}_${
                                             LocalDateTime.now().format(formatter)
-                                        }.backup"
+                                        }.backup",
+                                        context,
                                     )
                                 }
                             ),
@@ -213,21 +216,21 @@ fun BackupAndRestore(
                                 title = { Text("Import from local file") },
                                 icon = painterResource(R.drawable.restore),
                                 onClick = {
-                                    restoreLauncher.launch(arrayOf("application/octet-stream"))
+                                    restoreLauncher.launchSafely(arrayOf("application/octet-stream"), context)
                                 }
                             ),
                             Material3SettingsItem(
                                 title = { Text("Import 'm3u' Playlist") },
                                 icon = painterResource(R.drawable.playlist_add),
                                 onClick = {
-                                    importM3uLauncherOnline.launch(arrayOf("audio/*"))
+                                    importM3uLauncherOnline.launchSafely(arrayOf("audio/*"), context)
                                 }
                             ),
                             Material3SettingsItem(
                                 title = { Text("Import 'csv' Playlist") },
                                 icon = painterResource(R.drawable.playlist_add),
                                 onClick = {
-                                    importPlaylistFromCsv.launch(arrayOf("text/csv", "text/comma-separated-values", "application/csv", "text/plain"))
+                                    importPlaylistFromCsv.launchSafely(arrayOf("text/csv", "text/comma-separated-values", "application/csv", "text/plain"), context)
                                 }
                             )
                         )
