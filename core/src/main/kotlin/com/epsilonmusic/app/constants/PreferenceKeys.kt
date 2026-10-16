@@ -21,6 +21,14 @@ val SpotifyAccountNameKey = stringPreferencesKey("spotify_account_name")
 val SpotifyAccountAvatarUrlKey = stringPreferencesKey("spotify_account_avatar_url")
 val SpotifyAccessTokenKey = stringPreferencesKey("spotify_access_token")
 val SpotifyAccessTokenExpiresAtKey = longPreferencesKey("spotify_access_token_expires_at")
+
+// Recommendation source (YouTube Music / Spotify)
+val RecommendationSourceKey = stringPreferencesKey("recommendation_source")
+
+enum class RecommendationSource {
+    YOUTUBE,
+    SPOTIFY
+}
 val EnableDynamicIconKey = booleanPreferencesKey("enableDynamicIcon")
 val EnableLegacyIconKey = booleanPreferencesKey("enableLegacyIcon")
 /**

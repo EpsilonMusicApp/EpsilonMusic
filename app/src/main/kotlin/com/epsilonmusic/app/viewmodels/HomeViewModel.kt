@@ -29,6 +29,8 @@ import com.epsilonmusic.app.constants.HideYoutubeShortsKey
 import com.epsilonmusic.app.constants.InnerTubeCookieKey
 import com.epsilonmusic.app.constants.QuickPicks
 import com.epsilonmusic.app.constants.QuickPicksKey
+import com.epsilonmusic.app.constants.RecommendationSource
+import com.epsilonmusic.app.constants.RecommendationSourceKey
 import com.epsilonmusic.app.db.MusicDatabase
 import com.epsilonmusic.app.db.entities.Album
 import com.epsilonmusic.app.db.entities.LocalItem
@@ -75,6 +77,7 @@ class HomeViewModel @Inject constructor(
     @ApplicationContext val context: Context,
     val database: MusicDatabase,
     val syncUtils: SyncUtils,
+    val loadSpotifyRecommendationsUseCase: com.epsilonmusic.app.spotify.LoadSpotifyRecommendationsUseCase,
 ) : ViewModel() {
     val isRefreshing = MutableStateFlow(false)
     val isLoading = MutableStateFlow(false)
@@ -446,6 +449,26 @@ class HomeViewModel @Inject constructor(
         val hideExplicit = context.dataStore.get(HideExplicitKey, false)
         val hideVideoSongs = context.dataStore.get(HideVideoSongsKey, false)
         val fromTimeStamp = System.currentTimeMillis() - 86400000L * 7 * 2
+
+        // Spotify recommendations source (if selected and authenticated)
+        val recommendationSource = try {
+            context.dataStore.data.first()[RecommendationSourceKey].toEnum(RecommendationSource.YOUTUBE)
+        } catch (e: Exception) { RecommendationSource.YOUTUBE }
+
+        if (recommendationSource == RecommendationSource.SPOTIFY) {
+            val spotifyRecs = try {
+                loadSpotifyRecommendationsUseCase(
+                    hideExplicit = hideExplicit,
+                    fromTimeStamp = fromTimeStamp,
+                )
+            } catch (e: Exception) { null }
+
+            if (!spotifyRecs.isNullOrEmpty()) {
+                similarRecommendations.value = spotifyRecs.shuffled()
+                return
+            }
+            // Fall through to YouTube recommendations if Spotify fails
+        }
 
         coroutineScope {
             val artistDeferreds = database.mostPlayedArtists(fromTimeStamp, limit = 15).first()

@@ -824,4 +824,8 @@
     <string name="listen_together_server_url_desc">Manage Server URL settings</string>
     <string name="listen_together_logs_desc">Manage Connection logs settings</string>
     <string name="listen_together_choose_server_desc">Manage Choose server settings</string>
+    <!-- Recommendation source -->
+    <string name="recommendation_source">Recommendation source</string>
+    <string name="youtube_music">YouTube Music</string>
+    <string name="spotify">Spotify</string>
 </resources>
