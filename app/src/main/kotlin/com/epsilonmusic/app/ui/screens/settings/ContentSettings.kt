@@ -88,6 +88,8 @@ import com.epsilonmusic.app.constants.ProxyUrlKey
 import com.epsilonmusic.app.constants.ProxyUsernameKey
 import com.epsilonmusic.app.constants.QuickPicks
 import com.epsilonmusic.app.constants.QuickPicksKey
+import com.epsilonmusic.app.constants.RecommendationSource
+import com.epsilonmusic.app.constants.RecommendationSourceKey
 import com.epsilonmusic.app.constants.RandomizeHomeOrderKey
 import com.epsilonmusic.app.constants.SYSTEM_DEFAULT
 import com.epsilonmusic.app.constants.ShowArtistDescriptionKey
@@ -162,6 +164,7 @@ highlightKey: String? = null) {
     )
     val (lengthTop, onLengthTopChange) = rememberPreference(key = TopSize, defaultValue = "50")
     val (quickPicks, onQuickPicksChange) = rememberEnumPreference(key = QuickPicksKey, defaultValue = QuickPicks.QUICK_PICKS)
+    val (recommendationSource, onRecommendationSourceChange) = rememberEnumPreference(key = RecommendationSourceKey, defaultValue = RecommendationSource.YOUTUBE)
     val (showSpeedDial, onShowSpeedDialChange) = rememberPreference(key = ShowSpeedDialKey, defaultValue = true)
     val (randomizeHomeOrder, onRandomizeHomeOrderChange) = rememberPreference(
         RandomizeHomeOrderKey,
@@ -507,6 +510,29 @@ highlightKey: String? = null) {
 
     var showQuickPicksDialog by rememberSaveable {
         mutableStateOf(false)
+    }
+
+    var showRecommendationSourceDialog by rememberSaveable {
+        mutableStateOf(false)
+    }
+
+    if (showRecommendationSourceDialog) {
+        EnumDialog(
+            onDismiss = { showRecommendationSourceDialog = false },
+            onSelect = {
+                onRecommendationSourceChange(it)
+                showRecommendationSourceDialog = false
+            },
+            title = stringResource(R.string.recommendation_source),
+            current = recommendationSource,
+            values = RecommendationSource.values().toList(),
+            valueText = {
+                when (it) {
+                    RecommendationSource.YOUTUBE -> stringResource(R.string.youtube_music)
+                    RecommendationSource.SPOTIFY -> stringResource(R.string.spotify)
+                }
+            }
+        )
     }
 
     if (showQuickPicksDialog) {
@@ -1243,6 +1269,19 @@ highlightKey: String? = null) {
                         )
                     },
                     onClick = { showQuickPicksDialog = true }
+                ),
+                Material3SettingsItem(
+                    icon = painterResource(R.drawable.home_outlined),
+                    title = { Text(stringResource(R.string.recommendation_source)) },
+                    description = {
+                        Text(
+                            when (recommendationSource) {
+                                RecommendationSource.YOUTUBE -> stringResource(R.string.youtube_music)
+                                RecommendationSource.SPOTIFY -> stringResource(R.string.spotify)
+                            }
+                        )
+                    },
+                    onClick = { showRecommendationSourceDialog = true }
                 ),
                 Material3SettingsItem(
     isHighlighted = (highlightKey == "Speed Dial"),
