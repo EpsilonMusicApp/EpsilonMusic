@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="assets/Bold ring emblem — final.png" alt="Epsilon Music Logo" width="120"/>
+  <img src="assets/logo-animated.gif" alt="Epsilon Music Logo" width="120"/>
 
   <h1>Epsilon Music</h1>
 
@@ -9,11 +9,6 @@
     <tr>
       <td align="center" style="padding: 15px; border: none;">
         <a href="https://epsilonmusic.ct.ws" style="text-decoration:none;"><img src="assets/download.png" alt="Download" width="150" style="border-radius: 12px; box-shadow: 0 8px 16px rgba(0,0,0,0.2);"/></a>
-      </td>
-      <td align="center" style="padding: 15px; border: none;">
-        <a href='https://epsilon-music.en.uptodown.com/android' title='Download Epsilon Music' >
-                <img src='https://stc.utdstc.com/img/mediakit/download-gio-big.png' alt='Download Epsilon Music' width="150">
-                </a>
       </td>
     </tr>
   </table>
