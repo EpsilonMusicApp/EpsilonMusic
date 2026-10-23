@@ -165,6 +165,7 @@ import com.epsilonmusic.app.constants.DarkModeKey
 import com.epsilonmusic.app.constants.DefaultOpenTabKey
 import com.epsilonmusic.app.constants.DisableScreenshotKey
 import com.epsilonmusic.app.constants.DynamicThemeKey
+import com.epsilonmusic.app.constants.EnableDynamicIconKey
 import com.epsilonmusic.app.constants.EnableHighRefreshRateKey
 import com.epsilonmusic.app.constants.FloatingToolbarBottomPadding
 import com.epsilonmusic.app.constants.FloatingToolbarHorizontalPadding
@@ -218,6 +219,7 @@ import com.epsilonmusic.app.ui.theme.epsilonmusicTheme
 import com.epsilonmusic.app.ui.theme.extractThemeColor
 import com.epsilonmusic.app.ui.utils.appBarScrollBehavior
 import com.epsilonmusic.app.ui.utils.resetHeightOffset
+import com.epsilonmusic.app.utils.IconUtils
 import com.epsilonmusic.app.utils.SyncUtils
 import com.epsilonmusic.app.utils.dataStore
 import com.epsilonmusic.app.utils.get
@@ -417,6 +419,19 @@ class MainActivity : ComponentActivity() {
 
         
         listenTogetherManager.initialize()
+
+        // Self-heal for devices that had a legacy icon selected before the
+        // legacy variants were removed in 1.0.8: their enabled launcher alias
+        // was deleted from the manifest, leaving the package with no working
+        // launcher entry (the icon opened App info instead of the app). The
+        // legacy aliases now exist as stubs carrying the current icon; if one
+        // of them is the active entry, switch back to the standard alias.
+        try {
+            if (IconUtils.legacyIconActive(this)) {
+                IconUtils.setIcon(this, dataStore[EnableDynamicIconKey] ?: true, IconUtils.LEGACY_OFF)
+            }
+        } catch (_: Exception) {
+        }
 
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
             val locale = dataStore[AppLanguageKey]
