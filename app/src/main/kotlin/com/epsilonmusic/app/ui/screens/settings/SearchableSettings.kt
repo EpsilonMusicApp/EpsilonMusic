@@ -198,8 +198,6 @@ fun getAllSearchableSettings(): List<SearchableSetting> {
             SearchableSetting(stringResource(R.string.lyrics_text_size), stringResource(R.string.lyrics_text_size_desc), "Appearance", "settings/appearance"),
             SearchableSetting(stringResource(R.string.lyrics_thumbnail_play_pause), stringResource(R.string.lyrics_thumbnail_play_pause_desc), "Appearance", "settings/appearance"),
             SearchableSetting(stringResource(R.string.lyrics_v2_fluid), stringResource(R.string.lyrics_v2_fluid_desc), "Appearance", "settings/appearance"),
-            SearchableSetting(stringResource(R.string.max_image_cache_size), null, "Storage", "settings/storage"),
-            SearchableSetting(stringResource(R.string.max_song_cache_size), null, "Storage", "settings/storage"),
             SearchableSetting(stringResource(R.string.mini_player), null, "Appearance", "settings/appearance"),
             SearchableSetting(stringResource(R.string.miniplayer_background_style), null, "Appearance", "settings/appearance"),
             SearchableSetting(stringResource(R.string.misc), null, "Privacy", "settings/privacy"),
