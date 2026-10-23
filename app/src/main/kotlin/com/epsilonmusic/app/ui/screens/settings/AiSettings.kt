@@ -6,6 +6,7 @@ import kotlinx.coroutines.launch
 import androidx.compose.runtime.rememberCoroutineScope
 import com.epsilonmusic.app.api.OpenRouterService
 import com.epsilonmusic.app.api.DeepLService
+import com.epsilonmusic.app.lyrics.LyricsTranslationHelper
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -51,6 +52,7 @@ import com.epsilonmusic.app.constants.TranslateLanguageKey
 import com.epsilonmusic.app.constants.TranslateModeKey
 import com.epsilonmusic.app.constants.AutoTranslateKey
 import com.epsilonmusic.app.constants.AiRecommendationsKey
+import com.epsilonmusic.app.constants.CreateFromTasteDailyKey
 import com.epsilonmusic.app.ui.component.EnumDialog
 import com.epsilonmusic.app.ui.component.Material3SettingsGroup
 import com.epsilonmusic.app.ui.component.Material3SettingsItem
@@ -74,6 +76,7 @@ highlightKey: String? = null) {
     var translateMode by rememberPreference(TranslateModeKey, "Literal")
     var autoTranslate by rememberPreference(AutoTranslateKey, false)
     var aiRecommendations by rememberPreference(AiRecommendationsKey, false)
+    var createFromTasteDaily by rememberPreference(CreateFromTasteDailyKey, false)
     var deeplApiKey by rememberPreference(DeeplApiKey, "")
     var deeplFormality by rememberPreference(DeeplFormalityKey, "default")
 
@@ -260,6 +263,111 @@ highlightKey: String? = null) {
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }
+                add(
+Material3SettingsItem(
+                              icon = painterResource(R.drawable.network_node),
+                              title = { Text("Test Connection") },
+                              description = {
+                                Text(
+                                  when {
+                                    isTesting -> "Testing connection..."
+                                    testStatusMessage != null -> testStatusMessage!!
+                                    else -> "Verify your provider, model, and API key"
+                                  },
+                                  color =
+                                    when {
+                                      testStatusMessage != null && testIsSuccess -> MaterialTheme.colorScheme.primary
+                                      testStatusMessage != null && !testIsSuccess -> MaterialTheme.colorScheme.error
+                                      else -> MaterialTheme.colorScheme.onSurfaceVariant
+                                    }
+                                )
+                              },
+                              trailingContent =
+                                if (isTesting) {
+                                  {
+                                    CircularProgressIndicator(
+                                      modifier = Modifier.size(20.dp),
+                                      strokeWidth = 2.dp
+                                    )
+                                  }
+                                } else null,
+                              onClick = {
+                                if (!isTesting) {
+                                  isTesting = true
+                                  testStatusMessage = "Testing..."
+                                  coroutineScope.launch {
+                                    try {
+                                      if (aiProvider == "DeepL") {
+                                        if (deeplApiKey.isBlank()) {
+                                          isTesting = false
+                                          testIsSuccess = false
+                                          testStatusMessage = "API Key missing"
+                                          testDialogTitle = "DeepL Test Failed"
+                                          testDialogMessage = "Please enter your DeepL API key before testing."
+                                          showTestDialog = true
+                                          return@launch
+                                        }
+                                        val res = DeepLService.testConnection(deeplApiKey)
+                                        isTesting = false
+                                        if (res.isSuccess) {
+                                          testIsSuccess = true
+                                          testStatusMessage = "Connected successfully!"
+                                        } else {
+                                          testIsSuccess = false
+                                          testStatusMessage = "Connection failed"
+                                          testDialogTitle = "DeepL Test Failed"
+                                          testDialogMessage = res.exceptionOrNull()?.message ?: "Unknown DeepL error"
+                                          showTestDialog = true
+                                        }
+                                      } else {
+                                        if (openRouterApiKey.isBlank() && aiProvider != "Custom") {
+                                          isTesting = false
+                                          testIsSuccess = false
+                                          testStatusMessage = "API Key missing"
+                                          testDialogTitle = "Test Failed"
+                                          testDialogMessage = "Please enter your $aiProvider API key before testing."
+                                          showTestDialog = true
+                                          return@launch
+                                        }
+                                        val targetUrl =
+                                          if (aiProvider == "Custom") {
+                                            openRouterBaseUrl.ifBlank { "https://openrouter.ai/api/v1/chat/completions" }
+                                          } else {
+                                            aiProviders[aiProvider]?.ifBlank { "https://openrouter.ai/api/v1/chat/completions" }
+                                              ?: "https://openrouter.ai/api/v1/chat/completions"
+                                          }
+                                        val res =
+                                          OpenRouterService.testConnection(
+                                            baseUrl = targetUrl,
+                                            apiKey = openRouterApiKey,
+                                            model = openRouterModel
+                                          )
+                                        isTesting = false
+                                        if (res.isSuccess) {
+                                          testIsSuccess = true
+                                          testStatusMessage = "Connected successfully!"
+                                        } else {
+                                          testIsSuccess = false
+                                          testStatusMessage = "Connection failed"
+                                          testDialogTitle = "Connection Failed"
+                                          testDialogMessage =
+                                            "Failed to connect to $aiProvider ($targetUrl):\n\n${res.exceptionOrNull()?.message}"
+                                          showTestDialog = true
+                                        }
+                                      }
+                                    } catch (e: Exception) {
+                                      isTesting = false
+                                      testIsSuccess = false
+                                      testStatusMessage = "Error"
+                                      testDialogTitle = "Error"
+                                      testDialogMessage = e.localizedMessage ?: e.message ?: "Unexpected error"
+                                      showTestDialog = true
+                                    }
+                                  }
+                                }
+                              }
+                            )
+                )
             }
         )
     }
@@ -500,110 +608,8 @@ highlightKey: String? = null) {
                     )
                 } else {
                     null
-                },
-                Material3SettingsItem(
-                              icon = painterResource(R.drawable.network_node),
-                              title = { Text("Test Connection") },
-                              description = {
-                                Text(
-                                  when {
-                                    isTesting -> "Testing connection..."
-                                    testStatusMessage != null -> testStatusMessage!!
-                                    else -> "Verify your provider, model, and API key"
-                                  },
-                                  color =
-                                    when {
-                                      testStatusMessage != null && testIsSuccess -> MaterialTheme.colorScheme.primary
-                                      testStatusMessage != null && !testIsSuccess -> MaterialTheme.colorScheme.error
-                                      else -> MaterialTheme.colorScheme.onSurfaceVariant
-                                    }
-                                )
-                              },
-                              trailingContent =
-                                if (isTesting) {
-                                  {
-                                    CircularProgressIndicator(
-                                      modifier = Modifier.size(20.dp),
-                                      strokeWidth = 2.dp
-                                    )
-                                  }
-                                } else null,
-                              onClick = {
-                                if (!isTesting) {
-                                  isTesting = true
-                                  testStatusMessage = "Testing..."
-                                  coroutineScope.launch {
-                                    try {
-                                      if (aiProvider == "DeepL") {
-                                        if (deeplApiKey.isBlank()) {
-                                          isTesting = false
-                                          testIsSuccess = false
-                                          testStatusMessage = "API Key missing"
-                                          testDialogTitle = "DeepL Test Failed"
-                                          testDialogMessage = "Please enter your DeepL API key before testing."
-                                          showTestDialog = true
-                                          return@launch
-                                        }
-                                        val res = DeepLService.testConnection(deeplApiKey)
-                                        isTesting = false
-                                        if (res.isSuccess) {
-                                          testIsSuccess = true
-                                          testStatusMessage = "Connected successfully!"
-                                        } else {
-                                          testIsSuccess = false
-                                          testStatusMessage = "Connection failed"
-                                          testDialogTitle = "DeepL Test Failed"
-                                          testDialogMessage = res.exceptionOrNull()?.message ?: "Unknown DeepL error"
-                                          showTestDialog = true
-                                        }
-                                      } else {
-                                        if (openRouterApiKey.isBlank() && aiProvider != "Custom") {
-                                          isTesting = false
-                                          testIsSuccess = false
-                                          testStatusMessage = "API Key missing"
-                                          testDialogTitle = "Test Failed"
-                                          testDialogMessage = "Please enter your $aiProvider API key before testing."
-                                          showTestDialog = true
-                                          return@launch
-                                        }
-                                        val targetUrl =
-                                          if (aiProvider == "Custom") {
-                                            openRouterBaseUrl.ifBlank { "https://openrouter.ai/api/v1/chat/completions" }
-                                          } else {
-                                            aiProviders[aiProvider]?.ifBlank { "https://openrouter.ai/api/v1/chat/completions" }
-                                              ?: "https://openrouter.ai/api/v1/chat/completions"
-                                          }
-                                        val res =
-                                          OpenRouterService.testConnection(
-                                            baseUrl = targetUrl,
-                                            apiKey = openRouterApiKey,
-                                            model = openRouterModel
-                                          )
-                                        isTesting = false
-                                        if (res.isSuccess) {
-                                          testIsSuccess = true
-                                          testStatusMessage = "Connected successfully!"
-                                        } else {
-                                          testIsSuccess = false
-                                          testStatusMessage = "Connection failed"
-                                          testDialogTitle = "Connection Failed"
-                                          testDialogMessage =
-                                            "Failed to connect to $aiProvider ($targetUrl):\n\n${res.exceptionOrNull()?.message}"
-                                          showTestDialog = true
-                                        }
-                                      }
-                                    } catch (e: Exception) {
-                                      isTesting = false
-                                      testIsSuccess = false
-                                      testStatusMessage = "Error"
-                                      testDialogTitle = "Error"
-                                      testDialogMessage = e.localizedMessage ?: e.message ?: "Unexpected error"
-                                      showTestDialog = true
-                                    }
-                                  }
-                                }
-                              }
-                            )
+                }
+
             ).filterNotNull()
         )
 
@@ -628,7 +634,27 @@ highlightKey: String? = null) {
                                         stringResource(R.string.not_set)
                                 )
                             },
-                            onClick = { showDeeplApiKeyDialog = true }
+                            onClick = { showDeeplApiKeyDialog = true },
+                            trailingContent =
+                                if (deeplApiKey.isNotEmpty()) {
+                                    {
+                                        IconButton(
+                                            onClick = {
+                                                deeplApiKey = ""
+                                                LyricsTranslationHelper.cancelTranslation()
+                                                LyricsTranslationHelper.resetStatus()
+                                            }
+                                        ) {
+                                            Icon(
+                                                painterResource(R.drawable.close),
+                                                contentDescription = "Remove",
+                                                modifier = Modifier.size(20.dp)
+                                            )
+                                        }
+                                    }
+                                } else {
+                                    null
+                                }
                         )
                     )
                     add(
@@ -663,20 +689,44 @@ highlightKey: String? = null) {
                                         stringResource(R.string.not_set)
                                 )
                             },
-                            onClick = { showApiKeyDialog = true }
+                            onClick = { showApiKeyDialog = true },
+                            trailingContent =
+                                if (openRouterApiKey.isNotEmpty()) {
+                                    {
+                                        IconButton(
+                                            onClick = {
+                                                openRouterApiKey = ""
+                                                LyricsTranslationHelper.cancelTranslation()
+                                                LyricsTranslationHelper.resetStatus()
+                                            }
+                                        ) {
+                                            Icon(
+                                                painterResource(R.drawable.close),
+                                                contentDescription = "Remove",
+                                                modifier = Modifier.size(20.dp)
+                                            )
+                                        }
+                                    }
+                                } else {
+                                    null
+                                }
                         )
                     )
-                    if (aiProvider != "Custom") {
-                        add(
+                    add(
                             Material3SettingsItem(
     isHighlighted = (highlightKey == stringResource(R.string.ai_model)),
                                 icon = painterResource(R.drawable.discover_tune),
                                 title = { Text(stringResource(R.string.ai_model)) },
                                 description = { Text(openRouterModel.ifBlank { stringResource(R.string.not_set) }) },
-                                onClick = { showModelDialog = true }
+                                onClick = {
+                                    if (aiProvider == "Custom" || commonModels.isEmpty()) {
+                                        showCustomModelInput = true
+                                    } else {
+                                        showModelDialog = true
+                                    }
+                                }
                             )
                         )
-                    }
                 }
             }
         )
@@ -688,56 +738,13 @@ highlightKey: String? = null) {
         Material3SettingsGroup(scrollState = scrollState, 
             title = stringResource(R.string.ai_translation_mode),
             items = buildList {
-                if (aiProvider != "DeepL") {
-                    add(
-                        Material3SettingsItem(
-    isHighlighted = (highlightKey == stringResource(R.string.ai_translation_mode)),
-                            icon = painterResource(R.drawable.translate),
-                            title = { Text(stringResource(R.string.ai_translation_mode)) },
-                            description = {
-                                Text(
-                                    when (translateMode) {
-                                        "Literal" -> stringResource(R.string.ai_translation_literal)
-                                        "Transcribed" -> stringResource(R.string.ai_translation_transcribed)
-                                        else -> translateMode
-                                    }
-                                )
-                            },
-                            onClick = { showTranslateModeDialog = true },
-                            trailingContent = {
-                                IconButton(onClick = { showTranslateModeHelpDialog = true }) {
-                                    Icon(
-                                        painterResource(R.drawable.info),
-                                        contentDescription = null,
-                                        modifier = Modifier.size(20.dp)
-                                    )
-                                }
-                            }
-                        )
-                    )
-                }
-                add(
+                                add(
                     Material3SettingsItem(
     isHighlighted = (highlightKey == stringResource(R.string.ai_target_language)),
                         icon = painterResource(R.drawable.language),
                         title = { Text(stringResource(R.string.ai_target_language)) },
                         description = { Text(LanguageCodeToName[translateLanguage] ?: translateLanguage) },
                         onClick = { showLanguageDialog = true }
-                    )
-                )
-                add(
-                    Material3SettingsItem(
-    isHighlighted = (highlightKey == stringResource(R.string.ai_auto_translate)),
-                        icon = painterResource(R.drawable.translate),
-                        title = { Text(stringResource(R.string.ai_auto_translate)) },
-                        description = { Text(stringResource(R.string.ai_auto_translate_desc)) },
-                        trailingContent = {
-                            Switch(
-                                checked = autoTranslate,
-                                onCheckedChange = { autoTranslate = it }
-                            )
-                        },
-                        onClick = { autoTranslate = !autoTranslate }
                     )
                 )
             }
@@ -765,20 +772,21 @@ highlightKey: String? = null) {
                         onClick = { aiRecommendations = !aiRecommendations }
                     )
                 )
-                if (aiRecommendations) {
-                    add(
-                        Material3SettingsItem(
-                            isHighlighted = false,
-                            icon = painterResource(R.drawable.sync),
-                            title = { Text(stringResource(R.string.ai_recommendations_refresh)) },
-                            description = { Text(stringResource(R.string.ai_recommendations_refresh_desc)) },
-                            onClick = {
-                                showRefreshDialog = true
-                            }
-                        )
+                add(
+                    Material3SettingsItem(
+                        icon = painterResource(R.drawable.queue_music),
+                        title = { Text("Create from Taste") },
+                        description = { Text("Daily update of a playlist from your taste history") },
+                        trailingContent = {
+                            Switch(
+                                checked = createFromTasteDaily,
+                                onCheckedChange = { createFromTasteDaily = it }
+                            )
+                        },
+                        onClick = { createFromTasteDaily = !createFromTasteDaily }
                     )
-                }
-            }
+                )
+                            }
         )
 
         if (showRefreshDialog) {

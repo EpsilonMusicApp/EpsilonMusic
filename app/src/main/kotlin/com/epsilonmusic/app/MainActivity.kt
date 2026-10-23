@@ -160,6 +160,7 @@ import com.music.innertube.models.SongItem
 import com.music.innertube.models.WatchEndpoint
 import com.epsilonmusic.app.constants.AppBarHeight
 import com.epsilonmusic.app.constants.AiRecommendationsKey
+import com.epsilonmusic.app.constants.CreateFromTasteDailyKey
 import com.epsilonmusic.app.constants.AppLanguageKey
 import com.epsilonmusic.app.constants.DarkModeKey
 import com.epsilonmusic.app.constants.DefaultOpenTabKey
@@ -474,6 +475,27 @@ class MainActivity : ComponentActivity() {
                         )
                     } else {
                         workManager.cancelUniqueWork("AiRecommendationWorker")
+                    }
+                }
+        }
+
+        lifecycleScope.launch {
+            dataStore.data
+                .map { (try { it[CreateFromTasteDailyKey] } catch(e: Exception) { null }) ?: false }
+                .distinctUntilChanged()
+                .collectLatest { enabled ->
+                    val workManager = androidx.work.WorkManager.getInstance(this@MainActivity)
+                    if (enabled) {
+                        val request = androidx.work.PeriodicWorkRequestBuilder<com.epsilonmusic.app.ai.TasteMixWorker>(1, java.util.concurrent.TimeUnit.DAYS)
+                            .setConstraints(androidx.work.Constraints.Builder().setRequiredNetworkType(androidx.work.NetworkType.CONNECTED).build())
+                            .build()
+                        workManager.enqueueUniquePeriodicWork(
+                            "TasteMixWorker",
+                            androidx.work.ExistingPeriodicWorkPolicy.KEEP,
+                            request
+                        )
+                    } else {
+                        workManager.cancelUniqueWork("TasteMixWorker")
                     }
                 }
         }

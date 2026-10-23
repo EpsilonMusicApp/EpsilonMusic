@@ -348,7 +348,6 @@ fun getAllSearchableSettings(): List<SearchableSetting> {
             SearchableSetting("DeepL ${stringResource(R.string.ai_api_key)}", stringResource(R.string.ai_api_key_desc), "AI Lyrics Translation", "settings/ai"),
             SearchableSetting(stringResource(R.string.ai_auto_translate), stringResource(R.string.ai_auto_translate_desc), "AI Lyrics Translation", "settings/ai"),
             SearchableSetting(stringResource(R.string.ai_recommendations), stringResource(R.string.ai_recommendations_desc), "AI Lyrics Translation", "settings/ai"),
-            SearchableSetting(stringResource(R.string.ai_recommendations_refresh), stringResource(R.string.ai_recommendations_refresh_desc), "AI Lyrics Translation", "settings/ai"),
             SearchableSetting("Supported Links", null, "Settings", "settings"),
             SearchableSetting(stringResource(R.string.refresh), null, "Discord", "settings/discord"),
             SearchableSetting(stringResource(R.string.activity_status), null, "Discord", "settings/discord"),
