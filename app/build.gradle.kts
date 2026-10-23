@@ -317,7 +317,7 @@ dependencies {
     "gmsImplementation"(libs.cast.framework)
 
     implementation(libs.room.runtime)
-    implementation(libs.kuromoji.ipadic)
+    "gmsImplementation"(libs.kuromoji.ipadic)
     implementation(libs.tinypinyin)
 
     implementation(libs.room.ktx)
