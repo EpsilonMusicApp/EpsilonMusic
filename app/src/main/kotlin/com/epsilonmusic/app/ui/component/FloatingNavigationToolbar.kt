@@ -107,7 +107,7 @@ fun FloatingNavigationToolbar(
         modifier = modifier.fillMaxWidth(),
         contentAlignment = Alignment.Center,
     ) {
-        val showSelectedLabels = false
+        val showSelectedLabels = true
 
         if (hasOverflowMenu) {
             HorizontalFloatingToolbar(
