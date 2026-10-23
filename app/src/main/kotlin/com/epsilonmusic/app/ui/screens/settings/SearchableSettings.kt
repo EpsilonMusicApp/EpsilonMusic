@@ -306,7 +306,7 @@ fun getAllSearchableSettings(): List<SearchableSetting> {
             SearchableSetting(stringResource(R.string.view_commit_history), null, "System Update", "settings/update"),
             SearchableSetting(stringResource(R.string.wavy), null, "Appearance", "settings/appearance"),
             SearchableSetting(stringResource(R.string.yt_sync), stringResource(R.string.yt_sync_desc), "Account", "settings/account"),
-            SearchableSetting("Import from Spotify", null, "Backup & Restore", "settings/spotify_import"),
+            SearchableSetting("Spotify", "Connect to Spotify", "Account", "settings/account"),
             SearchableSetting("Import from local file", null, "Backup & Restore", "settings/backup_restore"),
             SearchableSetting("Import 'm3u' Playlist", null, "Backup & Restore", "settings/backup_restore"),
             SearchableSetting("Import 'csv' Playlist", null, "Backup & Restore", "settings/backup_restore"),
