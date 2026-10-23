@@ -425,7 +425,6 @@ fun StorageSettings(
                 )
             )
         )
-        )
         Spacer(Modifier.padding(bottom = 30.dp))
 
         Spacer(Modifier.windowInsetsPadding(LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Bottom)))
