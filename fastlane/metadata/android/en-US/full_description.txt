@@ -1,11 +1,20 @@
-Epsilon Music delivers a seamless, premium listening experience by leveraging YouTube Music's vast library — without the ads. It adds powerful extras including offline downloads, real-time synchronized lyrics, and environment-aware music recognition.
+Epsilon Music is an Android music player that lets you listen to music quickly, ad-free, and with a full set of advanced options to play, organize, and discover songs from your smartphone or tablet. Epsilon Music can find any track you want on YouTube or YouTube Music, letting you play it in the background, download it for offline listening, and control every aspect of playback through a smooth, modern interface. It also syncs with your YouTube Music account, so your playlists, liked songs, and library follow you across devices without switching apps.
 
-Features:
-* Ad-Free — Stream without any interruptions.
-* Seamless Playback — Switch effortlessly between audio-only and video modes.
-* Background Playback — Listen while using other apps or with the screen off.
-* Offline Mode — Download tracks, albums, and playlists via a dedicated download manager.
-* Epsilon Find — Identify songs playing around you using advanced audio recognition.
-* Multiple Lyric Animations — Choose from various lyric display styles with word-by-word synchronization.
-* Smart Recommendations — Personalized suggestions based on your listening history.
-* Epsilon Brain — An intelligent, on-device engine that analyzes your listening momentum and auto-injects perfectly aligned tracks into your queue.
+Play music from YouTube Music
+With Epsilon Music, you can play virtually any song or video available on YouTube Music directly from the app, no browser or official client required. Just use the search tool to find songs, albums, artists, music videos, or full playlists, and then add them to your queue or personal collections. Since playback works in the background, you can turn off the screen or switch to another app without interrupting the audio, which is ideal for long podcasts or study playlists.
+
+Offline listening with downloads
+Epsilon Music lets you download songs, albums, and playlists through its dedicated download manager, so your music is always available, even without an internet connection. Downloaded tracks integrate into your library and are treated as if they were your own files, and a Data Saver mode reduces data usage when you do stream on a limited connection. This prevents interruptions when traveling or dealing with poor coverage.
+
+Library, playlists, and discovery
+Epsilon Music organizes your music into a library with sections for songs, albums, artists, and playlists. Sign in with your YouTube Music account and your playlists, liked songs, and saved albums sync both ways between the app and YouTube Music. You can create custom playlists, import your playlists from Spotify, play local files stored on your device, and reorder your playback queue at any time. The app also keeps your listening history, builds a listening summary of your most-played tracks, and helps you discover new music through charts, moods, genres, and smart recommendations based on what you listen to.
+
+Synced lyrics and audio controls
+If you enjoy following along with your music, Epsilon Music includes full lyric support, including word-by-word synced lyrics that highlight in time with the track, plus built-in translation for lyrics in other languages. Other useful features include crossfade for smooth transitions between songs, seamless switching between audio-only and video modes, and extras like Listen Together — listen in sync with friends in real time — and Discord Rich Presence, which shows what you're playing on your Discord profile.
+
+Download the Epsilon Music APK if you want a player that gives you access to the YouTube Music catalog as the core of your library, along with features like ad-free background playback, offline downloads, two-way cloud sync, and full control of your music — completely free and open source.
+
+Epsilon Music is for you if
+✓ You want unlimited YouTube Music access with ad-free background playback in a smooth interface
+✓ You need offline downloads so poor coverage never interrupts your playlists or podcasts
+✓ You value powerful organization, synced lyrics, and a library that syncs with your YouTube Music account across all your devices
