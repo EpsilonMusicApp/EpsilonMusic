@@ -18,7 +18,7 @@
       </td>
       <td align="center" style="padding: 15px; border: none;">
         <a href='https://epsilon-music.en.uptodown.com/android' title='Download Epsilon Music' >
-                <img src='https://stc.utdstc.com/img/mediakit/download-gio-big.png' alt='Download Epsilon Music' width="150">
+                <img src='https://stc.utdstc.com/img/mediakit/download-aao-small.png' alt='Download Epsilon Music'>
                 </a>
       </td>
       <td align="center" style="padding: 15px; border: none;">
