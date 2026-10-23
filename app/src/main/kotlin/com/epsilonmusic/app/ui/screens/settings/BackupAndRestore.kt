@@ -194,12 +194,6 @@ fun BackupAndRestore(
                                 description = { Text("Restore data from backups or other sources") },
                                 icon = painterResource(R.drawable.restore),
                                 onClick = { currentScreen = BackupSubScreen.IMPORT }
-                            ),
-                            Material3SettingsItem(
-                                title = { Text("Import from Spotify") },
-                                description = { Text(stringResource(R.string.spotify_import_desc)) },
-                                icon = painterResource(R.drawable.ic_spotify),
-                                onClick = { navController.navigate("settings/spotify_import") }
                             )
                         )
                     )
