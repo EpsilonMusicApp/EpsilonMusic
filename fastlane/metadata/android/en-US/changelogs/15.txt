@@ -1,0 +1,7 @@
+New Ink app icon and a refreshed look throughout.
+Spotify recommendations: sign in with Spotify for personalized home recommendations.
+Create from Taste: a daily "My Taste Mix" playlist built from your listening.
+Listening Summary: your top songs, artists and listening time, with daily detail.
+AI Hub: test your API connection, manage keys and models more easily.
+Settings reorganized into clean card groups; Spotify moved to Account > Integrations.
+Fixed: tapping Library could open Listen Together instead.
