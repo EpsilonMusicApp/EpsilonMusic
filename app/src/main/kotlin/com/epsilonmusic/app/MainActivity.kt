@@ -1195,10 +1195,18 @@ class MainActivity : ComponentActivity() {
                         },
                         bottomBar = {
                             val onNavItemClick: (Screens, Boolean) -> Unit = remember(navController, coroutineScope, topAppBarScrollBehavior, playerBottomSheetState) {
-                                { screen: Screens, isSelected: Boolean ->
+                                { screen: Screens, _: Boolean ->
                                     if (playerBottomSheetState.isExpanded) {
                                         playerBottomSheetState.collapseSoft()
                                     }
+
+                                    // Judge "already on this tab" from the live destination,
+                                    // not the flag the bar captured when it was composed:
+                                    // a stale flag can re-navigate (or open the wrong tab)
+                                    // when the tap lands during a bar recomposition.
+                                    val currentDestRoute = navController.currentBackStackEntry?.destination?.route
+                                    val isSelected = currentDestRoute == screen.route ||
+                                        currentDestRoute?.startsWith("${screen.route}/") == true
 
                                     if (isSelected) {
                                         navController.currentBackStackEntry?.savedStateHandle?.set("scrollToTop", true)
@@ -1342,10 +1350,18 @@ class MainActivity : ComponentActivity() {
                     ) {
                         Row(Modifier.fillMaxSize()) {
                             val onRailItemClick: (Screens, Boolean) -> Unit = remember(navController, coroutineScope, topAppBarScrollBehavior, playerBottomSheetState) {
-                                { screen: Screens, isSelected: Boolean ->
+                                { screen: Screens, _: Boolean ->
                                     if (playerBottomSheetState.isExpanded) {
                                         playerBottomSheetState.collapseSoft()
                                     }
+
+                                    // Judge "already on this tab" from the live destination,
+                                    // not the flag the bar captured when it was composed:
+                                    // a stale flag can re-navigate (or open the wrong tab)
+                                    // when the tap lands during a bar recomposition.
+                                    val currentDestRoute = navController.currentBackStackEntry?.destination?.route
+                                    val isSelected = currentDestRoute == screen.route ||
+                                        currentDestRoute?.startsWith("${screen.route}/") == true
 
                                     if (isSelected) {
                                         navController.currentBackStackEntry?.savedStateHandle?.set("scrollToTop", true)
