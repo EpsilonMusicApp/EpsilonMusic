@@ -263,111 +263,6 @@ highlightKey: String? = null) {
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }
-                add(
-Material3SettingsItem(
-                              icon = painterResource(R.drawable.network_node),
-                              title = { Text("Test Connection") },
-                              description = {
-                                Text(
-                                  when {
-                                    isTesting -> "Testing connection..."
-                                    testStatusMessage != null -> testStatusMessage!!
-                                    else -> "Verify your provider, model, and API key"
-                                  },
-                                  color =
-                                    when {
-                                      testStatusMessage != null && testIsSuccess -> MaterialTheme.colorScheme.primary
-                                      testStatusMessage != null && !testIsSuccess -> MaterialTheme.colorScheme.error
-                                      else -> MaterialTheme.colorScheme.onSurfaceVariant
-                                    }
-                                )
-                              },
-                              trailingContent =
-                                if (isTesting) {
-                                  {
-                                    CircularProgressIndicator(
-                                      modifier = Modifier.size(20.dp),
-                                      strokeWidth = 2.dp
-                                    )
-                                  }
-                                } else null,
-                              onClick = {
-                                if (!isTesting) {
-                                  isTesting = true
-                                  testStatusMessage = "Testing..."
-                                  coroutineScope.launch {
-                                    try {
-                                      if (aiProvider == "DeepL") {
-                                        if (deeplApiKey.isBlank()) {
-                                          isTesting = false
-                                          testIsSuccess = false
-                                          testStatusMessage = "API Key missing"
-                                          testDialogTitle = "DeepL Test Failed"
-                                          testDialogMessage = "Please enter your DeepL API key before testing."
-                                          showTestDialog = true
-                                          return@launch
-                                        }
-                                        val res = DeepLService.testConnection(deeplApiKey)
-                                        isTesting = false
-                                        if (res.isSuccess) {
-                                          testIsSuccess = true
-                                          testStatusMessage = "Connected successfully!"
-                                        } else {
-                                          testIsSuccess = false
-                                          testStatusMessage = "Connection failed"
-                                          testDialogTitle = "DeepL Test Failed"
-                                          testDialogMessage = res.exceptionOrNull()?.message ?: "Unknown DeepL error"
-                                          showTestDialog = true
-                                        }
-                                      } else {
-                                        if (openRouterApiKey.isBlank() && aiProvider != "Custom") {
-                                          isTesting = false
-                                          testIsSuccess = false
-                                          testStatusMessage = "API Key missing"
-                                          testDialogTitle = "Test Failed"
-                                          testDialogMessage = "Please enter your $aiProvider API key before testing."
-                                          showTestDialog = true
-                                          return@launch
-                                        }
-                                        val targetUrl =
-                                          if (aiProvider == "Custom") {
-                                            openRouterBaseUrl.ifBlank { "https://openrouter.ai/api/v1/chat/completions" }
-                                          } else {
-                                            aiProviders[aiProvider]?.ifBlank { "https://openrouter.ai/api/v1/chat/completions" }
-                                              ?: "https://openrouter.ai/api/v1/chat/completions"
-                                          }
-                                        val res =
-                                          OpenRouterService.testConnection(
-                                            baseUrl = targetUrl,
-                                            apiKey = openRouterApiKey,
-                                            model = openRouterModel
-                                          )
-                                        isTesting = false
-                                        if (res.isSuccess) {
-                                          testIsSuccess = true
-                                          testStatusMessage = "Connected successfully!"
-                                        } else {
-                                          testIsSuccess = false
-                                          testStatusMessage = "Connection failed"
-                                          testDialogTitle = "Connection Failed"
-                                          testDialogMessage =
-                                            "Failed to connect to $aiProvider ($targetUrl):\n\n${res.exceptionOrNull()?.message}"
-                                          showTestDialog = true
-                                        }
-                                      }
-                                    } catch (e: Exception) {
-                                      isTesting = false
-                                      testIsSuccess = false
-                                      testStatusMessage = "Error"
-                                      testDialogTitle = "Error"
-                                      testDialogMessage = e.localizedMessage ?: e.message ?: "Unexpected error"
-                                      showTestDialog = true
-                                    }
-                                  }
-                                }
-                              }
-                            )
-                )
             }
         )
     }
@@ -728,6 +623,111 @@ Material3SettingsItem(
                             )
                         )
                 }
+                add(
+Material3SettingsItem(
+                              icon = painterResource(R.drawable.network_node),
+                              title = { Text("Test Connection") },
+                              description = {
+                                Text(
+                                  when {
+                                    isTesting -> "Testing connection..."
+                                    testStatusMessage != null -> testStatusMessage!!
+                                    else -> "Verify your provider, model, and API key"
+                                  },
+                                  color =
+                                    when {
+                                      testStatusMessage != null && testIsSuccess -> MaterialTheme.colorScheme.primary
+                                      testStatusMessage != null && !testIsSuccess -> MaterialTheme.colorScheme.error
+                                      else -> MaterialTheme.colorScheme.onSurfaceVariant
+                                    }
+                                )
+                              },
+                              trailingContent =
+                                if (isTesting) {
+                                  {
+                                    CircularProgressIndicator(
+                                      modifier = Modifier.size(20.dp),
+                                      strokeWidth = 2.dp
+                                    )
+                                  }
+                                } else null,
+                              onClick = {
+                                if (!isTesting) {
+                                  isTesting = true
+                                  testStatusMessage = "Testing..."
+                                  coroutineScope.launch {
+                                    try {
+                                      if (aiProvider == "DeepL") {
+                                        if (deeplApiKey.isBlank()) {
+                                          isTesting = false
+                                          testIsSuccess = false
+                                          testStatusMessage = "API Key missing"
+                                          testDialogTitle = "DeepL Test Failed"
+                                          testDialogMessage = "Please enter your DeepL API key before testing."
+                                          showTestDialog = true
+                                          return@launch
+                                        }
+                                        val res = DeepLService.testConnection(deeplApiKey)
+                                        isTesting = false
+                                        if (res.isSuccess) {
+                                          testIsSuccess = true
+                                          testStatusMessage = "Connected successfully!"
+                                        } else {
+                                          testIsSuccess = false
+                                          testStatusMessage = "Connection failed"
+                                          testDialogTitle = "DeepL Test Failed"
+                                          testDialogMessage = res.exceptionOrNull()?.message ?: "Unknown DeepL error"
+                                          showTestDialog = true
+                                        }
+                                      } else {
+                                        if (openRouterApiKey.isBlank() && aiProvider != "Custom") {
+                                          isTesting = false
+                                          testIsSuccess = false
+                                          testStatusMessage = "API Key missing"
+                                          testDialogTitle = "Test Failed"
+                                          testDialogMessage = "Please enter your $aiProvider API key before testing."
+                                          showTestDialog = true
+                                          return@launch
+                                        }
+                                        val targetUrl =
+                                          if (aiProvider == "Custom") {
+                                            openRouterBaseUrl.ifBlank { "https://openrouter.ai/api/v1/chat/completions" }
+                                          } else {
+                                            aiProviders[aiProvider]?.ifBlank { "https://openrouter.ai/api/v1/chat/completions" }
+                                              ?: "https://openrouter.ai/api/v1/chat/completions"
+                                          }
+                                        val res =
+                                          OpenRouterService.testConnection(
+                                            baseUrl = targetUrl,
+                                            apiKey = openRouterApiKey,
+                                            model = openRouterModel
+                                          )
+                                        isTesting = false
+                                        if (res.isSuccess) {
+                                          testIsSuccess = true
+                                          testStatusMessage = "Connected successfully!"
+                                        } else {
+                                          testIsSuccess = false
+                                          testStatusMessage = "Connection failed"
+                                          testDialogTitle = "Connection Failed"
+                                          testDialogMessage =
+                                            "Failed to connect to $aiProvider ($targetUrl):\n\n${res.exceptionOrNull()?.message}"
+                                          showTestDialog = true
+                                        }
+                                      }
+                                    } catch (e: Exception) {
+                                      isTesting = false
+                                      testIsSuccess = false
+                                      testStatusMessage = "Error"
+                                      testDialogTitle = "Error"
+                                      testDialogMessage = e.localizedMessage ?: e.message ?: "Unexpected error"
+                                      showTestDialog = true
+                                    }
+                                  }
+                                }
+                              }
+                            )
+                )
             }
         )
 
