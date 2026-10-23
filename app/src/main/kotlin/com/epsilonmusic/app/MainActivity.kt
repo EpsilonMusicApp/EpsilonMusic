@@ -162,8 +162,6 @@ import com.epsilonmusic.app.constants.AppBarHeight
 import com.epsilonmusic.app.constants.AiRecommendationsKey
 import com.epsilonmusic.app.constants.AppLanguageKey
 import com.epsilonmusic.app.constants.DarkModeKey
-import com.epsilonmusic.app.constants.EnableLegacyIconKey
-import com.epsilonmusic.app.constants.LegacyIconVariantKey
 import com.epsilonmusic.app.constants.DefaultOpenTabKey
 import com.epsilonmusic.app.constants.DisableScreenshotKey
 import com.epsilonmusic.app.constants.DynamicThemeKey
@@ -220,7 +218,6 @@ import com.epsilonmusic.app.ui.theme.epsilonmusicTheme
 import com.epsilonmusic.app.ui.theme.extractThemeColor
 import com.epsilonmusic.app.ui.utils.appBarScrollBehavior
 import com.epsilonmusic.app.ui.utils.resetHeightOffset
-import com.epsilonmusic.app.utils.IconUtils
 import com.epsilonmusic.app.utils.SyncUtils
 import com.epsilonmusic.app.utils.dataStore
 import com.epsilonmusic.app.utils.get
@@ -421,24 +418,6 @@ class MainActivity : ComponentActivity() {
         
         listenTogetherManager.initialize()
 
-        // Reconcile the launcher icon activity-aliases with the persisted
-        // preference. The PackageManager component states persist on their own,
-        // but they can be reset when the app is updated or reinstalled, which
-        // would silently revert a selected legacy icon. Best-effort: failures
-        // (e.g. SecurityException on restricted profiles) are swallowed and the
-        // manifest defaults remain in effect.
-        lifecycleScope.launch {
-            try {
-                val prefs = dataStore.data.first()
-                val legacyEnabled = (try { prefs[EnableLegacyIconKey] } catch (e: Exception) { null }) ?: false
-                val legacyVariant = (try { prefs[LegacyIconVariantKey] } catch (e: Exception) { null }) ?: 0
-                if (legacyEnabled) {
-                    IconUtils.setIcon(this@MainActivity, true, legacyVariant)
-                }
-            } catch (_: Exception) {
-            }
-        }
-
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
             val locale = dataStore[AppLanguageKey]
                 ?.takeUnless { it == SYSTEM_DEFAULT }
@@ -638,7 +617,6 @@ class MainActivity : ComponentActivity() {
             pureBlack = pureBlack,
             themeColor = themeColor,
         ) {
-
 
         if (showUpdateDialog) {
             AlertDialog(
@@ -1018,8 +996,6 @@ class MainActivity : ComponentActivity() {
                 }
 
                 val isLibraryRoute = navBackStackEntry?.destination?.route == Screens.Library.route
-
-
 
                 val pauseListenHistory by rememberPreference(PauseListenHistoryKey, defaultValue = false)
                 val eventCount by database.eventCount().collectAsState(initial = 0)
@@ -1457,8 +1433,6 @@ class MainActivity : ComponentActivity() {
                         state = LocalBottomSheetPageState.current,
                         modifier = Modifier.align(Alignment.BottomCenter)
                     )
-
-
 
                     sharedSong?.let { song ->
                         playerConnection?.let {

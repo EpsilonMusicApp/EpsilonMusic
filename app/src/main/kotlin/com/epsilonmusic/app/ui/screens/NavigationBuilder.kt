@@ -52,7 +52,6 @@ import com.epsilonmusic.app.ui.screens.settings.SettingsScreen
 import com.epsilonmusic.app.ui.screens.settings.AccountSettingsScreen
 import com.epsilonmusic.app.ui.screens.settings.StorageSettings
 import com.epsilonmusic.app.ui.screens.settings.ThemeScreen
-import com.epsilonmusic.app.ui.screens.settings.LegacyIconScreen
 import com.epsilonmusic.app.ui.screens.settings.FontSelectionScreen
 import com.epsilonmusic.app.ui.screens.settings.AiSettings
 
@@ -370,10 +369,6 @@ fun NavGraphBuilder.navigationBuilder(
 
     composable("settings/appearance/liquidglass") {
         GlassEffectSettings(navController, scrollBehavior)
-    }
-
-    composable("settings/appearance/legacyicon") {
-        LegacyIconScreen(navController, activity, snackbarHostState)
     }
 
     composable("settings/appearance/font") {

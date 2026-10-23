@@ -987,16 +987,7 @@ highlightKey: String? = null) {
 
 
 
-                add(
-                    Material3SettingsItem(
-    isHighlighted = (highlightKey == stringResource(R.string.legacy_icon)),
-                        customIcon = { Icon(painterResource(R.mipmap.legacy_icon_monochrome), contentDescription = null, modifier = Modifier.size(48.dp), tint = MaterialTheme.colorScheme.primary) },
-                        title = { Text(stringResource(R.string.legacy_icon)) },
-                        description = { Text(stringResource(R.string.legacy_icon_desc)) },
-                        onClick = { navController.navigate("settings/appearance/legacyicon") }
-                    )
-                )
-                add(
+                                add(
                     Material3SettingsItem(
     isHighlighted = (highlightKey == stringResource(R.string.theme)),
                         icon = painterResource(R.drawable.palette),
