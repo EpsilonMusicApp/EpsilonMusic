@@ -132,11 +132,20 @@ android {
             keyAlias = "androiddebugkey"
             keyPassword = "android"
         }
-        create("release") {
-            storeFile = file("keystore/release.keystore")
-            storePassword = System.getenv("STORE_PASSWORD")
-            keyAlias = System.getenv("KEY_ALIAS")
-            keyPassword = System.getenv("KEY_PASSWORD")
+        // Define the release signing config only when the keystore
+        // credentials exist in the environment. Clean checkouts (e.g.
+        // F-Droid's builders, which sign with their own key) have neither
+        // the keystore nor the passwords, and defining the config there
+        // fails their build at signing validation. CI is unaffected: it
+        // sets these env vars, and its injected signing
+        // (-Pandroid.injected.signing.*) overrides this config anyway.
+        if (System.getenv("STORE_PASSWORD") != null) {
+            create("release") {
+                storeFile = file("keystore/release.keystore")
+                storePassword = System.getenv("STORE_PASSWORD")
+                keyAlias = System.getenv("KEY_ALIAS")
+                keyPassword = System.getenv("KEY_PASSWORD")
+            }
         }
     }
 
@@ -146,7 +155,7 @@ android {
             isShrinkResources = true
             isCrunchPngs = false
             isDebuggable = false
-            signingConfig = signingConfigs.getByName("release")
+            signingConfig = signingConfigs.findByName("release")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
