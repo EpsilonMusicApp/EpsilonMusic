@@ -20,8 +20,6 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
-// VibeSummary is the shared model declared in StatsViewModel.kt (same package).
-
 data class DayUsageData(
   val dayName: String,
   val timestamp: Long,
@@ -158,7 +156,7 @@ class ListeningSummaryViewModel @Inject constructor(val database: MusicDatabase)
             val diff =
               if (prevPlayTime == 0L) 100
               else ((dominant.value - prevPlayTime).toDouble() / prevPlayTime * 100).toInt()
-            VibeSummary(dominant.key, dominant.value, prevPlayTime, diff, hasPreviousPeriod = prevPlayTime > 0)
+            VibeSummary(dominant.key, dominant.value, prevPlayTime, diff)
           }
         }
       }
