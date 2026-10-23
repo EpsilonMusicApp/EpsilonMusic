@@ -48,6 +48,8 @@ import com.epsilonmusic.app.ui.screens.settings.DarkMode
 import com.epsilonmusic.app.ui.screens.settings.PlayerSettings
 import com.epsilonmusic.app.ui.screens.settings.PrivacySettings
 import com.epsilonmusic.app.ui.screens.settings.RomanizationSettings
+import com.epsilonmusic.app.ui.screens.DetailedListeningHistoryScreen
+import com.epsilonmusic.app.ui.screens.ListeningSummaryScreen
 import com.epsilonmusic.app.ui.screens.settings.SettingsScreen
 import com.epsilonmusic.app.ui.screens.settings.AccountSettingsScreen
 import com.epsilonmusic.app.ui.screens.settings.StorageSettings
@@ -388,6 +390,17 @@ fun NavGraphBuilder.navigationBuilder(
 
     composable("settings/content/romanization") {
         RomanizationSettings(navController, scrollBehavior)
+    }
+
+    composable("settings/listening_summary") {
+        ListeningSummaryScreen(navController)
+    }
+
+    composable(
+        route = "detailed_listening_history/{startTimestamp}",
+        arguments = listOf(navArgument("startTimestamp") { type = NavType.StringType })
+    ) {
+        DetailedListeningHistoryScreen(navController)
     }
 
     composable(

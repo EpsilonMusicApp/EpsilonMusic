@@ -1117,4 +1117,6 @@
     <string name="generate_success_desc">Your AI-generated playlist has been saved to your library.</string>
     <string name="generate_error_title">Generation Failed</string>
     <string name="generate_error_default">Something went wrong while generating the playlist. Check your AI settings and try again.</string>
+    <string name="listening_summary">Listening Summary</string>
+    <string name="listening_summary_desc">View your music listening stats</string>
 </resources>

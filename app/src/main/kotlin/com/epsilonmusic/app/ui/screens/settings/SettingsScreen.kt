@@ -84,6 +84,8 @@ fun SettingsScreen(
     val listenTogetherDesc = stringResource(R.string.setting_desc_listen_together)
     val contentDesc = stringResource(R.string.setting_desc_content)
     val aiLyricsDesc = stringResource(R.string.setting_desc_ai)
+    val listeningSummaryText = stringResource(R.string.listening_summary)
+    val listeningSummaryDesc = stringResource(R.string.listening_summary_desc)
     val privacyDesc = stringResource(R.string.setting_desc_privacy)
     val storageDesc = stringResource(R.string.setting_desc_storage)
     val backupDesc = stringResource(R.string.setting_desc_backup)
@@ -244,6 +246,17 @@ fun SettingsScreen(
                         title = { Text(aiLyricsText) },
                         description = { Text(aiLyricsDesc) },
                         onClick = { navController.navigate("settings/ai") }
+                    )
+                )
+            }
+            if (listeningSummaryText.lowercase().contains(searchLower) || listeningSummaryDesc.lowercase().contains(searchLower)) {
+                add(
+                    Material3SettingsItem(
+                        isHighlighted = (highlightKey == listeningSummaryText),
+                        icon = painterResource(R.drawable.history),
+                        title = { Text(listeningSummaryText) },
+                        description = { Text(listeningSummaryDesc) },
+                        onClick = { navController.navigate("settings/listening_summary") }
                     )
                 )
             }
