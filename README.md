@@ -21,6 +21,9 @@
                 <img src='https://stc.utdstc.com/img/mediakit/download-gio-big.png' alt='Download Epsilon Music' width="150">
                 </a>
       </td>
+      <td align="center" style="padding: 15px; border: none;">
+        <a href="https://apkpure.com/p/com.epsilonmusic.app" title="Download Epsilon Music on APKPure" style="text-decoration:none;"><img src="https://img.shields.io/badge/APKPure-Download-24B574?style=for-the-badge" alt="Download on APKPure" width="150"/></a>
+      </td>
     </tr>
   </table>
 </div>
@@ -213,6 +216,7 @@ Epsilon Music delivers a seamless, premium listening experience built on YouTube
 - **Website:** [epsilonmusic.ct.ws](https://epsilonmusic.ct.ws)
 - **GitHub Releases:** download the latest APK from the [Releases Page](https://github.com/EpsilonMusicApp/EpsilonMusic/releases/latest)
 - **Uptodown:** [Epsilon Music on Uptodown](https://epsilon-music.en.uptodown.com/android)
+- **APKPure:** [Epsilon Music on APKPure](https://apkpure.com/p/com.epsilonmusic.app)
 
 <details>
 <summary><b>Building from Source</b></summary>
