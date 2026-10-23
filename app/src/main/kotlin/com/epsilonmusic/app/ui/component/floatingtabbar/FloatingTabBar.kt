@@ -464,8 +464,10 @@ private fun SharedTransitionScope.InlineTab(
             .then(tabBarContentModifier)
             .clickable(
                 onClick = {
+                    // Expand only: firing the tab's own click here as well could
+                    // navigate using a selection state captured when the bar's
+                    // content was built, landing the user on the wrong tab.
                     onInlineTabClick()
-                    inlineTab.onClick()
                 },
                 indication = inlineTab.indication?.invoke(),
                 interactionSource = remember { MutableInteractionSource() }
