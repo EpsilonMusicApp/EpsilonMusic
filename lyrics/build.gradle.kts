@@ -11,6 +11,11 @@ android {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
     }
+    flavorDimensions += "variant"
+    productFlavors {
+        create("gms") { dimension = "variant" }
+        create("foss") { dimension = "variant" }
+    }
 }
 kotlin { jvmToolchain(21) }
 
@@ -25,7 +30,7 @@ dependencies {
     implementation(project(":paxsenixlyrics"))
     implementation(project(":innertube"))
     
-    implementation(libs.kuromoji.ipadic)
+    "gmsImplementation"(libs.kuromoji.ipadic)
     implementation(libs.tinypinyin)
     implementation("androidx.core:core-ktx:1.13.1")
     implementation(libs.hilt)
