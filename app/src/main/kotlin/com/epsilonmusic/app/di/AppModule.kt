@@ -74,6 +74,7 @@ object AppModule {
             com.epsilonmusic.app.db.MIGRATION_42_43,
             com.epsilonmusic.app.db.MIGRATION_43_44,
             com.epsilonmusic.app.db.MIGRATION_44_45,
+            com.epsilonmusic.app.db.MIGRATION_45_46,
         )
         .setJournalMode(androidx.room.RoomDatabase.JournalMode.WRITE_AHEAD_LOGGING)
         .setTransactionExecutor(java.util.concurrent.Executors.newFixedThreadPool(4))
