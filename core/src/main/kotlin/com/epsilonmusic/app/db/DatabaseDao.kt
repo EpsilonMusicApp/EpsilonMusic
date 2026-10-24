@@ -297,6 +297,7 @@ interface DatabaseDao {
     fun hiddenFromQuickPicksSongIds(): Flow<List<String>>
 
     @Transaction
+    @Transaction
     @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query(
         """
