@@ -165,6 +165,8 @@ import com.epsilonmusic.app.constants.HidePlayerThumbnailKey
 import com.epsilonmusic.app.constants.HideStatusBarOnFullscreenKey
 import com.epsilonmusic.app.constants.EnableLyricsThumbnailPlayPauseKey
 import com.epsilonmusic.app.constants.KeepScreenOn
+import com.epsilonmusic.app.constants.ShowSeekButtonsKey
+import com.epsilonmusic.app.playback.seekButtonTarget
 import com.epsilonmusic.app.constants.PlayerBackgroundStyle
 import com.epsilonmusic.app.constants.PlayerBackgroundStyleKey
 import com.epsilonmusic.app.constants.PlayerButtonsStyle
@@ -309,6 +311,7 @@ fun BottomSheetPlayer(
     val showCodecOnPlayer by rememberPreference(com.epsilonmusic.app.constants.ShowCodecOnPlayerKey, false)
     val hidePlayerSlider by rememberPreference(com.epsilonmusic.app.constants.HidePlayerSliderKey, true)
     val (hidePlayerThumbnail, onHidePlayerThumbnailChange) = rememberPreference(HidePlayerThumbnailKey, false)
+    val showSeekButtons by rememberPreference(ShowSeekButtonsKey, false)
     val cropAlbumArt by rememberPreference(CropAlbumArtKey, false)
     val mediaMetadata by playerConnection.mediaMetadata.collectAsState()
     val isLocalMedia = mediaMetadata?.id?.isLocalMediaId() == true
@@ -2316,6 +2319,25 @@ fun BottomSheetPlayer(
                 exit = shrinkVertically(shrinkTowards = Alignment.Top) + slideOutVertically(targetOffsetY = { it }) + fadeOut()
             ) {
                 Column {
+                    if (showSeekButtons) {
+                        SeekButtons(
+                            enabled = !isListenTogetherGuest &&
+                                (if (isCasting) castDuration > 0
+                                else playerConnection.player.isCurrentMediaItemSeekable),
+                            color = TextBackgroundColor,
+                            onSeek = { offsetMs ->
+                                val currentPosition =
+                                    if (isCasting) castPosition else playerConnection.player.currentPosition
+                                val currentDuration =
+                                    if (isCasting) castDuration else playerConnection.player.duration
+                                playerConnection.seekTo(
+                                    seekButtonTarget(
+                                        currentPosition, currentDuration, offsetMs
+                                    )
+                                )
+                            }
+                        )
+                    }
                     if (useNewPlayerDesign) {
                         Row(
                             horizontalArrangement = Arrangement.Center,

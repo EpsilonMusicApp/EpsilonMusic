@@ -7,6 +7,8 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.epsilonmusic.app.constants.ExportedSongIdsKey
+import com.epsilonmusic.app.constants.DownloadedSongSortDescendingKey
+import com.epsilonmusic.app.constants.DownloadedSongSortTypeKey
 import com.epsilonmusic.app.constants.HideExplicitKey
 import com.epsilonmusic.app.constants.HideVideoSongsKey
 import com.epsilonmusic.app.constants.SongSortDescendingKey
@@ -42,6 +44,9 @@ constructor(
     private val syncUtils: SyncUtils,
 ) : ViewModel() {
     val playlist = savedStateHandle.get<String>("playlist")!!
+    private val sortTypeKey = if (playlist == "downloaded") DownloadedSongSortTypeKey else SongSortTypeKey
+    private val sortDescendingKey =
+        if (playlist == "downloaded") DownloadedSongSortDescendingKey else SongSortDescendingKey
 
     private val _isRefreshing = MutableStateFlow(false)
     val isRefreshing = _isRefreshing.asStateFlow()
@@ -52,7 +57,7 @@ constructor(
             .map {
                 Triple(
                     Triple(
-                        (try { it[SongSortTypeKey] } catch(e: Exception) { null }).toEnum(SongSortType.CREATE_DATE) to ((try { it[SongSortDescendingKey] } catch(e: Exception) { null }) ?: true),
+                        (try { it[sortTypeKey] } catch(e: Exception) { null }).toEnum(SongSortType.CREATE_DATE) to ((try { it[sortDescendingKey] } catch(e: Exception) { null }) ?: true),
                         (try { it[HideExplicitKey] } catch(e: Exception) { null }) ?: false,
                         (try { it[HideVideoSongsKey] } catch(e: Exception) { null }) ?: false
                     ),

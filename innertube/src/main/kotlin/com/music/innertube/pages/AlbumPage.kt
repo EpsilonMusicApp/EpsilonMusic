@@ -10,6 +10,7 @@ import com.music.innertube.models.getItems
 import com.music.innertube.models.oddElements
 import com.music.innertube.models.response.BrowseResponse
 import com.music.innertube.models.splitBySeparator
+import com.music.innertube.text.ApiText
 import com.music.innertube.utils.parseTime
 
 data class AlbumPage(
@@ -49,12 +50,12 @@ data class AlbumPage(
         fun getArtists(response: BrowseResponse): List<Artist> {
             val artists = getHeader(response)?.straplineTextOne?.runs?.oddElements()?.map {
                 Artist(
-                    name = it.text,
+                    name = ApiText.clean(it.text),
                     id = it.navigationEndpoint?.browseEndpoint?.browseId
                 )
             } ?: response.header?.musicDetailHeaderRenderer?.subtitle?.runs?.splitBySeparator()?.getOrNull(1)?.oddElements()?.map {
                 Artist(
-                    name = it.text,
+                    name = ApiText.clean(it.text),
                     id = it.navigationEndpoint?.browseEndpoint?.browseId
                 )
             } ?: emptyList()
@@ -96,10 +97,10 @@ data class AlbumPage(
                     ?.text?.runs?.firstOrNull()
                     ?.navigationEndpoint?.watchEndpoint?.videoId
                 ?: return null,
-                title = PageHelper.extractRuns(renderer.flexColumns, "MUSIC_VIDEO").firstOrNull()?.text ?: return null,
+                title = PageHelper.extractRuns(renderer.flexColumns, "MUSIC_VIDEO").firstOrNull()?.text?.let(ApiText::clean) ?: return null,
                 artists = PageHelper.extractRuns(renderer.flexColumns, "MUSIC_PAGE_TYPE_ARTIST").map{
                     Artist(
-                        name = it.text,
+                        name = ApiText.clean(it.text),
                         id = it.navigationEndpoint?.browseEndpoint?.browseId
                     )
                 }.ifEmpty {
@@ -110,7 +111,7 @@ data class AlbumPage(
                     Album(it.title, it.browseId)
                 } ?: renderer.flexColumns.getOrNull(2)?.musicResponsiveListItemFlexColumnRenderer?.text?.runs?.firstOrNull()?.let {
                     Album(
-                        name = it.text,
+                        name = ApiText.clean(it.text),
                         id = it.navigationEndpoint?.browseEndpoint?.browseId!!
                     )
                 }!!,

@@ -52,7 +52,9 @@ data class SongEntity(
     @ColumnInfo(name = "isUploaded", defaultValue = false.toString())
     val isUploaded: Boolean = false,
     @ColumnInfo(name = "isVideo", defaultValue = false.toString())
-    val isVideo: Boolean = false
+    val isVideo: Boolean = false,
+    @ColumnInfo(defaultValue = "0")
+    val hideFromQuickPicks: Boolean = false
 ) {
     fun localToggleLike() = copy(
         liked = !liked,
@@ -86,4 +88,6 @@ data class SongEntity(
     fun toggleUploaded() = copy(
         isUploaded = !isUploaded
     )
+
+    fun toggleHideFromQuickPicks() = copy(hideFromQuickPicks = !hideFromQuickPicks)
 }

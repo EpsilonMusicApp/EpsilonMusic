@@ -650,6 +650,7 @@ highlightKey: String? = null) {
                     LibraryFilter.PLAYLISTS -> stringResource(R.string.playlists)
                     LibraryFilter.LIBRARY -> stringResource(R.string.filter_library)
                     LibraryFilter.LOCAL -> stringResource(R.string.filter_local)
+                    LibraryFilter.SPOTIFY -> stringResource(R.string.filter_spotify)
                 }
             }
         )
@@ -1726,6 +1727,7 @@ highlightKey: String? = null) {
                                 LibraryFilter.PLAYLISTS -> stringResource(R.string.playlists)
                                 LibraryFilter.LIBRARY -> stringResource(R.string.filter_library)
                                 LibraryFilter.LOCAL -> stringResource(R.string.filter_local)
+                                LibraryFilter.SPOTIFY -> stringResource(R.string.filter_spotify)
                             }
                         )
                     },

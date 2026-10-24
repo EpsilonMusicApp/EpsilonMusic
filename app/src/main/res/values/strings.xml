@@ -343,6 +343,14 @@
 
     <string name="network_ip_version">Network IP Version</string>
     <string name="audio_quality">Music Quality</string>
+    <string name="audio_quality_wifi">Wi-Fi audio quality</string>
+    <string name="audio_quality_cellular">Mobile data audio quality</string>
+    <string name="show_seek_buttons">10-second seek buttons</string>
+    <string name="show_seek_buttons_desc">Add rewind and forward buttons above the player controls</string>
+    <string name="seek_back_ten_seconds">Back 10 seconds</string>
+    <string name="seek_forward_ten_seconds">Forward 10 seconds</string>
+    <string name="seek_back_ten_short">−10s</string>
+    <string name="seek_forward_ten_short">+10s</string>
     <string name="ip_version_auto">Automatic</string>
     <string name="ip_version_ipv4">Forced IPv4</string>
     <string name="ip_version_ipv6">Forced IPv6</string>
@@ -460,6 +468,22 @@
     <string name="spotify_clear_selection">Clear</string>
     <string name="spotify_account">Spotify account</string>
     <string name="spotify_waiting_for_login">Waiting for Spotify login</string>
+    <string name="filter_spotify">Spotify</string>
+    <string name="spotify_live_library">Spotify live library</string>
+    <string name="spotify_live_desc">Browse your saved songs and playlists live — nothing gets copied into your local library.</string>
+    <string name="spotify_connect_account">Link Spotify account</string>
+    <string name="spotify_view_all_tracks">See every track</string>
+    <string name="spotify_resolving_stream">Finding a playable stream…</string>
+    <string name="spotify_playlists_title">Playlists</string>
+    <string name="spotify_no_playlists_found">No playlists found</string>
+    <string name="spotify_already_connected_refresh">Already linked? Tap to refresh</string>
+    <string name="spotify_connected_status">Connected to Spotify</string>
+    <string name="spotify_playlist_source">Spotify playlist</string>
+    <string name="spotify_no_match_snackbar">Couldn\'t find a playable stream for this track</string>
+    <string name="spotify_no_match_track_snackbar">Couldn\'t find a playable stream for %1$s</string>
+    <string name="allow_storage_access">Allow storage access</string>
+    <string name="ai_endpoint_not_allowed">This endpoint address is not allowed</string>
+    <string name="ai_endpoint_blocked_log">Blocked: the AI endpoint address is not allowed.</string>
     <string name="service_uptime">Service Uptime</string>
     <string name="service_uptime_desc">Check the status of music providers</string>
     <string name="music_providers">Music Providers</string>

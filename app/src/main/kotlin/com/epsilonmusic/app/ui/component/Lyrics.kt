@@ -34,6 +34,7 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -200,7 +201,8 @@ import kotlin.time.Duration.Companion.seconds
 fun Lyrics(
     sliderPositionProvider: () -> Long?,
     modifier: Modifier = Modifier,
-    showLyrics: Boolean
+    showLyrics: Boolean,
+    compact: Boolean = false
 ) {
     val playerConnection = LocalPlayerConnection.current ?: return
     val database = LocalDatabase.current
@@ -267,8 +269,12 @@ fun Lyrics(
     // it for a specific song. Keyed into `lines` so toggling triggers a live re-parse.
     val currentSongRomanize = currentSong?.romanizeLyrics ?: true
 
+    val parsedLines = remember(lyrics) { lyrics?.let(::parseLyrics).orEmpty() }
+    val isSynced = remember(parsedLines) { parsedLines.any { it.time > 0L } }
+
     val lines = remember(
         lyrics,
+        parsedLines,
         scope,
         currentSongRomanize,
         romanizeJapaneseLyrics,
@@ -287,8 +293,7 @@ fun Lyrics(
     ) {
         if (lyrics == null || lyrics == LYRICS_NOT_FOUND) {
             emptyList()
-        } else if (lyrics.startsWith("[")) {
-            val parsedLines = parseLyrics(lyrics)
+        } else if (parsedLines.isNotEmpty()) {
 
             val isRussianLyrics = romanizeRussianLyrics && !romanizeCyrillicByLine && isRussian(lyrics)
             val isUkrainianLyrics = romanizeUkrainianLyrics && !romanizeCyrillicByLine && isUkrainian(lyrics)
@@ -465,11 +470,6 @@ fun Lyrics(
             }
         }
     }
-    val isSynced =
-        remember(lyrics) {
-            !lyrics.isNullOrEmpty() && lyrics.startsWith("[")
-        }
-
     
     val translationStatus by LyricsTranslationHelper.status.collectAsState()
     val hasActiveTranslations by LyricsTranslationHelper.hasActiveTranslations.collectAsState()
@@ -596,12 +596,26 @@ fun Lyrics(
     val selectedIndices = remember { mutableStateListOf<Int>() }
     var showMaxSelectionToast by remember { mutableStateOf(false) } 
 
-    val isLyricsProviderShown = lyricsEntity?.provider != null && lyricsEntity?.provider != "Unknown" && !isSelectionModeActive
+    val isLyricsProviderShown = !compact && lyricsEntity?.provider != null && lyricsEntity?.provider != "Unknown" && !isSelectionModeActive
 
     val lazyListState = rememberLazyListState()
     
     
     var isAutoScrollEnabled by rememberSaveable { mutableStateOf(true) }
+    var lastManualScrollTime by remember { mutableStateOf(0L) }
+
+    LaunchedEffect(
+        isAutoScrollEnabled, isSynced, isSelectionModeActive, showLyrics,
+        lazyListState.isScrollInProgress, lastManualScrollTime,
+    ) {
+        if (!isAutoScrollEnabled && isSynced && !isSelectionModeActive && showLyrics &&
+            !lazyListState.isScrollInProgress
+        ) {
+            delay(4000)
+            lastPreviewTime = 0L
+            isAutoScrollEnabled = true
+        }
+    }
 
     
     BackHandler(enabled = isSelectionModeActive) {
@@ -660,10 +674,11 @@ fun Lyrics(
     LaunchedEffect(lines) {
         isSelectionModeActive = false
         selectedIndices.clear()
+        isAutoScrollEnabled = true
     }
 
-    LaunchedEffect(lyrics) {
-        if (lyrics.isNullOrEmpty() || !lyrics.startsWith("[")) {
+    LaunchedEffect(lyrics, isSynced) {
+        if (!isSynced) {
             currentLineIndex = -1
             return@LaunchedEffect
         }
@@ -692,9 +707,9 @@ fun Lyrics(
         val itemInfo = lazyListState.layoutInfo.visibleItemsInfo.firstOrNull { it.index == lookUpIndex }
         if (itemInfo != null) {
             val viewportHeight = lazyListState.layoutInfo.viewportEndOffset - lazyListState.layoutInfo.viewportStartOffset
-            val center = lazyListState.layoutInfo.viewportStartOffset + (viewportHeight / 2)
-            val itemCenter = itemInfo.offset + itemInfo.size / 2
-            val offset = itemCenter - center
+            val anchor = if (compact) lazyListState.layoutInfo.viewportStartOffset else lazyListState.layoutInfo.viewportStartOffset + (viewportHeight / 2)
+            val itemAnchor = if (compact) itemInfo.offset else itemInfo.offset + itemInfo.size / 2
+            val offset = itemAnchor - anchor
             if (kotlin.math.abs(offset) > 10) {
                 // Spring spec handles interruption gracefully: a new scroll request while
                 // one is in flight retargets instead of being dropped (fixes seek/scrub jank).
@@ -750,13 +765,14 @@ fun Lyrics(
             .padding(bottom = 12.dp)
     ) {
         
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .zIndex(1f)
-                .padding(top = 56.dp),
-            contentAlignment = Alignment.Center
-        ) {
+        if (!compact)
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .zIndex(1f)
+                    .padding(top = 56.dp),
+                contentAlignment = Alignment.Center
+            ) {
             when (val status = translationStatus) {
                 is LyricsTranslationHelper.TranslationStatus.Translating -> {
                     Card(
@@ -844,7 +860,7 @@ fun Lyrics(
             }
         }
 
-        if (lyrics == LYRICS_NOT_FOUND) {
+        if (lyrics == LYRICS_NOT_FOUND && !compact) {
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
@@ -858,15 +874,24 @@ fun Lyrics(
                     modifier = Modifier.alpha(0.5f)
                 )
             }
-        } else {
+        } else if (!compact || isSynced) {
             LazyColumn(
             state = lazyListState,
-            contentPadding = WindowInsets.systemBars
-                .only(WindowInsetsSides.Top)
-                .add(WindowInsets(top = maxHeight / 3, bottom = maxHeight / 2))
-                .asPaddingValues(),
+            userScrollEnabled = !compact,
+            contentPadding =
+                if (compact) {
+                    PaddingValues(bottom = maxHeight)
+                } else {
+                    WindowInsets.systemBars
+                        .only(WindowInsetsSides.Top)
+                        .add(WindowInsets(top = maxHeight / 3, bottom = maxHeight / 2))
+                        .asPaddingValues()
+                },
             modifier = Modifier
-                .fadingEdge(vertical = 64.dp)
+                .then(
+                    if (compact) Modifier.fadingEdge(bottom = 64.dp)
+                    else Modifier.fadingEdge(vertical = 64.dp)
+                )
                 .nestedScroll(remember {
                     object : NestedScrollConnection {
                         override fun onPostScroll(
@@ -876,6 +901,7 @@ fun Lyrics(
                         ): Offset {
                             if (source == NestedScrollSource.UserInput) {
                                 isAutoScrollEnabled = false
+                                lastManualScrollTime = System.currentTimeMillis()
                             }
                             if (!isSelectionModeActive) { 
                                 lastPreviewTime = System.currentTimeMillis()
@@ -888,6 +914,7 @@ fun Lyrics(
                             available: Velocity
                         ): Velocity {
                             isAutoScrollEnabled = false
+                            lastManualScrollTime = System.currentTimeMillis()
                             if (!isSelectionModeActive) { 
                                 lastPreviewTime = System.currentTimeMillis()
                             }
