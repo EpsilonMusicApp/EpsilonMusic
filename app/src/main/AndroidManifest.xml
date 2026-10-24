@@ -319,6 +319,14 @@
                 android:resource="@xml/provider_paths" />
         </provider>
 
+        <!-- Covers for Android Auto / Automotive OS / the cluster, which only load
+             content:// artwork. Serves only URIs signed by AutomotiveArtwork. -->
+        <provider
+            android:name=".utils.AutomotiveArtworkProvider"
+            android:authorities="${applicationId}.artwork"
+            android:exported="true"
+            tools:ignore="ExportedContentProvider" />
+
         <provider
             android:name="com.dpi.DensityScaler"
             android:authorities="${applicationId}.com.dpi.DensityScaler"
@@ -356,6 +364,11 @@
             android:name=".playback.AudioExportService"
             android:exported="false"
             android:foregroundServiceType="dataSync" />
+
+        <service
+            android:name="androidx.media3.exoplayer.scheduler.PlatformScheduler$PlatformSchedulerService"
+            android:permission="android.permission.BIND_JOB_SERVICE"
+            android:exported="true" />
 
         <service
             android:name="androidx.work.impl.foreground.SystemForegroundService"

@@ -8,6 +8,7 @@ import com.music.innertube.models.SongItem
 import com.music.innertube.models.WatchEndpoint
 import com.music.innertube.models.oddElements
 import com.music.innertube.models.splitBySeparator
+import com.music.innertube.text.ApiText
 import com.music.innertube.utils.parseTime
 
 data class NextResult(
@@ -37,7 +38,7 @@ object NextPage {
             artists =
                 longByLineRuns.firstOrNull()?.oddElements()?.map {
                     Artist(
-                        name = it.text,
+                        name = ApiText.clean(it.text),
                         id = it.navigationEndpoint?.browseEndpoint?.browseId,
                     )
                 } ?: return null,
@@ -49,7 +50,7 @@ object NextPage {
                         it.navigationEndpoint?.browseEndpoint != null
                     }?.let {
                         Album(
-                            name = it.text,
+                            name = ApiText.clean(it.text),
                             id = it.navigationEndpoint?.browseEndpoint?.browseId!!,
                         )
                     },

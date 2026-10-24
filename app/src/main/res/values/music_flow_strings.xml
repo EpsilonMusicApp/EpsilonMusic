@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="music_flow">Swipe Flow</string>
+    <string name="music_flow_caption">Swipe up to discover new music</string>
+    <string name="music_flow_open">Open Swipe Flow</string>
+    <string name="music_flow_offline">You\'re offline. Connect to the internet to find new music.</string>
+    <string name="music_flow_offline_banner">Offline · showing your downloads</string>
+    <string name="music_flow_empty">Nothing to show yet. Play a few songs, then try again.</string>
+    <string name="music_flow_failed">Couldn\'t load recommendations.</string>
+    <string name="music_flow_end">You\'ve reached the end of this flow</string>
+    <string name="music_flow_start_over">Start a fresh flow</string>
+    <string name="music_flow_next">Next track</string>
+    <string name="music_flow_previous">Previous track</string>
+    <string name="music_flow_unlike">Unlike</string>
+    <string name="music_flow_open_player">Open the player</string>
+    <string name="music_flow_restore_queue">Bring back previous queue</string>
+    <string name="music_flow_queue_restored">Previous queue restored</string>
+    <string name="music_flow_queue_restore_unavailable">The previous queue is no longer available</string>
+    <string name="music_flow_feedback">Tune recommendations</string>
+    <string name="music_flow_not_interested">Not interested</string>
+    <string name="music_flow_never_recommend">Don\'t suggest again</string>
+    <string name="music_flow_less_like_this">Show less like this</string>
+    <string name="music_flow_feedback_saved">Got it — your flow will adapt</string>
+    <string name="music_flow_blocked_casting">Can\'t switch tracks in Swipe Flow while casting</string>
+    <string name="music_flow_blocked_listen_together">Only the host can change tracks in Listen Together</string>
+    <string name="music_flow_external">Playing from another queue · tap play to listen here</string>
+    <string name="music_flow_playback_error">This track couldn\'t be played</string>
+    <string name="music_flow_skip">Skip</string>
+    <string name="music_flow_buffering">Loading track</string>
+
+    <string name="music_flow_settings_description">Swipe through song recommendations</string>
+    <string name="music_flow_enable">Show Swipe Flow</string>
+    <string name="music_flow_enable_description">Adds a Swipe Flow shortcut to the navigation</string>
+    <string name="music_flow_autoplay">Autoplay</string>
+    <string name="music_flow_autoplay_description">Start playing as soon as a song appears</string>
+    <string name="music_flow_auto_next">Auto-advance</string>
+    <string name="music_flow_auto_next_description">Move to the next song when one ends</string>
+    <string name="music_flow_animated_background">Animated backgrounds</string>
+    <string name="music_flow_animated_background_description">Play Canvas loops when available. Off with Data saver</string>
+    <string name="music_flow_lyrics">Lyric preview</string>
+    <string name="music_flow_lyrics_description">Show the current lyric line on each song</string>
+    <string name="music_flow_cellular_prefetch">Preload artwork on mobile data</string>
+    <string name="music_flow_cellular_prefetch_description">Only artwork and song details are preloaded, never audio</string>
+    <string name="music_flow_hide_recent">Hide recently played</string>
+    <string name="music_flow_hide_recent_description">Skip songs you\'ve played recently</string>
+</resources>

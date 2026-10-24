@@ -11,6 +11,7 @@ import com.music.innertube.models.SongItem
 import com.music.innertube.models.YTItem
 import com.music.innertube.models.oddElements
 import com.music.innertube.models.splitBySeparator
+import com.music.innertube.text.ApiText
 
 data class RelatedPage(
     val songs: List<SongItem>,
@@ -48,18 +49,18 @@ data class RelatedPage(
                         ?.text
                         ?.runs
                         ?.firstOrNull()
-                        ?.text ?: return null,
+                        ?.text?.let(ApiText::clean) ?: return null,
                 artists =
                     secondaryLineRuns?.firstOrNull()?.oddElements()?.map {
                         Artist(
-                            name = it.text,
+                            name = ApiText.clean(it.text),
                             id = it.navigationEndpoint?.browseEndpoint?.browseId,
                         )
                     } ?: return null,
                 album =
                     renderer.flexColumns.getOrNull(2)?.musicResponsiveListItemFlexColumnRenderer?.text?.runs?.firstOrNull()?.let {
                         Album(
-                            name = it.text,
+                            name = ApiText.clean(it.text),
                             id = it.navigationEndpoint?.browseEndpoint?.browseId ?: return null,
                         )
                     },
@@ -91,10 +92,10 @@ data class RelatedPage(
                         title =
                             renderer.title.runs
                                 ?.firstOrNull()
-                                ?.text ?: return null,
+                                ?.text?.let(ApiText::clean) ?: return null,
                         artists = renderer.subtitle?.runs?.splitBySeparator()?.getOrNull(1)?.oddElements()?.map {
                             Artist(
-                                name = it.text,
+                                name = ApiText.clean(it.text),
                                 id = it.navigationEndpoint?.browseEndpoint?.browseId
                             )
                         },
@@ -119,9 +120,9 @@ data class RelatedPage(
                         title =
                             renderer.title.runs
                                 ?.firstOrNull()
-                                ?.text ?: return null,
+                                ?.text?.let(ApiText::clean) ?: return null,
                         author = Artist(
-                            name = renderer.subtitle?.runs?.lastOrNull()?.text ?: return null,
+                            name = ApiText.clean(renderer.subtitle?.runs?.lastOrNull()?.text ?: return null),
                             id = null
                         ),
                         songCountText = renderer.subtitle?.runs?.findLast {
@@ -158,7 +159,7 @@ data class RelatedPage(
                         title =
                             renderer.title.runs
                                 ?.firstOrNull()
-                                ?.text ?: return null,
+                                ?.text?.let(ApiText::clean) ?: return null,
                         thumbnail = renderer.thumbnailRenderer.musicThumbnailRenderer?.getThumbnailUrl() ?: return null,
                         shuffleEndpoint =
                             renderer.menu

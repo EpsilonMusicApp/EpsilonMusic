@@ -65,6 +65,7 @@ import com.music.innertube.pages.SearchResult
 import com.music.innertube.pages.SearchSuggestionPage
 import com.music.innertube.pages.SearchSummary
 import com.music.innertube.pages.SearchSummaryPage
+import com.music.innertube.text.ApiText
 import io.ktor.client.call.body
 import io.ktor.client.statement.bodyAsText
 import kotlinx.coroutines.runBlocking
@@ -258,7 +259,7 @@ object YouTube {
 
         fun mapRuns(runs: List<Run>?): List<Run>? = runs?.map { run ->
             Run(
-                text = run.text,
+                text = ApiText.clean(run.text),
                 navigationEndpoint = run.navigationEndpoint
             )
         }
@@ -303,10 +304,10 @@ object YouTube {
             val albumItem = AlbumItem(
                 browseId = browseId,
                 playlistId = playlistId,
-                title = response.header.musicDetailHeaderRenderer.title.runs?.firstOrNull()?.text!!,
+                title = response.header.musicDetailHeaderRenderer.title.runs?.firstOrNull()?.text?.let(ApiText::clean)!!,
                 artists = response.header.musicDetailHeaderRenderer.subtitle.runs?.filter { it.navigationEndpoint != null }?.map {
                     Artist(
-                        name = it.text,
+                        name = ApiText.clean(it.text),
                         id = it.navigationEndpoint?.browseEndpoint?.browseId
                     )
                 },
@@ -330,11 +331,11 @@ object YouTube {
             val albumItem = AlbumItem(
                 browseId = browseId,
                 playlistId = playlistId,
-                title = response.contents?.twoColumnBrowseResultsRenderer?.tabs?.firstOrNull()?.tabRenderer?.content?.sectionListRenderer?.contents?.firstOrNull()?.musicResponsiveHeaderRenderer?.title?.runs?.firstOrNull()?.text!!,
+                title = response.contents?.twoColumnBrowseResultsRenderer?.tabs?.firstOrNull()?.tabRenderer?.content?.sectionListRenderer?.contents?.firstOrNull()?.musicResponsiveHeaderRenderer?.title?.runs?.firstOrNull()?.text?.let(ApiText::clean)!!,
                 artists = response.contents.twoColumnBrowseResultsRenderer.tabs.firstOrNull()?.tabRenderer?.content?.sectionListRenderer?.contents?.firstOrNull()?.musicResponsiveHeaderRenderer?.straplineTextOne?.runs?.oddElements()
                     ?.map {
                         Artist(
-                            name = it.text,
+                            name = ApiText.clean(it.text),
                             id = it.navigationEndpoint?.browseEndpoint?.browseId
                         )
                     }!!,
@@ -407,7 +408,7 @@ object YouTube {
 
         fun mapRuns(runs: List<Run>?): List<Run>? = runs?.map { run ->
             Run(
-                text = run.text,
+                text = ApiText.clean(run.text),
                 navigationEndpoint = run.navigationEndpoint
             )
         }
@@ -421,9 +422,9 @@ object YouTube {
         ArtistPage(
             artist = ArtistItem(
                 id = browseId,
-                title = response.header?.musicImmersiveHeaderRenderer?.title?.runs?.firstOrNull()?.text
-                    ?: response.header?.musicVisualHeaderRenderer?.title?.runs?.firstOrNull()?.text
-                    ?: response.header?.musicHeaderRenderer?.title?.runs?.firstOrNull()?.text!!,
+                title = response.header?.musicImmersiveHeaderRenderer?.title?.runs?.firstOrNull()?.text?.let(ApiText::clean)
+                    ?: response.header?.musicVisualHeaderRenderer?.title?.runs?.firstOrNull()?.text?.let(ApiText::clean)
+                    ?: response.header?.musicHeaderRenderer?.title?.runs?.firstOrNull()?.text?.let(ApiText::clean)!!,
                 thumbnail = response.header?.musicImmersiveHeaderRenderer?.thumbnail?.musicThumbnailRenderer?.getThumbnailUrl()
                     ?: response.header?.musicVisualHeaderRenderer?.foregroundThumbnail?.musicThumbnailRenderer?.getThumbnailUrl()
                     ?: response.header?.musicDetailHeaderRenderer?.thumbnail?.musicThumbnailRenderer?.getThumbnailUrl(),
@@ -500,7 +501,7 @@ object YouTube {
             }
             else -> {
                 ArtistItemsPage(
-                    title = response.header?.musicHeaderRenderer?.title?.runs?.firstOrNull()?.text ?: "",
+                    title = response.header?.musicHeaderRenderer?.title?.runs?.firstOrNull()?.text?.let(ApiText::clean) ?: "",
                     items = musicPlaylistShelfRenderer?.contents?.getItems()?.mapNotNull {
                         ArtistItemsPage.fromMusicResponsiveListItemRenderer(it)
                     } ?: emptyList(),
@@ -586,10 +587,10 @@ object YouTube {
         PlaylistPage(
             playlist = PlaylistItem(
                 id = playlistId,
-                title = header?.title?.runs?.firstOrNull()?.text ?: "",
+                title = header?.title?.runs?.firstOrNull()?.text?.let(ApiText::clean) ?: "",
                 author = header?.straplineTextOne?.runs?.firstOrNull()?.let {
                     Artist(
-                        name = it.text,
+                        name = ApiText.clean(it.text),
                         id = it.navigationEndpoint?.browseEndpoint?.browseId
                     )
                 },
@@ -1030,12 +1031,12 @@ object YouTube {
                         ?.text ?: return null
 
                     val titleRun = firstColumn.runs?.firstOrNull() ?: return null
-                    val title = titleRun.text.takeIf { it.isNotBlank() } ?: return null
+                    val title = titleRun.text.takeIf { it.isNotBlank() }?.let(ApiText::clean) ?: return null
 
                     val artists = secondColumn.runs?.mapNotNull { run ->
                         run.text.takeIf { it.isNotBlank() }?.let { name ->
                             Artist(
-                                name = name,
+                                name = ApiText.clean(name),
                                 id = run.navigationEndpoint?.browseEndpoint?.browseId
                             )
                         }
@@ -1073,10 +1074,10 @@ object YouTube {
                     val subtitle = renderer.subtitle?.runs ?: return null
                     SongItem(
                         id = renderer.navigationEndpoint.watchEndpoint?.videoId ?: return null,
-                        title = renderer.title.runs?.firstOrNull()?.text ?: return null,
+                        title = renderer.title.runs?.firstOrNull()?.text?.let(ApiText::clean) ?: return null,
                         artists = subtitle.mapNotNull {
                             it.navigationEndpoint?.browseEndpoint?.browseId?.let { id ->
-                                Artist(name = it.text, id = id)
+                                Artist(name = ApiText.clean(it.text), id = id)
                             }
                         },
                         thumbnail = renderer.thumbnailRenderer.musicThumbnailRenderer?.getThumbnailUrl() ?: return null,
@@ -1092,10 +1093,10 @@ object YouTube {
                         playlistId = renderer.thumbnailOverlay?.musicItemThumbnailOverlayRenderer?.content
                             ?.musicPlayButtonRenderer?.playNavigationEndpoint
                             ?.watchPlaylistEndpoint?.playlistId ?: return null,
-                        title = renderer.title.runs?.firstOrNull()?.text ?: return null,
+                        title = renderer.title.runs?.firstOrNull()?.text?.let(ApiText::clean) ?: return null,
                         artists = renderer.subtitle?.runs?.oddElements()?.drop(1)?.mapNotNull {
                             it.navigationEndpoint?.browseEndpoint?.browseId?.let { id ->
-                                Artist(name = it.text, id = id)
+                                Artist(name = ApiText.clean(it.text), id = id)
                             }
                         },
                         year = renderer.subtitle?.runs?.lastOrNull()?.text?.toIntOrNull(),
@@ -1579,13 +1580,13 @@ object YouTube {
                     comment = CommentThreadRenderer.Comment(
                         commentRenderer = com.music.innertube.models.comment.CommentRenderer(
                             authorText = com.music.innertube.models.Runs(
-                                runs = listOf(com.music.innertube.models.Run(text = payload.author?.displayName ?: "Unknown", navigationEndpoint = null))
+                                runs = listOf(com.music.innertube.models.Run(text = ApiText.clean(payload.author?.displayName ?: "Unknown"), navigationEndpoint = null))
                             ),
                             authorThumbnail = com.music.innertube.models.Thumbnails(
                                 thumbnails = listOf(com.music.innertube.models.Thumbnail(url = payload.author?.avatarThumbnailUrl ?: "", width = 0, height = 0))
                             ),
                             contentText = com.music.innertube.models.Runs(
-                                runs = listOf(com.music.innertube.models.Run(text = payload.properties?.content?.content ?: "", navigationEndpoint = null))
+                                runs = listOf(com.music.innertube.models.Run(text = ApiText.clean(payload.properties?.content?.content ?: ""), navigationEndpoint = null))
                             ),
                             publishedTimeText = com.music.innertube.models.Runs(
                                 runs = listOf(com.music.innertube.models.Run(text = payload.properties?.publishedTime ?: "", navigationEndpoint = null))
@@ -1670,13 +1671,13 @@ object YouTube {
 
                 com.music.innertube.models.comment.CommentRenderer(
                     authorText = com.music.innertube.models.Runs(
-                        runs = listOf(com.music.innertube.models.Run(text = payload.author?.displayName ?: "Unknown", navigationEndpoint = null))
+                        runs = listOf(com.music.innertube.models.Run(text = ApiText.clean(payload.author?.displayName ?: "Unknown"), navigationEndpoint = null))
                     ),
                     authorThumbnail = com.music.innertube.models.Thumbnails(
                         thumbnails = listOf(com.music.innertube.models.Thumbnail(url = payload.author?.avatarThumbnailUrl ?: "", width = 0, height = 0))
                     ),
                     contentText = com.music.innertube.models.Runs(
-                        runs = listOf(com.music.innertube.models.Run(text = payload.properties?.content?.content ?: "", navigationEndpoint = null))
+                        runs = listOf(com.music.innertube.models.Run(text = ApiText.clean(payload.properties?.content?.content ?: ""), navigationEndpoint = null))
                     ),
                     publishedTimeText = com.music.innertube.models.Runs(
                         runs = listOf(com.music.innertube.models.Run(text = payload.properties?.publishedTime ?: "", navigationEndpoint = null))

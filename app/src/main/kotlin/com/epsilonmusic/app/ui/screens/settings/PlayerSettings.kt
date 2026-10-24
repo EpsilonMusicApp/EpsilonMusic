@@ -41,6 +41,9 @@ import com.epsilonmusic.app.constants.AudioNormalizationKey
 import com.epsilonmusic.app.constants.AudioOffload
 import com.epsilonmusic.app.constants.AudioQuality
 import com.epsilonmusic.app.constants.AudioQualityKey
+import com.epsilonmusic.app.constants.AudioQualityWifiKey
+import com.epsilonmusic.app.constants.AudioQualityCellularKey
+import com.epsilonmusic.app.constants.ShowSeekButtonsKey
 import com.epsilonmusic.app.constants.AutoDownloadOnLikeKey
 import com.epsilonmusic.app.constants.DownloadWithMetadataKey
 import com.epsilonmusic.app.constants.AutomixCrossfadeKey
@@ -60,6 +63,7 @@ import com.epsilonmusic.app.constants.PersistentShuffleAcrossQueuesKey
 import com.epsilonmusic.app.constants.PreventDuplicateTracksInQueueKey
 import com.epsilonmusic.app.constants.RememberShuffleAndRepeatKey
 import com.epsilonmusic.app.constants.ResumeOnBluetoothConnectKey
+import com.epsilonmusic.app.constants.AutoplayOnAutomotiveConnectKey
 import com.epsilonmusic.app.constants.SeekExtraSeconds
 import com.epsilonmusic.app.constants.ShufflePlaylistFirstKey
 import com.epsilonmusic.app.constants.SimilarContent
@@ -98,6 +102,14 @@ highlightKey: String? = null) {
     val (audioQuality, onAudioQualityChange) = rememberEnumPreference(
         AudioQualityKey,
         defaultValue = AudioQuality.OPUS
+    )
+    val (audioQualityWifi, onAudioQualityWifiChange) = rememberEnumPreference(
+        AudioQualityWifiKey,
+        defaultValue = AudioQuality.LOSSLESS
+    )
+    val (audioQualityCellular, onAudioQualityCellularChange) = rememberEnumPreference(
+        AudioQualityCellularKey,
+        defaultValue = AudioQuality.MEDIUM
     )
 
     val (crossfadeEnabled, onCrossfadeEnabledChange) = rememberPreference(
@@ -180,6 +192,11 @@ highlightKey: String? = null) {
         defaultValue = true
     )
 
+    val (showSeekButtons, onShowSeekButtonsChange) = rememberPreference(
+        ShowSeekButtonsKey,
+        defaultValue = false
+    )
+
     val (seekExtraSeconds, onSeekExtraSeconds) = rememberPreference(
         SeekExtraSeconds,
         defaultValue = false
@@ -238,6 +255,10 @@ highlightKey: String? = null) {
         ResumeOnBluetoothConnectKey,
         defaultValue = false
     )
+    val (autoplayOnAutomotiveConnect, onAutoplayOnAutomotiveConnectChange) = rememberPreference(
+        AutoplayOnAutomotiveConnectKey,
+        defaultValue = false
+    )
     val (keepScreenOn, onKeepScreenOnChange) = rememberPreference(
         KeepScreenOn,
         defaultValue = false
@@ -247,7 +268,8 @@ highlightKey: String? = null) {
         defaultValue = 1f
     )
 
-    var showAudioQualityDialog by remember { mutableStateOf(false) }
+    var showAudioQualityWifiDialog by remember { mutableStateOf(false) }
+    var showAudioQualityCellularDialog by remember { mutableStateOf(false) }
     var showDownloadQualityDialog by remember { mutableStateOf(false) }
     var showPlaybackEngineDialog by remember { mutableStateOf(false) }
 
@@ -287,25 +309,43 @@ highlightKey: String? = null) {
         )
     }
 
-    if (showAudioQualityDialog) {
+    if (showAudioQualityWifiDialog) {
         EnumDialog(
-            onDismiss = { showAudioQualityDialog = false },
+            onDismiss = { showAudioQualityWifiDialog = false },
             onSelect = {
-                onAudioQualityChange(it)
-                showAudioQualityDialog = false
+                onAudioQualityWifiChange(it)
+                showAudioQualityWifiDialog = false
             },
-            title = stringResource(R.string.audio_quality),
-            current = audioQuality,
-            values = listOf(AudioQuality.OPUS),
-            valueText = {
-                when (it) {
-                    AudioQuality.OPUS -> "Opus"
-                    else -> ""
-                }
+            title = stringResource(R.string.audio_quality_wifi),
+            current = audioQualityWifi,
+            values = listOf(
+                AudioQuality.LOSSLESS,
+                AudioQuality.HIGH,
+                AudioQuality.MEDIUM,
+                AudioQuality.LOW,
+            ),
+            valueText = { it.label },
+            valueDescription = { "${it.detail} (${it.hourly})" }
+        )
+    }
+
+    if (showAudioQualityCellularDialog) {
+        EnumDialog(
+            onDismiss = { showAudioQualityCellularDialog = false },
+            onSelect = {
+                onAudioQualityCellularChange(it)
+                showAudioQualityCellularDialog = false
             },
-            valueDescription = {
-                ""
-            }
+            title = stringResource(R.string.audio_quality_cellular),
+            current = audioQualityCellular,
+            values = listOf(
+                AudioQuality.MEDIUM,
+                AudioQuality.LOW,
+                AudioQuality.HIGH,
+                AudioQuality.LOSSLESS,
+            ),
+            valueText = { it.label },
+            valueDescription = { "${it.detail} (${it.hourly})" }
         )
     }
 
@@ -441,18 +481,34 @@ highlightKey: String? = null) {
             title = stringResource(R.string.player),
             items = buildList {
                 add(Material3SettingsItem(
-    isHighlighted = (highlightKey == stringResource(R.string.audio_quality)),
-                    icon = painterResource(R.drawable.graphic_eq),
-                    title = { Text(stringResource(R.string.audio_quality)) },
-                    description = {
-                        Text(
-                            when (audioQuality) {
-                                AudioQuality.OPUS -> "Opus"
-                                else -> "Opus"
-                            }
-                        )
+    isHighlighted = (highlightKey == stringResource(R.string.show_seek_buttons)),
+                    icon = painterResource(R.drawable.fast_forward),
+                    title = { Text(stringResource(R.string.show_seek_buttons)) },
+                    description = { Text(stringResource(R.string.show_seek_buttons_desc)) },
+                    trailingContent = {
+                        Switch(checked = showSeekButtons, onCheckedChange = onShowSeekButtonsChange)
                     },
-                    onClick = null
+                    onClick = { onShowSeekButtonsChange(!showSeekButtons) }
+                ))
+
+                add(Material3SettingsItem(
+    isHighlighted = (highlightKey == stringResource(R.string.audio_quality_wifi)),
+                    icon = painterResource(R.drawable.wifi_proxy),
+                    title = { Text(stringResource(R.string.audio_quality_wifi)) },
+                    description = {
+                        Text("${audioQualityWifi.label} · ${audioQualityWifi.detail}")
+                    },
+                    onClick = { showAudioQualityWifiDialog = true }
+                ))
+
+                add(Material3SettingsItem(
+    isHighlighted = (highlightKey == stringResource(R.string.audio_quality_cellular)),
+                    icon = painterResource(R.drawable.network_node),
+                    title = { Text(stringResource(R.string.audio_quality_cellular)) },
+                    description = {
+                        Text("${audioQualityCellular.label} · ${audioQualityCellular.detail} (${audioQualityCellular.hourly})")
+                    },
+                    onClick = { showAudioQualityCellularDialog = true }
                 ))
                 
                 add(Material3SettingsItem(
@@ -1194,6 +1250,28 @@ highlightKey: String? = null) {
                         )
                     },
                     onClick = { onResumeOnBluetoothConnectChange(!resumeOnBluetoothConnect) }
+                ),
+                Material3SettingsItem(
+    isHighlighted = (highlightKey == stringResource(R.string.autoplay_on_automotive_connect)),
+                    icon = painterResource(R.drawable.auto_play),
+                    title = { Text(stringResource(R.string.autoplay_on_automotive_connect)) },
+                    description = { Text(stringResource(R.string.autoplay_on_automotive_connect_desc)) },
+                    trailingContent = {
+                        Switch(
+                            checked = autoplayOnAutomotiveConnect,
+                            onCheckedChange = onAutoplayOnAutomotiveConnectChange,
+                            thumbContent = {
+                                Icon(
+                                    painter = painterResource(
+                                        id = if (autoplayOnAutomotiveConnect) R.drawable.check else R.drawable.close
+                                    ),
+                                    contentDescription = null,
+                                    modifier = Modifier.size(SwitchDefaults.IconSize)
+                                )
+                            }
+                        )
+                    },
+                    onClick = { onAutoplayOnAutomotiveConnectChange(!autoplayOnAutomotiveConnect) }
                 ),
                 Material3SettingsItem(
     isHighlighted = (highlightKey == stringResource(R.string.keep_screen_on_when_player_is_expanded)),

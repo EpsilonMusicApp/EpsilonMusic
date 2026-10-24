@@ -7,6 +7,7 @@ import com.music.innertube.models.PlaylistItem
 import com.music.innertube.models.SongItem
 import com.music.innertube.models.oddElements
 import com.music.innertube.models.splitBySeparator
+import com.music.innertube.text.ApiText
 import com.music.innertube.utils.parseTime
 import com.music.innertube.models.YTItem
 
@@ -42,16 +43,16 @@ data class PlaylistPage(
                 ?: return null,
                 title = renderer.flexColumns.firstOrNull()
                     ?.musicResponsiveListItemFlexColumnRenderer?.text
-                    ?.runs?.firstOrNull()?.text ?: return null,
+                    ?.runs?.firstOrNull()?.text?.let(ApiText::clean) ?: return null,
                 artists = secondaryLineRuns?.firstOrNull()?.oddElements()?.map {
                     Artist(
-                        name = it.text,
+                        name = ApiText.clean(it.text),
                         id = it.navigationEndpoint?.browseEndpoint?.browseId,
                     )
                 }.orEmpty(),
                 album = renderer.flexColumns.getOrNull(2)?.musicResponsiveListItemFlexColumnRenderer?.text?.runs?.firstOrNull()?.let {
                     Album(
-                        name = it.text,
+                        name = ApiText.clean(it.text),
                         id = it.navigationEndpoint?.browseEndpoint?.browseId ?: return@let null
                     )
                 },

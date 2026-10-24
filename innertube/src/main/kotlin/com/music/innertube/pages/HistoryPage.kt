@@ -8,6 +8,7 @@ import com.music.innertube.models.SongItem
 import com.music.innertube.models.getItems
 import com.music.innertube.models.oddElements
 import com.music.innertube.models.splitBySeparator
+import com.music.innertube.text.ApiText
 import com.music.innertube.utils.parseTime
 
 data class HistoryPage(
@@ -21,7 +22,7 @@ data class HistoryPage(
     companion object {
         fun fromMusicShelfRenderer(renderer: MusicShelfRenderer): HistorySection {
             return HistorySection(
-                title = renderer.title?.runs?.firstOrNull()?.text!!,
+                title = renderer.title?.runs?.firstOrNull()?.text?.let(ApiText::clean)!!,
                 songs = renderer.contents?.getItems()?.mapNotNull {
                     fromMusicResponsiveListItemRenderer(it)
                 }!!
@@ -52,16 +53,16 @@ data class HistoryPage(
                 ?: return null,
                 title = renderer.flexColumns.firstOrNull()
                     ?.musicResponsiveListItemFlexColumnRenderer?.text?.runs?.firstOrNull()
-                    ?.text ?: return null,
+                    ?.text?.let(ApiText::clean) ?: return null,
                 artists = secondaryLineRuns?.firstOrNull()?.oddElements()?.map {
                     Artist(
-                        name = it.text,
+                        name = ApiText.clean(it.text),
                         id = it.navigationEndpoint?.browseEndpoint?.browseId
                     )
                 } ?: emptyList(),
                 album = renderer.flexColumns.getOrNull(3)?.musicResponsiveListItemFlexColumnRenderer?.text?.runs?.firstOrNull()?.let {
                     Album(
-                        name = it.text,
+                        name = ApiText.clean(it.text),
                         id = it.navigationEndpoint?.browseEndpoint?.browseId ?: return@let null
                     )
                 },

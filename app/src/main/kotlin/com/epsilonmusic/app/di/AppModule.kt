@@ -145,4 +145,10 @@ object AppModule {
         @ApplicationContext context: Context,
         client: ListenTogetherClient,
     ): ListenTogetherManager = ListenTogetherManager(client, context)
+
+    @Singleton
+    @Provides
+    fun provideMusicFlowFeedSource(
+        impl: com.epsilonmusic.app.musicflow.MusicFlowRepository,
+    ): com.epsilonmusic.app.musicflow.MusicFlowFeedSource = impl
 }

@@ -2,6 +2,7 @@ package com.music.innertube.pages
 
 import com.music.innertube.models.AlbumItem
 import com.music.innertube.models.MusicTwoRowItemRenderer
+import com.music.innertube.text.ApiText
 
 data class LibraryAlbumsPage(
     val albums: List<AlbumItem>,
@@ -14,7 +15,7 @@ data class LibraryAlbumsPage(
                         playlistId = renderer.thumbnailOverlay?.musicItemThumbnailOverlayRenderer?.content
                             ?.musicPlayButtonRenderer?.playNavigationEndpoint
                             ?.watchPlaylistEndpoint?.playlistId ?: return null,
-                        title = renderer.title.runs?.firstOrNull()?.text ?: return null,
+                        title = renderer.title.runs?.firstOrNull()?.text?.let(ApiText::clean) ?: return null,
                         artists = null,
                         year = renderer.subtitle?.runs?.lastOrNull()?.text?.toIntOrNull(),
                         thumbnail = renderer.thumbnailRenderer.musicThumbnailRenderer?.getThumbnailUrl() ?: return null,

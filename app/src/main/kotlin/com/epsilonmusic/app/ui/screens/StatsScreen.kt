@@ -107,10 +107,13 @@ fun StatsScreen(
     val lazyListState = rememberLazyListState()
     val selectedOption by viewModel.selectedOption.collectAsState()
 
+    val firstEventTimestamp = firstEvent?.event?.timestamp
+
     val weeklyDates =
-        if (currentDate != null && firstEvent != null) {
+        if (currentDate != null && firstEventTimestamp != null) {
+            val minDate = firstEventTimestamp.minusWeeks(1)
             generateSequence(currentDate) { it.minusWeeks(1) }
-                .takeWhile { it.isAfter(firstEvent?.event?.timestamp?.minusWeeks(1)) }
+                .takeWhile { it.isAfter(minDate) }
                 .mapIndexed { index, date ->
                     val endDate = date.plusWeeks(1).minusDays(1).coerceAtMost(currentDate)
                     val formatter = DateTimeFormatter.ofPattern("dd MMM")
@@ -136,17 +139,13 @@ fun StatsScreen(
         }
 
     val monthlyDates =
-        if (currentDate != null && firstEvent != null) {
+        if (currentDate != null && firstEventTimestamp != null) {
+            val minDate = firstEventTimestamp.withDayOfMonth(1)
             generateSequence(
                 currentDate.plusMonths(1).withDayOfMonth(1).minusDays(1)
             ) { it.minusMonths(1) }
                 .takeWhile {
-                    it.isAfter(
-                        firstEvent
-                            ?.event
-                            ?.timestamp
-                            ?.withDayOfMonth(1),
-                    )
+                    it.isAfter(minDate)
                 }.mapIndexed { index, date ->
                     val formatter = DateTimeFormatter.ofPattern("MMM")
                     val formattedDate = formatter.format(date)
@@ -163,7 +162,7 @@ fun StatsScreen(
         }
 
     val yearlyDates =
-        if (currentDate != null && firstEvent != null) {
+        if (currentDate != null && firstEventTimestamp != null) {
             generateSequence(
                 currentDate
                     .plusYears(1)
@@ -171,11 +170,7 @@ fun StatsScreen(
                     .minusDays(1),
             ) { it.minusYears(1) }
                 .takeWhile {
-                    it.isAfter(
-                        firstEvent
-                            ?.event
-                            ?.timestamp,
-                    )
+                    it.isAfter(firstEventTimestamp)
                 }.mapIndexed { index, date ->
                     Pair(index, "${date.year}")
                 }.toList()
@@ -309,14 +304,15 @@ fun StatsScreen(
                         items = mostPlayedSongsStats,
                         key = { _, song -> song.id },
                     ) { index, song ->
+                        val playCount = song.songCountListened ?: 0
                         LocalSongsGrid(
                             title = "${index + 1}. ${song.title}",
                             subtitle =
                             joinByBullet(
                                 pluralStringResource(
                                     R.plurals.n_time,
-                                    song.songCountListened!!!!,
-                                    song.songCountListened!!!!,
+                                    playCount,
+                                    playCount,
                                 ),
                                 makeTimeString(song.timeListened),
                             ),
@@ -331,20 +327,26 @@ fun StatsScreen(
                                         if (song.id == mediaMetadata?.id) {
                                             playerConnection.togglePlayPause()
                                         } else {
+                                            val matchedSong =
+                                                mostPlayedSongs.find { it.id == song.id }
+                                                    ?: mostPlayedSongs.getOrNull(index)
                                             playerConnection.playQueue(
                                                 YouTubeQueue(
                                                     endpoint = WatchEndpoint(song.id),
-                                                    preloadItem = mostPlayedSongs.find { it.id == song.id }?.toMediaMetadata(),
+                                                    preloadItem = matchedSong?.toMediaMetadata(),
                                                 ),
                                             )
                                         }
                                     },
                                     onLongClick = {
                                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                        mostPlayedSongs.find { it.id == song.id }?.let { originalSong ->
+                                        val matchedSong =
+                                            mostPlayedSongs.find { it.id == song.id }
+                                                ?: mostPlayedSongs.getOrNull(index)
+                                        if (matchedSong != null) {
                                             menuState.show {
                                                 SongMenu(
-                                                    originalSong = originalSong,
+                                                    originalSong = matchedSong,
                                                     navController = navController,
                                                     onDismiss = menuState::dismiss,
                                                 )
@@ -420,14 +422,15 @@ fun StatsScreen(
                             items = mostPlayedAlbums,
                             key = { _, album -> album.id },
                         ) { index, album ->
+                            val playCount = album.songCountListened ?: 0
                             LocalAlbumsGrid(
                                 title = "${index + 1}. ${album.album.title}",
                                 subtitle =
                                 joinByBullet(
                                     pluralStringResource(
                                         R.plurals.n_time,
-                                        album.songCountListened!!,
-                                        album.songCountListened!!
+                                        playCount,
+                                        playCount
                                     ),
                                     makeTimeString(album.timeListened),
                                 ),

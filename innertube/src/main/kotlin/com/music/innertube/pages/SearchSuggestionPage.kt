@@ -10,6 +10,7 @@ import com.music.innertube.models.YTItem
 import com.music.innertube.models.clean
 import com.music.innertube.models.oddElements
 import com.music.innertube.models.splitBySeparator
+import com.music.innertube.text.ApiText
 
 object SearchSuggestionPage {
     fun fromMusicResponsiveListItemRenderer(renderer: MusicResponsiveListItemRenderer): YTItem? {
@@ -40,14 +41,14 @@ object SearchSuggestionPage {
                             ?.text
                             ?.runs
                             ?.firstOrNull()
-                            ?.text ?: return null,
+                            ?.text?.let(ApiText::clean) ?: return null,
                     artists =
                         secondaryLine
                             ?.firstOrNull()
                             ?.oddElements()
                             ?.map {
                                 Artist(
-                                    name = it.text,
+                                    name = ApiText.clean(it.text),
                                     id = it.navigationEndpoint?.browseEndpoint?.browseId,
                                 )
                             } ?: return null,
@@ -61,7 +62,7 @@ object SearchSuggestionPage {
                             ?.firstOrNull()
                             ?.let {
                                 Album(
-                                    name = it.text,
+                                    name = ApiText.clean(it.text),
                                     id = it.navigationEndpoint?.browseEndpoint?.browseId ?: return null,
                                 )
                             },
@@ -84,7 +85,7 @@ object SearchSuggestionPage {
                             ?.text
                             ?.runs
                             ?.firstOrNull()
-                            ?.text
+                            ?.text?.let(ApiText::clean)
                             ?: return null,
                     thumbnail = renderer.thumbnail?.musicThumbnailRenderer?.getThumbnailUrl() ?: return null,
                     shuffleEndpoint =
@@ -132,11 +133,11 @@ object SearchSuggestionPage {
                             ?.text
                             ?.runs
                             ?.firstOrNull()
-                            ?.text ?: return null,
+                            ?.text?.let(ApiText::clean) ?: return null,
                     artists =
                         secondaryLine.getOrNull(1)?.oddElements()?.map {
                             Artist(
-                                name = it.text,
+                                name = ApiText.clean(it.text),
                                 id = it.navigationEndpoint?.browseEndpoint?.browseId,
                             )
                         } ?: return null,

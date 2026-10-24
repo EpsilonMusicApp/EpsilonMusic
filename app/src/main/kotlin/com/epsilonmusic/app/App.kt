@@ -30,6 +30,7 @@ import com.epsilonmusic.app.extensions.toEnum
 import com.epsilonmusic.app.extensions.toInetSocketAddress
 import com.epsilonmusic.app.utils.CrashHandler
 import com.epsilonmusic.app.utils.AppContextHolder
+import com.epsilonmusic.app.utils.YouTubeThumbnailFallbackInterceptor
 import com.epsilonmusic.app.utils.dataStore
 import com.epsilonmusic.app.utils.reportException
 import dagger.hilt.android.HiltAndroidApp
@@ -322,6 +323,7 @@ class App : Application(), SingletonImageLoader.Factory {
         return ImageLoader.Builder(this).apply {
             crossfade(true)
             allowHardware(Build.VERSION.SDK_INT >= Build.VERSION_CODES.P)
+            components { add(YouTubeThumbnailFallbackInterceptor()) }
             
             memoryCache {
                 MemoryCache.Builder()

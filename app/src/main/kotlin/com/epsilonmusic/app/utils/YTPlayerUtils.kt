@@ -792,6 +792,8 @@ object YTPlayerUtils {
     ): PlayerResponse.StreamingData.Format? {
         Timber.tag(logTag).d("Finding format with audioQuality: $audioQuality, network metered: ${connectivityManager.isActiveNetworkMetered}")
 
+        val targetMaxKbps = audioQuality.maxKbps.coerceAtMost(160)
+
         val audioFormats = playerResponse.streamingData?.adaptiveFormats
             ?.filter { it.isAudio }
             .orEmpty()
@@ -804,7 +806,10 @@ object YTPlayerUtils {
         if (originalFormats.isEmpty() && audioFormats.isNotEmpty()) {
             Timber.tag(logTag).w("No original audio track available (${audioFormats.size} dubbed) — falling back to auto-dubbed audio")
         }
-        val format = (originalFormats.ifEmpty { audioFormats })
+        val candidates = originalFormats.ifEmpty { audioFormats }
+        val format = candidates
+            .filter { it.bitrate <= targetMaxKbps * 1000L }
+            .ifEmpty { candidates }
             .maxByOrNull {
                 it.bitrate * 1 + (if (it.mimeType.startsWith("audio/webm")) 10240 else 0)
             }

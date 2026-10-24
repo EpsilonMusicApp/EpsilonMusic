@@ -30,10 +30,12 @@ import com.epsilonmusic.app.ui.screens.equalizer.EqScreen
 import com.epsilonmusic.app.ui.screens.generate.GenerateScreen
 import com.epsilonmusic.app.ui.screens.library.LibraryScreen
 import com.epsilonmusic.app.ui.screens.library.LocalSongScreen
+import com.epsilonmusic.app.ui.screens.musicflow.MusicFlowScreen
 import com.epsilonmusic.app.ui.screens.playlist.AutoPlaylistScreen
 import com.epsilonmusic.app.ui.screens.playlist.CachePlaylistScreen
 import com.epsilonmusic.app.ui.screens.playlist.LocalPlaylistScreen
 import com.epsilonmusic.app.ui.screens.playlist.OnlinePlaylistScreen
+import com.epsilonmusic.app.ui.screens.playlist.SpotifyPlaylistDetailScreen
 import com.epsilonmusic.app.ui.screens.playlist.TopPlaylistScreen
 import com.epsilonmusic.app.ui.screens.search.OnlineSearchResult
 import com.epsilonmusic.app.ui.screens.search.SearchScreen
@@ -41,11 +43,13 @@ import com.epsilonmusic.app.ui.screens.settings.BlockedArtistsScreen
 import com.epsilonmusic.app.ui.screens.settings.AboutScreen
 import com.epsilonmusic.app.ui.screens.settings.AppearanceSettings
 import com.epsilonmusic.app.ui.screens.settings.GlassEffectSettings
+import com.epsilonmusic.app.ui.screens.settings.MusicFlowSettings
 import com.epsilonmusic.app.ui.screens.settings.BackupAndRestore
 import com.epsilonmusic.app.ui.screens.settings.ContentSettings
 import com.epsilonmusic.app.ui.screens.settings.UptimeScreen
 import com.epsilonmusic.app.ui.screens.settings.DarkMode
 import com.epsilonmusic.app.ui.screens.settings.PlayerSettings
+import com.epsilonmusic.app.ui.screens.settings.ExtensionSettingsScreen
 import com.epsilonmusic.app.ui.screens.settings.PrivacySettings
 import com.epsilonmusic.app.ui.screens.settings.RomanizationSettings
 import com.epsilonmusic.app.ui.screens.DetailedListeningHistoryScreen
@@ -121,6 +125,10 @@ fun NavGraphBuilder.navigationBuilder(
 
     composable("ambient_mode") {
         AmbientModeScreen(navController)
+    }
+
+    composable("music_flow") {
+        MusicFlowScreen(navController)
     }
 
     composable("ambient_settings") {
@@ -276,6 +284,33 @@ fun NavGraphBuilder.navigationBuilder(
     }
 
     composable(
+        route = "spotify_playlist/{playlistId}?title={title}&cover={cover}",
+        arguments =
+            listOf(
+                navArgument("playlistId") { type = NavType.StringType },
+                navArgument("title") {
+                    type = NavType.StringType
+                    defaultValue = "Playlist"
+                },
+                navArgument("cover") {
+                    type = NavType.StringType
+                    defaultValue = ""
+                },
+            ),
+    ) { backStackEntry ->
+        val playlistId = backStackEntry.arguments?.getString("playlistId") ?: return@composable
+        val title = backStackEntry.arguments?.getString("title") ?: "Playlist"
+        val cover = backStackEntry.arguments?.getString("cover") ?: ""
+        SpotifyPlaylistDetailScreen(
+            navController = navController,
+            scrollBehavior = scrollBehavior,
+            playlistId = playlistId,
+            playlistTitle = title,
+            playlistCover = cover,
+        )
+    }
+
+    composable(
         route = "local_playlist/{playlistId}",
         arguments = listOf(
             navArgument("playlistId") {
@@ -369,6 +404,10 @@ fun NavGraphBuilder.navigationBuilder(
         ThemeScreen(navController)
     }
 
+    composable("settings/music_flow") {
+        MusicFlowSettings(navController, scrollBehavior)
+    }
+
     composable("settings/appearance/liquidglass") {
         GlassEffectSettings(navController, scrollBehavior)
     }
@@ -416,6 +455,10 @@ fun NavGraphBuilder.navigationBuilder(
         arguments = listOf(navArgument("highlightKey") { type = NavType.StringType; nullable = true })
     ) { backStackEntry ->
         PlayerSettings(navController, scrollBehavior, highlightKey = backStackEntry.arguments?.getString("highlightKey"))
+    }
+
+    composable("settings/extensions") {
+        ExtensionSettingsScreen(navController, scrollBehavior)
     }
 
     composable(

@@ -6,7 +6,9 @@ import android.content.ContentResolver
 import android.content.Context
 import android.content.pm.PackageManager
 import android.net.Uri
+import java.security.MessageDigest
 import android.os.Bundle
+import android.os.SystemClock
 import androidx.annotation.DrawableRes
 import androidx.core.net.toUri
 import androidx.media3.common.C
@@ -28,11 +30,16 @@ import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.SettableFuture
 import com.music.innertube.YouTube
+import com.music.innertube.models.AlbumItem
+import com.music.innertube.models.ArtistItem
 import com.music.innertube.models.PlaylistItem
 import com.music.innertube.models.SongItem
 import com.music.innertube.models.filterExplicit
 import com.music.innertube.models.filterVideoSongs
+import com.music.innertube.pages.HomePage
 import com.epsilonmusic.app.R
+import com.epsilonmusic.app.constants.AutoplayOnAutomotiveConnectKey
+import com.epsilonmusic.app.constants.DataSyncIdKey
 import com.epsilonmusic.app.constants.HideExplicitKey
 import com.epsilonmusic.app.constants.HideVideoSongsKey
 import com.epsilonmusic.app.constants.MediaSessionConstants
@@ -43,6 +50,7 @@ import com.epsilonmusic.app.db.entities.Song
 import com.epsilonmusic.app.extensions.toMediaItem
 import com.epsilonmusic.app.extensions.toggleRepeatMode
 import com.epsilonmusic.app.models.toMediaMetadata
+import com.epsilonmusic.app.utils.AutomotiveArtwork.withAutomotiveArtworkUri
 import com.epsilonmusic.app.utils.dataStore
 import com.epsilonmusic.app.utils.get
 import com.epsilonmusic.app.utils.reportException
@@ -50,11 +58,16 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.guava.future
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withTimeoutOrNull
 import javax.inject.Inject
 
 @androidx.annotation.OptIn(UnstableApi::class)
@@ -70,6 +83,30 @@ constructor(
     var toggleLike: () -> Unit = {}
     var toggleStartRadio: () -> Unit = {}
     var toggleLibrary: () -> Unit = {}
+
+    /**
+     * Invoked when an automotive controller connects. Used to warm the cover of the
+     * item already playing, which otherwise never goes through a media-item
+     * transition while the car is connected.
+     */
+    var onAutomotiveConnected: () -> Unit = {}
+
+    /** Cached YouTube Home snapshot (see [youtubeHome]) and when it was fetched. */
+    private var cachedHome: HomePage? = null
+    private var cachedHomeAtMs = 0L
+
+    /** Disk copy of [cachedHome], so the shelves survive process restarts. */
+    private val homeStore by lazy { AutoHomeSnapshotStore(context) }
+    /** Account the cached snapshot belongs to (see [homeAccountKey]); null until first use. */
+    private var homeAccount: String? = null
+    /** True while [cachedHome] is the restored copy and still needs a fresh fetch. */
+    private var cachedHomeFromDisk = false
+    /** Wall-clock time each shelf was last returned by YouTube, by [homeSectionKey]. */
+    private var homeLastSeenMs: Map<String, Long> = emptyMap()
+    private val homeRefreshing = java.util.concurrent.atomic.AtomicBoolean(false)
+
+    /** Serializes the Home snapshot refresh so concurrent misses cannot race. */
+    private val homeMutex = Mutex()
 
     /**
      * Package names [MediaSession.isAutomotiveController] and [MediaSession.isAutoCompanionController]
@@ -149,6 +186,15 @@ constructor(
             connectionResult.availableSessionCommands
         }
 
+        // The reported package name alone is not verified; require the UID check
+        // so an arbitrary controller cannot trigger the artwork warm-up.
+        if (isVerifiedAutomotiveController(controller)) {
+            onAutomotiveConnected()
+        }
+        if (isAutomotiveBrowser(controller)) {
+            prefetchHome()
+        }
+
         return MediaSession.ConnectionResult.accept(
             availableSessionCommands,
             connectionResult.availablePlayerCommands,
@@ -188,12 +234,42 @@ constructor(
         return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
     }
 
+    /**
+     * Handles playback resumption requests (Android Auto / Automotive OS reconnect).
+     *
+     * When the [AutoplayOnAutomotiveConnectKey] setting is on and the caller is an
+     * automotive controller, the current player queue (restored from disk with
+     * playWhenReady=false) is offered back so Auto can resume it without manual taps.
+     * Every other case keeps the old never-completing behavior so nothing can
+     * unexpectedly start playback on controller reconnect.
+     */
     @Deprecated("Deprecated in MediaLibrarySession.Callback")
     override fun onPlaybackResumption(
         mediaSession: MediaSession,
         controller: MediaSession.ControllerInfo
     ): ListenableFuture<MediaItemsWithStartPosition> {
-        return SettableFuture.create<MediaItemsWithStartPosition>()
+        if (!isAutomotiveBrowser(controller) && !isVerifiedAutomotiveController(controller)) {
+            return SettableFuture.create<MediaItemsWithStartPosition>()
+        }
+        return scope.future(Dispatchers.Main) {
+            val autoplay = context.dataStore.get(AutoplayOnAutomotiveConnectKey, false)
+            if (!autoplay) {
+                // Never complete, exactly like before: no implicit playback.
+                awaitCancellation()
+            }
+            if (!::service.isInitialized) {
+                return@future MediaItemsWithStartPosition(emptyList(), 0, C.TIME_UNSET)
+            }
+            val player = service.player
+            if (player.mediaItemCount <= 0) {
+                return@future MediaItemsWithStartPosition(emptyList(), 0, C.TIME_UNSET)
+            }
+            val index = player.currentMediaItemIndex
+                .takeIf { it != C.INDEX_UNSET }
+                ?.coerceIn(0, player.mediaItemCount - 1) ?: 0
+            val items = List(player.mediaItemCount) { player.getMediaItemAt(it) }
+            MediaItemsWithStartPosition(items, index, player.currentPosition)
+        }
     }
 
     override fun onGetLibraryRoot(
@@ -215,11 +291,32 @@ constructor(
         page: Int,
         pageSize: Int,
         params: MediaLibraryService.LibraryParams?,
-    ): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> =
-        scope.future(Dispatchers.IO) {
+    ): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> {
+        val isAutomotive = isAutomotiveBrowser(browser)
+        return scope.future(Dispatchers.IO) {
+            // Automotive "Suggested" / "Recent" tabs arrive as LibraryParams flags on the
+            // root, not as distinct parentIds. Serve them from the Home snapshot / local
+            // recents instead of an empty list so Auto shows recommended music.
+            if (parentId == MusicService.ROOT && params?.isSuggested == true) {
+                return@future LibraryResult.ofItemList(
+                    // Suggested/Recent used to skip the artwork rewrite, so their covers
+                    // were URI-only and unreliable on automotive surfaces.
+                    withAutomotiveArtworkIfNeeded(isAutomotive, suggestedHomeSongs().paginate(page, pageSize)),
+                    params.withContentStyleHints(),
+                )
+            }
+            if (parentId == MusicService.ROOT && params?.isRecent == true) {
+                val recent = database.songsByCreateDateAsc().first().take(50)
+                    .map { it.toMediaItem(MusicService.SONG) }
+                return@future LibraryResult.ofItemList(
+                    withAutomotiveArtworkIfNeeded(isAutomotive, recent.paginate(page, pageSize)),
+                    params.withContentStyleHints(),
+                )
+            }
             val children =
                 when (parentId) {
                     MusicService.ROOT -> rootChildren()
+                    MusicService.HOME -> homeSections()
 
                     MusicService.SONG -> database.songsByCreateDateAsc().first()
                         .map { it.toMediaItem(parentId) }
@@ -236,7 +333,7 @@ constructor(
                                 ),
                                 artist.artist.thumbnailUrl?.toUri(),
                                 MediaMetadata.MEDIA_TYPE_ARTIST,
-                                singleItemStyle = MediaConstants.EXTRAS_VALUE_CONTENT_STYLE_CATEGORY_LIST_ITEM,
+                                singleItemStyle = artistItemStyle(isAutomotive),
                             )
                         }
 
@@ -282,6 +379,11 @@ constructor(
 
                     else ->
                         when {
+                            parentId == MusicService.HOME_SECTION ||
+                                parentId.startsWith("${MusicService.HOME_SECTION}/") -> {
+                                val sectionId = parentId.removePrefix(MusicService.HOME_SECTION).removePrefix("/")
+                                listOf(shuffleMediaItem(parentId)) + homeSectionSongs(sectionId, parentId)
+                            }
                             parentId.startsWith("${MusicService.ARTIST}/") ->
                                 database.artistSongsByCreateDateAsc(parentId.removePrefix("${MusicService.ARTIST}/"))
                                     .first().map {
@@ -349,21 +451,42 @@ constructor(
                 }
 
             LibraryResult.ofItemList(
-                children.paginate(page, pageSize),
+                withAutomotiveArtworkIfNeeded(isAutomotive, children.paginate(page, pageSize)),
                 params.withContentStyleHints(),
             )
         }
+    }
+
+    /**
+     * Points each item's artwork at the local provider (see [AutomotiveArtworkProvider]).
+     * Android Auto ignores `https://` icon URIs, and embedding the bytes only fit
+     * a bounded part of each page, so covers were missing on later items and on
+     * some surfaces. A `content://` URI lets every surface load every cover lazily.
+     */
+    private fun withAutomotiveArtworkIfNeeded(
+        isAutomotive: Boolean,
+        items: List<MediaItem>
+    ): List<MediaItem> = if (isAutomotive) withAutomotiveArtwork(items) else items
+
+    private fun withAutomotiveArtwork(items: List<MediaItem>): List<MediaItem> =
+        items.map { it.withAutomotiveArtworkUri(context) }
+
+    private fun isAutomotiveBrowser(browser: MediaSession.ControllerInfo): Boolean =
+        browser.packageName in trustedAutomotivePackages
 
     override fun onGetItem(
         session: MediaLibrarySession,
         browser: MediaSession.ControllerInfo,
         mediaId: String,
-    ): ListenableFuture<LibraryResult<MediaItem>> =
-        scope.future(Dispatchers.IO) {
-            getMediaItem(mediaId)?.let {
-                LibraryResult.ofItem(it, null)
-            } ?: LibraryResult.ofError(SessionError.ERROR_UNKNOWN)
+    ): ListenableFuture<LibraryResult<MediaItem>> {
+        val isAutomotive = isAutomotiveBrowser(browser)
+        return scope.future(Dispatchers.IO) {
+            getMediaItem(mediaId, isAutomotive)
+                ?.let { item -> if (isAutomotive) withAutomotiveArtwork(listOf(item)).first() else item }
+                ?.let { LibraryResult.ofItem(it, null) }
+                ?: LibraryResult.ofError(SessionError.ERROR_UNKNOWN)
         }
+    }
 
     override fun onSearch(
         session: MediaLibrarySession,
@@ -383,6 +506,7 @@ constructor(
         pageSize: Int,
         params: MediaLibraryService.LibraryParams?
     ): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> {
+        val isAutomotive = isAutomotiveBrowser(browser)
         return scope.future(Dispatchers.IO) {
             if (query.isEmpty()) {
                 return@future LibraryResult.ofItemList(emptyList(), params.withContentStyleHints())
@@ -451,7 +575,7 @@ constructor(
                     reportException(e)
                 }
                 
-                LibraryResult.ofItemList(searchResults.paginate(page, pageSize), params.withContentStyleHints())
+                LibraryResult.ofItemList(withAutomotiveArtworkIfNeeded(isAutomotive, searchResults.paginate(page, pageSize)), params.withContentStyleHints())
                 
             } catch (e: Exception) {
                 reportException(e)
@@ -582,6 +706,41 @@ constructor(
                     }
                 }
 
+                MusicService.HOME_SECTION -> {
+                    val sectionId = path.getOrNull(1) ?: return@future defaultResult
+                    val songId = path.lastOrNull() ?: return@future defaultResult
+                    val parentId = mediaItems.firstOrNull()?.mediaId?.removeSuffix("/$songId")
+                        ?: "${MusicService.HOME_SECTION}/$sectionId"
+                    // Drop the shuffle marker itself: it is a command, not a playable queue item.
+                    val sectionSongs =
+                        if (sectionId == SUGGESTED_SECTION_ID) suggestedHomeSongs() else homeSectionSongs(sectionId, parentId)
+                    val songs = sectionSongs.filter { it.mediaMetadata.isPlayable == true && !it.mediaId.endsWith(MusicService.SHUFFLE_ACTION) }
+                    if (songs.isEmpty()) return@future defaultResult
+                    val playable = songs.map { song ->
+                        val id = song.mediaId.substringAfterLast("/")
+                        database.song(id).first()?.toMediaItem() ?: song
+                    }
+                    if (songId == MusicService.SHUFFLE_ACTION) {
+                        MediaItemsWithStartPosition(playable.shuffled(), 0, C.TIME_UNSET)
+                    } else {
+                        MediaItemsWithStartPosition(
+                            playable,
+                            playable.indexOfFirst { it.mediaId.endsWith(songId) }.takeIf { it != -1 } ?: 0,
+                            C.TIME_UNSET
+                        )
+                    }
+                }
+                MusicService.HOME -> {
+                    // Reached via the shuffle marker under suggested songs: play shuffled.
+                    val songs = suggestedHomeSongs()
+                        .filter { it.mediaMetadata.isPlayable == true && !it.mediaId.endsWith(MusicService.SHUFFLE_ACTION) }
+                        .map { song ->
+                            val id = song.mediaId.substringAfterLast("/")
+                            database.song(id).first()?.toMediaItem() ?: song
+                        }
+                    if (songs.isEmpty()) return@future defaultResult
+                    MediaItemsWithStartPosition(songs.shuffled(), 0, C.TIME_UNSET)
+                }
                 MusicService.SEARCH -> {
                     val songId = path.lastOrNull() ?: return@future defaultResult
                     val searchQuery = mediaItems.firstOrNull()?.mediaId
@@ -689,6 +848,14 @@ constructor(
 
     private fun rootChildren() = listOf(
         browsableMediaItem(
+            MusicService.HOME,
+            context.getString(R.string.home),
+            null,
+            drawableUri(R.drawable.home_filled),
+            MediaMetadata.MEDIA_TYPE_FOLDER_MIXED,
+            singleItemStyle = MediaConstants.EXTRAS_VALUE_CONTENT_STYLE_CATEGORY_GRID_ITEM,
+        ),
+        browsableMediaItem(
             MusicService.SONG,
             context.getString(R.string.songs),
             null,
@@ -722,13 +889,338 @@ constructor(
         ),
     )
 
-    private suspend fun getMediaItem(mediaId: String): MediaItem? {
+    private fun artistItemStyle(isAutomotive: Boolean) =
+        if (isAutomotive) {
+            MediaConstants.EXTRAS_VALUE_CONTENT_STYLE_CATEGORY_LIST_ITEM
+        } else {
+            MediaConstants.EXTRAS_VALUE_CONTENT_STYLE_GRID_ITEM
+        }
+
+    /**
+     * One Home snapshot per [HOME_CACHE_TTL_MS], shared by every automotive browse
+     * call.
+     *
+     * YouTube's Home feed is personalized per request: two consecutive fetches can
+     * return different shelves, or the same shelves in a different order, which
+     * made shelves such as "Quick picks" appear and disappear between visits.
+     * Every fetch is therefore merged into one snapshot ([mergeHomeSnapshots])
+     * that is also persisted ([AutoHomeSnapshotStore]), so the set of shelves and
+     * their order survive both refreshes and process restarts.
+     *
+     * The refresh is serialized by [homeMutex] because `onGetChildren` and
+     * `onSetMediaItems` run on independent IO coroutines: without it, two
+     * concurrent misses could install two different snapshots. The TTL uses
+     * [SystemClock.elapsedRealtime] so a wall-clock adjustment cannot expire it.
+     */
+    private suspend fun youtubeHome(): HomePage? {
+        val account = homeAccountKey()
+        val (home, isFresh) =
+            homeMutex.withLock {
+                useHomeAccount(account)
+                cachedHome to isCachedHomeFresh()
+            }
+        if (isFresh) return home
+        // A stale snapshot (restored from disk, or past its TTL) is served right
+        // away so Auto never waits on several Home pages; the refresh only adds
+        // shelves or updates their content, positions stay put.
+        if (home != null) {
+            refreshHomeInBackground()
+            return home
+        }
+        return refreshHome()
+    }
+
+    /**
+     * Identifies the signed-in account, so one account's personalized shelves are
+     * never shown to another. Read from DataStore rather than YouTube's in-memory
+     * data sync id, which is still unset for a moment after a cold start.
+     */
+    private fun homeAccountKey(): String =
+        MessageDigest.getInstance("SHA-256")
+            .digest(context.dataStore.get(DataSyncIdKey, "").toByteArray())
+            .joinToString("") { "%02x".format(it) }
+
+    /**
+     * Makes [cachedHome] belong to [account]: on first use, or after a sign-out or
+     * account switch inside this process, the snapshot is replaced by the one
+     * stored for [account] (if any). Callers hold [homeMutex].
+     */
+    private fun useHomeAccount(account: String) {
+        if (homeAccount == account) return
+        homeAccount = account
+        cachedHome = null
+        cachedHomeAtMs = 0L
+        cachedHomeFromDisk = false
+        homeLastSeenMs = emptyMap()
+        val snapshot = homeStore.load(account) ?: return
+        // The age limit applies to the restored copy too, or a shelf could outlive
+        // it whenever the refresh keeps failing.
+        val wallNow = System.currentTimeMillis()
+        val sections =
+            snapshot.sections.filter {
+                wallNow - (snapshot.lastSeenMs[homeSectionKey(it)] ?: 0L) < HOME_SECTION_MAX_AGE_MS
+            }
+        if (sections.isEmpty()) return
+        val keptKeys = sections.map(::homeSectionKey).toSet()
+        cachedHome = HomePage(chips = null, sections = sections)
+        homeLastSeenMs = snapshot.lastSeenMs.filterKeys { it in keptKeys }
+        cachedHomeFromDisk = true
+    }
+
+    private fun isCachedHomeFresh(): Boolean =
+        cachedHome != null &&
+            !cachedHomeFromDisk &&
+            SystemClock.elapsedRealtime() - cachedHomeAtMs < HOME_CACHE_TTL_MS
+
+    private fun refreshHomeInBackground() {
+        if (!homeRefreshing.compareAndSet(false, true)) return
+        scope.launch(Dispatchers.IO) {
+            try {
+                refreshHome()
+            } finally {
+                homeRefreshing.set(false)
+            }
+        }
+    }
+
+    /**
+     * Fetches Home, merges it into the snapshot and persists the result.
+     *
+     * [homeMutex] is held only to check freshness and to install the result, not
+     * during the network fetch, so browse calls keep getting the stale snapshot
+     * immediately while a refresh is running.
+     */
+    private suspend fun refreshHome(): HomePage? {
+        val account = homeAccountKey()
+        homeMutex.withLock {
+            useHomeAccount(account)
+            if (isCachedHomeFresh()) return cachedHome
+        }
+        val fetched = fetchFullHome()
+        return homeMutex.withLock {
+            useHomeAccount(account)
+            if (fetched == null || fetched.sections.isEmpty()) {
+                // Offline or YouTube failing: the restored snapshot still gives Auto its shelves.
+                return@withLock cachedHome
+            }
+            // Another caller may have installed a fresh snapshot during the fetch.
+            if (isCachedHomeFresh()) return@withLock cachedHome
+            val wallNow = System.currentTimeMillis()
+            val lastSeen = homeLastSeenMs.toMutableMap()
+            fetched.sections.forEach { lastSeen[homeSectionKey(it)] = wallNow }
+            // Keep shelves YouTube has not returned for a while from piling up forever.
+            val merged =
+                mergeHomeSnapshots(cachedHome, fetched).let { page ->
+                    page.copy(
+                        sections =
+                            page.sections.filter {
+                                wallNow - (lastSeen[homeSectionKey(it)] ?: wallNow) < HOME_SECTION_MAX_AGE_MS
+                            }
+                    )
+                }
+            val keptKeys = merged.sections.map(::homeSectionKey).toSet()
+            homeLastSeenMs = lastSeen.filterKeys { it in keptKeys }
+            cachedHome = merged
+            cachedHomeAtMs = SystemClock.elapsedRealtime()
+            cachedHomeFromDisk = false
+            homeStore.save(account, merged.sections, ::homeSectionKey, homeLastSeenMs)
+            merged
+        }
+    }
+
+    /**
+     * The first Home page plus its continuations.
+     *
+     * `YouTube.home()` returns only the first batch of shelves; the rest (often
+     * including the "Mixed for you" mixes) arrive through continuations, and
+     * which shelves land in the first batch varies per request. Serving only
+     * the first page made shelves swap in and out between visits.
+     */
+    private suspend fun fetchFullHome(): HomePage? {
+        // Bounded, or a stalled connection would keep the refresh (and the
+        // homeRefreshing flag) active forever.
+        val first =
+            try {
+                withTimeoutOrNull(HOME_FIRST_PAGE_TIMEOUT_MS) { YouTube.home().getOrNull() }
+            } catch (e: Exception) {
+                reportException(e)
+                null
+            } ?: return null
+        val sections = first.sections.toMutableList()
+        var continuation = first.continuation
+        withTimeoutOrNull(HOME_CONTINUATION_TIMEOUT_MS) {
+            var pages = 1
+            while (continuation != null && pages < HOME_MAX_PAGES) {
+                val next = YouTube.home(continuation).getOrNull() ?: break
+                sections += next.sections
+                continuation = next.continuation
+                pages++
+            }
+        }
+        return first.copy(sections = sections.distinctBy(::homeSectionKey), continuation = null)
+    }
+
+    /**
+     * Keeps every shelf seen during this process alive and in a stable position:
+     * shelves already shown keep their slot (with fresh content when the new fetch
+     * has them), new shelves are appended, and a shelf missing from one fetch is
+     * not dropped. Auto then always shows the same full set of categories.
+     */
+    private fun mergeHomeSnapshots(previous: HomePage?, fresh: HomePage): HomePage {
+        if (previous == null) return fresh
+        val freshByKey = fresh.sections.associateBy(::homeSectionKey)
+        val previousKeys = previous.sections.map(::homeSectionKey).toSet()
+        val sections =
+            previous.sections.map { freshByKey[homeSectionKey(it)] ?: it } +
+                fresh.sections.filter { homeSectionKey(it) !in previousKeys }
+        return fresh.copy(sections = sections)
+    }
+
+    /**
+     * Stable id of a shelf inside the Auto tree. It used to be the shelf's index in
+     * the feed, which pointed at a different shelf as soon as the feed changed.
+     * Encoded, so a "/" in a title cannot split the media id.
+     */
+    private fun homeSectionKey(section: HomePage.Section): String = Uri.encode(section.title.trim())
+
+    /** Resolves a shelf by [homeSectionKey], or by index for ids from older builds. */
+    private suspend fun homeSection(sectionId: String): HomePage.Section? {
+        val sections = youtubeHome()?.sections ?: return null
+        return sections.firstOrNull { homeSectionKey(it) == sectionId }
+            ?: sectionId.toIntOrNull()?.let { sections.getOrNull(it) }
+    }
+
+    /** Fetches Home ahead of the first browse so Auto does not wait for every page. */
+    private fun prefetchHome() {
+        scope.launch(Dispatchers.IO) { youtubeHome() }
+    }
+
+    /**
+     * YouTube Home sections (Quick picks, Keep listening, charts...) as browsable
+     * Auto nodes. Previously Auto only showed local Songs/Artists/Albums/Playlists,
+     * so YouTube-generated playlists and recommendations were invisible.
+     */
+    private suspend fun homeSections(): List<MediaItem> {
+        return try {
+            val home = youtubeHome()
+                ?.filterExplicit(context.dataStore.get(HideExplicitKey, false))
+                ?.filterVideoSongs(
+                    context.dataStore.get(HideVideoSongsKey, false) ||
+                        context.dataStore.get(com.epsilonmusic.app.constants.DataSaverEnabledKey, false)
+                ) ?: return emptyList()
+            home.sections.mapNotNull { section ->
+                val artwork = sectionArtwork(section)
+                // A shelf whose children homeSectionSongs() cannot render (album-only,
+                // artist-only, ...) is a dead end on Automotive: it opens to nothing.
+                // Artwork alone does not make a shelf browsable, so require usable
+                // children instead of artwork.
+                if (section.items.none { it is SongItem || it is PlaylistItem }) {
+                    return@mapNotNull null
+                }
+                browsableMediaItem(
+                    "${MusicService.HOME_SECTION}/${homeSectionKey(section)}",
+                    section.title,
+                    section.label ?: "${section.items.size} items",
+                    artwork?.toUri(),
+                    MediaMetadata.MEDIA_TYPE_FOLDER_MIXED,
+                    singleItemStyle = MediaConstants.EXTRAS_VALUE_CONTENT_STYLE_GRID_ITEM,
+                )
+            }
+        } catch (e: Exception) {
+            reportException(e)
+            emptyList()
+        }
+    }
+
+    /**
+     * Header thumbnail when present, otherwise the first item's artwork. Home
+     * shelves commonly ship without a header thumbnail, which is why Auto showed
+     * a warning icon instead of a cover.
+     */
+    private fun sectionArtwork(section: HomePage.Section): String? =
+        section.thumbnail
+            ?: when (val first = section.items.firstOrNull()) {
+                is SongItem -> first.thumbnail
+                is PlaylistItem -> first.thumbnail
+                is AlbumItem -> first.thumbnail
+                is ArtistItem -> first.thumbnail
+                else -> null
+            }
+
+    private suspend fun homeSectionSongs(sectionId: String, parentId: String): List<MediaItem> {
+        return try {
+            val section = homeSection(sectionId) ?: return emptyList()
+            val hideExplicit = context.dataStore.get(HideExplicitKey, false)
+            val hideVideos = context.dataStore.get(HideVideoSongsKey, false) ||
+                context.dataStore.get(com.epsilonmusic.app.constants.DataSaverEnabledKey, false)
+            // Filter video songs on the YTItem list (same predicate as elsewhere);
+            // filtering MediaItems afterwards would be a no-op.
+            section.items.filterVideoSongs(hideVideos).flatMap { item ->
+                when (item) {
+                    is SongItem -> {
+                        if (hideExplicit && item.explicit) return@flatMap emptyList()
+                        // Cache online metadata so playback resolves even if DB missed it.
+                        try { database.query { insert(item.toMediaMetadata()) } } catch (_: Exception) {}
+                        listOf(item.toMediaItem(parentId))
+                    }
+                    is PlaylistItem -> listOf(item.toBrowsableMediaItem())
+                    else -> emptyList()
+                }
+            }.take(100)
+        } catch (e: Exception) {
+            reportException(e)
+            emptyList()
+        }
+    }
+
+    private suspend fun suggestedHomeSongs(): List<MediaItem> {
+        return try {
+            val home = youtubeHome()
+                ?.filterExplicit(context.dataStore.get(HideExplicitKey, false))
+                ?.filterVideoSongs(
+                    context.dataStore.get(HideVideoSongsKey, false) ||
+                        context.dataStore.get(com.epsilonmusic.app.constants.DataSaverEnabledKey, false)
+                ) ?: return emptyList()
+            val songs = home.sections.flatMap { it.items }.filterIsInstance<SongItem>().take(50)
+            songs.forEach { item ->
+                try { database.query { insert(item.toMediaMetadata()) } } catch (_: Exception) {}
+            }
+            listOf(shuffleMediaItem(MusicService.HOME)) +
+                songs.map { it.toMediaItem("${MusicService.HOME_SECTION}/$SUGGESTED_SECTION_ID") }
+        } catch (e: Exception) {
+            reportException(e)
+            emptyList()
+        }
+    }
+
+    private suspend fun getMediaItem(mediaId: String, isAutomotive: Boolean = false): MediaItem? {
         val path = mediaId.split("/")
         val type = path.firstOrNull() ?: return null
 
         return when (type) {
             MusicService.ROOT -> rootMediaItem()
-
+            MusicService.HOME -> browsableMediaItem(
+                MusicService.HOME,
+                context.getString(R.string.home),
+                null,
+                drawableUri(R.drawable.home_filled),
+                MediaMetadata.MEDIA_TYPE_FOLDER_MIXED,
+                singleItemStyle = MediaConstants.EXTRAS_VALUE_CONTENT_STYLE_CATEGORY_GRID_ITEM,
+            )
+            MusicService.HOME_SECTION -> {
+                val sectionId = path.getOrNull(1) ?: return null
+                if (path.size == 2) {
+                    homeSections().firstOrNull { it.mediaId == mediaId }
+                } else {
+                    val songId = path.lastOrNull() ?: return null
+                    if (songId == MusicService.SHUFFLE_ACTION) {
+                        shuffleMediaItem(mediaId.removeSuffix("/$songId"))
+                    } else {
+                        database.song(songId).first()?.toMediaItem(mediaId.removeSuffix("/$songId"))
+                            ?: homeSectionOnlineSong(sectionId, songId, mediaId.removeSuffix("/$songId"))
+                    }
+                }
+            }
             MusicService.SONG -> {
                 if (path.size == 1) {
                     rootChildren().first { it.mediaId == MusicService.SONG }
@@ -751,7 +1243,7 @@ constructor(
                             ),
                             artist.artist.thumbnailUrl?.toUri(),
                             MediaMetadata.MEDIA_TYPE_ARTIST,
-                            singleItemStyle = MediaConstants.EXTRAS_VALUE_CONTENT_STYLE_CATEGORY_LIST_ITEM,
+                            singleItemStyle = artistItemStyle(isAutomotive),
                         )
                     }
                 } else {
@@ -853,6 +1345,27 @@ constructor(
             reportException(e)
             null
         }
+
+    private suspend fun homeSectionOnlineSong(
+        sectionId: String,
+        songId: String,
+        parentId: String,
+    ): MediaItem? {
+        if (sectionId == SUGGESTED_SECTION_ID) {
+            return suggestedHomeSongs()
+                .firstOrNull { it.mediaId.endsWith("/$songId") }
+        }
+        return try {
+            val item = homeSection(sectionId)
+                ?.items?.filterIsInstance<SongItem>()
+                ?.firstOrNull { it.id == songId } ?: return null
+            try { database.query { insert(item.toMediaMetadata()) } } catch (_: Exception) {}
+            item.toMediaItem(parentId)
+        } catch (e: Exception) {
+            reportException(e)
+            null
+        }
+    }
 
     private fun likedSongsMediaItem(songCount: Int) = browsableMediaItem(
         "${MusicService.PLAYLIST}/${PlaylistEntity.LIKED_PLAYLIST_ID}",
@@ -1028,5 +1541,19 @@ constructor(
         if (fromIndex >= size) return emptyList()
 
         return subList(fromIndex.toInt(), minOf(fromIndex.toInt() + pageSize, size))
+    }
+
+    private companion object {
+        /**
+         * How long a YouTube Home snapshot is reused for automotive browse calls
+         * before it is refreshed (and merged, see [mergeHomeSnapshots]).
+         */
+        const val HOME_CACHE_TTL_MS = 5 * 60 * 1000L
+        const val HOME_MAX_PAGES = 6
+        const val HOME_FIRST_PAGE_TIMEOUT_MS = 10_000L
+        /** A shelf YouTube has not returned for this long is dropped from the snapshot. */
+        const val HOME_SECTION_MAX_AGE_MS = 14L * 24 * 60 * 60 * 1000
+        const val HOME_CONTINUATION_TIMEOUT_MS = 12_000L
+        const val SUGGESTED_SECTION_ID = "suggested"
     }
 }

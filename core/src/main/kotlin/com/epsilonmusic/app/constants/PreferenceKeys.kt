@@ -70,6 +70,7 @@ val CropAlbumArtKey = booleanPreferencesKey("cropAlbumArt")
 val SeekExtraSeconds = booleanPreferencesKey("seekExtraSeconds")
 val PauseOnMute = booleanPreferencesKey("pauseOnMute")
 val ResumeOnBluetoothConnectKey = booleanPreferencesKey("resumeOnBluetoothConnect")
+val AutoplayOnAutomotiveConnectKey = booleanPreferencesKey("autoplayOnAutomotiveConnect")
 val KeepScreenOn = booleanPreferencesKey("keepScreenOn")
 val DeveloperModeKey = booleanPreferencesKey("developerMode")
 
@@ -109,10 +110,26 @@ val SelectedYtmPlaylistsKey = stringPreferencesKey("selectedYtmPlaylists")
 
 val ShowAudioFallbackToastKey = booleanPreferencesKey("show_audio_fallback_toast")
 val AudioQualityKey = stringPreferencesKey("audioQuality")
+val AudioQualityWifiKey = stringPreferencesKey("audioQualityWifi")
+val AudioQualityCellularKey = stringPreferencesKey("audioQualityCellular")
 val IpVersionKey = stringPreferencesKey("ipVersion")
 
-enum class AudioQuality {
-    OPUS,
+enum class AudioQuality(
+    val maxKbps: Int,
+    val label: String,
+    val detail: String,
+    val hourly: String,
+) {
+    AUTO(Int.MAX_VALUE, "Auto", "Adaptive based on connection", "Variable"),
+    LOW(64, "Low", "~64 kbps · data saver", "29 MB/hr"),
+    MEDIUM(160, "Medium", "Standard · ~160 kbps Opus", "77 MB/hr"),
+    HIGH(320, "High", "Addon high bitrate, YouTube fallback", "144 MB/hr"),
+    LOSSLESS(Int.MAX_VALUE, "Lossless", "Addons bit-exact FLAC/ALAC, YouTube fallback", "300+ MB/hr"),
+    OPUS(160, "Opus", "Standard ~160 kbps Opus", "77 MB/hr");
+
+    fun permitsLossless(): Boolean = this == LOSSLESS || this == AUTO
+    fun permitsHigh(): Boolean = this == LOSSLESS || this == AUTO || this == HIGH
+    fun permitsAddons(): Boolean = this == LOSSLESS || this == AUTO || this == HIGH
 }
 
 val DownloadQualityKey = stringPreferencesKey("downloadQuality")
@@ -130,6 +147,7 @@ enum class PlaybackEngine {
 }
 
 val PlaybackEngineKey = stringPreferencesKey("playbackEngine")
+val ShowSeekButtonsKey = booleanPreferencesKey("showSeekButtons")
 val PersistentQueueKey = booleanPreferencesKey("persistentQueue")
 val PersistentShuffleAcrossQueuesKey = booleanPreferencesKey("persistentShuffleAcrossQueues")
 val RememberShuffleAndRepeatKey = booleanPreferencesKey("rememberShuffleAndRepeat")
@@ -212,6 +230,8 @@ val ScrobbleDelaySecondsKey = intPreferencesKey("scrobbleDelaySeconds")
 val ChipSortTypeKey = stringPreferencesKey("chipSortType")
 val SongSortTypeKey = stringPreferencesKey("songSortType")
 val SongSortDescendingKey = booleanPreferencesKey("songSortDescending")
+val DownloadedSongSortTypeKey = stringPreferencesKey("downloadedSongSortType")
+val DownloadedSongSortDescendingKey = booleanPreferencesKey("downloadedSongSortDescending")
 val PlaylistSongSortTypeKey = stringPreferencesKey("playlistSongSortType")
 val PlaylistSongSortDescendingKey = booleanPreferencesKey("playlistSongSortDescending")
 val AutoPlaylistSongSortTypeKey = stringPreferencesKey("autoPlaylistSongSortType")
@@ -302,6 +322,15 @@ val ShowUploadedPlaylistKey = booleanPreferencesKey("show_uploaded_playlist")
 val EnablePlayerSwipeKey = booleanPreferencesKey("enable_player_swipe")
 val ShowSpeedDialKey = booleanPreferencesKey("showSpeedDial")
 val ShowCommentButtonKey = booleanPreferencesKey("show_comment_button")
+
+val MusicFlowEnabledKey = booleanPreferencesKey("music_flow_enabled")
+val MusicFlowAutoplayKey = booleanPreferencesKey("music_flow_autoplay")
+val MusicFlowAutoNextKey = booleanPreferencesKey("music_flow_auto_next")
+val MusicFlowAnimatedBackgroundKey = booleanPreferencesKey("music_flow_animated_background")
+val MusicFlowLyricsKey = booleanPreferencesKey("music_flow_lyrics")
+val MusicFlowCellularPrefetchKey = booleanPreferencesKey("music_flow_cellular_prefetch")
+val MusicFlowHideRecentKey = booleanPreferencesKey("music_flow_hide_recent")
+val PreferExtensionAudioKey = booleanPreferencesKey("prefer_extension_audio")
 
 enum class LibraryViewType {
     LIST,
