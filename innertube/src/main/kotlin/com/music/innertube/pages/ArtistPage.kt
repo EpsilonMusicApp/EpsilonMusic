@@ -17,6 +17,7 @@ import com.music.innertube.models.YTItem
 import com.music.innertube.models.getItems
 import com.music.innertube.models.oddElements
 import com.music.innertube.models.splitBySeparator
+import com.music.innertube.text.ApiText
 
 data class ArtistSection(
     val title: String,
@@ -43,7 +44,7 @@ data class ArtistPage(
 
         private fun fromMusicShelfRenderer(renderer: MusicShelfRenderer): ArtistSection? {
             return ArtistSection(
-                title = renderer.title?.runs?.firstOrNull()?.text ?: "",
+                title = renderer.title?.runs?.firstOrNull()?.text?.let(ApiText::clean) ?: "",
                 items = renderer.contents?.getItems()?.mapNotNull {
                     fromMusicResponsiveListItemRenderer(it)
                 }?.ifEmpty { null } ?: return null,
@@ -77,7 +78,7 @@ data class ArtistPage(
             // Extract artists from the first segment after splitting
             val artists = secondaryLineRuns?.firstOrNull()?.oddElements()?.map {
                 Artist(
-                    name = it.text,
+                    name = ApiText.clean(it.text),
                     id = it.navigationEndpoint?.browseEndpoint?.browseId
                 )
             }
@@ -88,7 +89,7 @@ data class ArtistPage(
                 ?.firstOrNull()?.let {
                     if (it.navigationEndpoint?.browseEndpoint?.browseId != null) {
                         Album(
-                            name = it.text,
+                            name = ApiText.clean(it.text),
                             id = it.navigationEndpoint.browseEndpoint.browseId
                         )
                     } else null
@@ -109,7 +110,7 @@ data class ArtistPage(
                 ?: return null,
                 title = renderer.flexColumns.firstOrNull()
                     ?.musicResponsiveListItemFlexColumnRenderer?.text?.runs?.firstOrNull()
-                    ?.text ?: return null,
+                    ?.text?.let(ApiText::clean) ?: return null,
                 artists = artists ?: return null,
                 album = album,
                 duration = null,
@@ -131,18 +132,18 @@ data class ArtistPage(
                     val subtitleRuns = renderer.subtitle?.runs?.oddElements() ?: return null
                     SongItem(
                         id = renderer.navigationEndpoint.watchEndpoint?.videoId ?: return null,
-                        title = renderer.title.runs?.firstOrNull()?.text ?: return null,
+                        title = renderer.title.runs?.firstOrNull()?.text?.let(ApiText::clean) ?: return null,
                         artists = subtitleRuns.filter { 
                             it.navigationEndpoint?.browseEndpoint?.browseId?.startsWith("UC") == true ||
                             it.navigationEndpoint?.browseEndpoint != null
                         }.map {
                             Artist(
-                                name = it.text,
+                                name = ApiText.clean(it.text),
                                 id = it.navigationEndpoint?.browseEndpoint?.browseId
                             )
                         }.ifEmpty {
                             subtitleRuns.firstOrNull()?.let { 
-                                listOf(Artist(name = it.text, id = null)) 
+                                listOf(Artist(name = ApiText.clean(it.text), id = null)) 
                             } ?: emptyList()
                         },
                         album = null,
@@ -161,7 +162,7 @@ data class ArtistPage(
                         playlistId = renderer.thumbnailOverlay?.musicItemThumbnailOverlayRenderer?.content
                             ?.musicPlayButtonRenderer?.playNavigationEndpoint
                             ?.anyWatchEndpoint?.playlistId ?: return null,
-                        title = renderer.title.runs?.firstOrNull()?.text ?: return null,
+                        title = renderer.title.runs?.firstOrNull()?.text?.let(ApiText::clean) ?: return null,
                         artists = null,
                         year = renderer.subtitle?.runs?.lastOrNull()?.text?.toIntOrNull(),
                         thumbnail = renderer.thumbnailRenderer.musicThumbnailRenderer?.getThumbnailUrl() ?: return null,
@@ -175,9 +176,9 @@ data class ArtistPage(
                     // Playlist from YouTube Music
                     PlaylistItem(
                         id = renderer.navigationEndpoint.browseEndpoint?.browseId?.removePrefix("VL") ?: return null,
-                        title = renderer.title.runs?.firstOrNull()?.text ?: return null,
+                        title = renderer.title.runs?.firstOrNull()?.text?.let(ApiText::clean) ?: return null,
                         author = Artist(
-                            name = renderer.subtitle?.runs?.firstOrNull()?.text ?: return null,
+                            name = renderer.subtitle?.runs?.firstOrNull()?.text?.let(ApiText::clean) ?: return null,
                             id = null
                         ),
                         songCountText = null,
@@ -198,7 +199,7 @@ data class ArtistPage(
                 renderer.isArtist -> {
                     ArtistItem(
                         id = renderer.navigationEndpoint.browseEndpoint?.browseId ?: return null,
-                        title = renderer.title.runs?.lastOrNull()?.text ?: return null,
+                        title = renderer.title.runs?.lastOrNull()?.text?.let(ApiText::clean) ?: return null,
                         thumbnail = renderer.thumbnailRenderer.musicThumbnailRenderer?.getThumbnailUrl() ?: return null,
                         channelId = renderer.menu?.menuRenderer?.items?.find {
                             it.toggleMenuServiceItemRenderer?.defaultIcon?.iconType == "SUBSCRIBE"

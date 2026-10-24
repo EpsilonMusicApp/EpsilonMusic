@@ -23,6 +23,7 @@ import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
 import org.json.JSONArray
+import com.epsilonmusic.app.R
 
 object AiPlaylistGenerator {
     private val client = OkHttpClient()
@@ -99,6 +100,11 @@ object AiPlaylistGenerator {
 
             if (apiKey.isEmpty()) {
                 onLog("API Key is missing. Please set it in Settings.")
+                return@withContext null
+            }
+
+            if (!com.epsilonmusic.app.api.OpenRouterService.isUrlSafe(baseUrl)) {
+                onLog(context.getString(R.string.ai_endpoint_blocked_log))
                 return@withContext null
             }
 

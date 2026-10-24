@@ -91,6 +91,8 @@ import com.epsilonmusic.app.LocalPlayerConnection
 import com.epsilonmusic.app.R
 import com.epsilonmusic.app.constants.HideExplicitKey
 import com.epsilonmusic.app.constants.SongSortDescendingKey
+import com.epsilonmusic.app.constants.DownloadedSongSortDescendingKey
+import com.epsilonmusic.app.constants.DownloadedSongSortTypeKey
 import com.epsilonmusic.app.constants.SongSortType
 import com.epsilonmusic.app.constants.SongSortTypeKey
 import com.epsilonmusic.app.constants.YtmSyncKey
@@ -198,10 +200,13 @@ fun AutoPlaylistScreen(
     }
 
     val (sortType, onSortTypeChange) = rememberEnumPreference(
-        SongSortTypeKey,
+        if (playlistId == "downloaded") DownloadedSongSortTypeKey else SongSortTypeKey,
         SongSortType.CREATE_DATE
     )
-    val (sortDescending, onSortDescendingChange) = rememberPreference(SongSortDescendingKey, true)
+    val (sortDescending, onSortDescendingChange) = rememberPreference(
+        if (playlistId == "downloaded") DownloadedSongSortDescendingKey else SongSortDescendingKey,
+        true
+    )
 
     val downloadUtil = LocalDownloadUtil.current
     var downloadState by remember {
@@ -427,11 +432,12 @@ fun AutoPlaylistScreen(
                                         } else if (song.song.id == mediaMetadata?.id) {
                                             playerConnection?.togglePlayPause()
                                         } else {
+                                            val playSongs = if (isSearching) filteredSongs else (songs ?: emptyList())
                                             playerConnection?.playQueue(
                                                 ListQueue(
                                                     title = playlist,
-                                                    items = songs!!.map { it.toMediaItem() },
-                                                    startIndex = songs!!.indexOfFirst { it.id == song.id }
+                                                    items = playSongs.map { it.toMediaItem() },
+                                                    startIndex = playSongs.indexOfFirst { it.id == song.id }.coerceAtLeast(0)
                                                 ),
                                             )
                                         }

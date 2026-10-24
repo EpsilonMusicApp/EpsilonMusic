@@ -647,7 +647,7 @@ highlightKey: String? = null) {
             title = "Privacy",
             items = listOf(
                 Material3SettingsItem(
-                    isHighlighted = false,
+                    isHighlighted = (highlightKey == "Blocked Artists"),
                     customIcon = {
                         Icon(
                             Icons.Default.Block,

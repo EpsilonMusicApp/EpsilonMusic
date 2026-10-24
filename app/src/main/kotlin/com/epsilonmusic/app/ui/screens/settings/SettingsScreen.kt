@@ -69,6 +69,8 @@ fun SettingsScreen(
     val accountText = stringResource(R.string.account)
     val appearanceText = stringResource(R.string.appearance)
     val playerText = stringResource(R.string.player_and_audio)
+    val swipeFlowText = stringResource(R.string.music_flow)
+    val swipeFlowDesc = stringResource(R.string.music_flow_settings_description)
     val listenTogetherText = stringResource(R.string.listen_together)
     val contentText = stringResource(R.string.content)
     val aiLyricsText = stringResource(R.string.ai_lyrics_translation)
@@ -86,6 +88,9 @@ fun SettingsScreen(
     val aiLyricsDesc = stringResource(R.string.setting_desc_ai)
     val listeningSummaryText = stringResource(R.string.listening_summary)
     val listeningSummaryDesc = stringResource(R.string.listening_summary_desc)
+    // Add-on servers: strings are inline until string resources are added for them.
+    val extensionsText = "Add-on servers"
+    val extensionsDesc = "Custom audio sources and stream priority"
     val privacyDesc = stringResource(R.string.setting_desc_privacy)
     val storageDesc = stringResource(R.string.setting_desc_storage)
     val backupDesc = stringResource(R.string.setting_desc_backup)
@@ -202,6 +207,17 @@ fun SettingsScreen(
                     )
                 )
             }
+            if (swipeFlowText.lowercase().contains(searchLower) || swipeFlowDesc.lowercase().contains(searchLower)) {
+                add(
+                    Material3SettingsItem(
+                        isHighlighted = (highlightKey == swipeFlowText),
+                        icon = painterResource(R.drawable.swipe),
+                        title = { Text(swipeFlowText) },
+                        description = { Text(swipeFlowDesc) },
+                        onClick = { navController.navigate("settings/music_flow") }
+                    )
+                )
+            }
             if (listenTogetherText.lowercase().contains(searchLower) || listenTogetherDesc.lowercase().contains(searchLower)) {
                 add(
                     Material3SettingsItem(
@@ -257,6 +273,16 @@ fun SettingsScreen(
                         title = { Text(listeningSummaryText) },
                         description = { Text(listeningSummaryDesc) },
                         onClick = { navController.navigate("settings/listening_summary") }
+                    )
+                )
+            }
+            if (extensionsText.lowercase().contains(searchLower) || extensionsDesc.lowercase().contains(searchLower)) {
+                add(
+                    Material3SettingsItem(
+                        icon = painterResource(R.drawable.link),
+                        title = { Text(extensionsText) },
+                        description = { Text(extensionsDesc) },
+                        onClick = { navController.navigate("settings/extensions") }
                     )
                 )
             }

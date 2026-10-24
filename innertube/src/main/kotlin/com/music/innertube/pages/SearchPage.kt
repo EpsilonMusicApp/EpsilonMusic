@@ -10,6 +10,7 @@ import com.music.innertube.models.SongItem
 import com.music.innertube.models.YTItem
 import com.music.innertube.models.oddElements
 import com.music.innertube.models.splitBySeparator
+import com.music.innertube.text.ApiText
 import com.music.innertube.utils.parseTime
 
 data class SearchResult(
@@ -49,18 +50,18 @@ object SearchPage {
                             ?.text
                             ?.runs
                             ?.firstOrNull()
-                            ?.text ?: return null,
+                            ?.text?.let(ApiText::clean) ?: return null,
                     artists =
                         secondaryLine.firstOrNull()?.oddElements()?.map {
                             Artist(
-                                name = it.text,
+                                name = ApiText.clean(it.text),
                                 id = it.navigationEndpoint?.browseEndpoint?.browseId,
                             )
                         } ?: return null.also { println("[UPLOAD_DEBUG] SearchPage.toYTItem FAILED: artists is null for renderer: $renderer") },
                     album =
                         secondaryLine.getOrNull(1)?.firstOrNull()?.takeIf { it.navigationEndpoint?.browseEndpoint != null }?.let {
                             Album(
-                                name = it.text,
+                                name = ApiText.clean(it.text),
                                 id = it.navigationEndpoint?.browseEndpoint?.browseId!!,
                             )
                         },
@@ -128,11 +129,11 @@ object SearchPage {
                             ?.text
                             ?.runs
                             ?.firstOrNull()
-                            ?.text ?: return null,
+                            ?.text?.let(ApiText::clean) ?: return null,
                     artists =
                         secondaryLine.getOrNull(1)?.oddElements()?.map {
                             Artist(
-                                name = it.text,
+                                name = ApiText.clean(it.text),
                                 id = it.navigationEndpoint?.browseEndpoint?.browseId,
                             )
                         } ?: return null,
@@ -163,11 +164,11 @@ object SearchPage {
                             ?.text
                             ?.runs
                             ?.firstOrNull()
-                            ?.text ?: return null,
+                            ?.text?.let(ApiText::clean) ?: return null,
                     author =
                         secondaryLine.firstOrNull()?.firstOrNull()?.let {
                             Artist(
-                                name = it.text,
+                                name = ApiText.clean(it.text),
                                 id = it.navigationEndpoint?.browseEndpoint?.browseId,
                             )
                         } ?: return null,

@@ -11,6 +11,7 @@ import com.music.innertube.models.Run
 import com.music.innertube.models.SongItem
 import com.music.innertube.models.YTItem
 import com.music.innertube.models.oddElements
+import com.music.innertube.text.ApiText
 import com.music.innertube.utils.parseTime
 
 data class LibraryPage(
@@ -25,7 +26,7 @@ data class LibraryPage(
                     playlistId = renderer.thumbnailOverlay?.musicItemThumbnailOverlayRenderer?.content
                         ?.musicPlayButtonRenderer?.playNavigationEndpoint
                         ?.watchPlaylistEndpoint?.playlistId ?: return null,
-                    title = renderer.title.runs?.firstOrNull()?.text ?: return null,
+                    title = renderer.title.runs?.firstOrNull()?.text?.let(ApiText::clean) ?: return null,
                     artists = parseArtists(renderer.subtitle?.runs),
                     year = renderer.subtitle?.runs?.lastOrNull()?.text?.toIntOrNull(),
                     thumbnail = renderer.thumbnailRenderer.musicThumbnailRenderer?.getThumbnailUrl()
@@ -37,10 +38,10 @@ data class LibraryPage(
 
                 renderer.isPlaylist -> PlaylistItem(
                     id = renderer.navigationEndpoint.browseEndpoint?.browseId?.removePrefix("VL") ?: return null,
-                    title = renderer.title.runs?.firstOrNull()?.text ?: return null,
+                    title = renderer.title.runs?.firstOrNull()?.text?.let(ApiText::clean) ?: return null,
                     author = renderer.subtitle?.runs?.firstOrNull()?.let {
                         Artist(
-                            name = it.text,
+                            name = ApiText.clean(it.text),
                             id = it.navigationEndpoint?.browseEndpoint?.browseId
                         )
                     },
@@ -63,7 +64,7 @@ data class LibraryPage(
 
                 renderer.isArtist -> ArtistItem(
                     id = renderer.navigationEndpoint.browseEndpoint?.browseId ?: return null,
-                    title = renderer.title.runs?.lastOrNull()?.text ?: return null,
+                    title = renderer.title.runs?.lastOrNull()?.text?.let(ApiText::clean) ?: return null,
                     thumbnail = renderer.thumbnailRenderer.musicThumbnailRenderer?.getThumbnailUrl() ?: return null,
                     shuffleEndpoint = renderer.menu?.menuRenderer?.items?.find {
                         it.menuNavigationItemRenderer?.icon?.iconType == "MUSIC_SHUFFLE"
@@ -113,9 +114,9 @@ data class LibraryPage(
                         if (browseId == null) {
                             println("[UPLOAD_DEBUG] LibraryPage.parse: Artist '${it.text}' has no browseId, using empty string")
                             // For uploaded songs, use empty string for artist ID if not available
-                            Artist(name = it.text, id = "")
+                            Artist(name = ApiText.clean(it.text), id = "")
                         } else {
-                            Artist(name = it.text, id = browseId)
+                            Artist(name = ApiText.clean(it.text), id = browseId)
                         }
                     } ?: emptyList()
 
@@ -127,9 +128,9 @@ data class LibraryPage(
                         val albumBrowseId = it.navigationEndpoint?.browseEndpoint?.browseId
                         if (albumBrowseId == null) {
                             println("[UPLOAD_DEBUG] LibraryPage.parse: Album '${it.text}' has no browseId, using empty string")
-                            Album(name = it.text, id = "")
+                            Album(name = ApiText.clean(it.text), id = "")
                         } else {
-                            Album(name = it.text, id = albumBrowseId)
+                            Album(name = ApiText.clean(it.text), id = albumBrowseId)
                         }
                     }
 
@@ -160,7 +161,7 @@ data class LibraryPage(
 
                 renderer.isArtist -> ArtistItem(
                     id = renderer.navigationEndpoint?.browseEndpoint?.browseId ?: return null,
-                    title = renderer.flexColumns.firstOrNull()?.musicResponsiveListItemFlexColumnRenderer?.text?.runs?.firstOrNull()?.text
+                    title = renderer.flexColumns.firstOrNull()?.musicResponsiveListItemFlexColumnRenderer?.text?.runs?.firstOrNull()?.text?.let(ApiText::clean)
                         ?: return null,
                     thumbnail = renderer.thumbnail?.musicThumbnailRenderer?.getThumbnailUrl()
                         ?: return null,

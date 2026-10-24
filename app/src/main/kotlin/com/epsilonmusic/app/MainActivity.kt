@@ -174,6 +174,7 @@ import com.epsilonmusic.app.constants.ListenTogetherInTopBarKey
 import com.epsilonmusic.app.constants.ListenTogetherUsernameKey
 import com.epsilonmusic.app.constants.MiniPlayerBottomSpacing
 import com.epsilonmusic.app.constants.MiniPlayerHeight
+import com.epsilonmusic.app.constants.MusicFlowEnabledKey
 import com.epsilonmusic.app.constants.NavigationBarAnimationSpec
 import com.epsilonmusic.app.constants.NavigationBarHeight
 import com.epsilonmusic.app.epsilonmusic.updater.checkForUpdate
@@ -748,6 +749,7 @@ class MainActivity : ComponentActivity() {
                     }
                 }
                 val (useNewMiniPlayerDesign) = rememberPreference(UseNewMiniPlayerDesignKey, defaultValue = true)
+                val (musicFlowEnabled) = rememberPreference(MusicFlowEnabledKey, defaultValue = true)
                 val defaultOpenTab = remember {
                     dataStore[DefaultOpenTabKey].toEnum(defaultValue = NavigationTab.HOME)
                 }
@@ -812,7 +814,8 @@ class MainActivity : ComponentActivity() {
 
                 val isLandscape = configuration.containerDpSize.width > configuration.containerDpSize.height
 
-                val showRail = isLandscape && !inSearchScreen && currentRoute != "ambient_mode"
+                val showRail =
+                    isLandscape && !inSearchScreen && currentRoute != "ambient_mode" && currentRoute != "music_flow"
 
                 val navPadding = if (shouldShowNavigationBar && !showRail) {
                     NavigationBarHeight + FloatingToolbarBottomPadding
@@ -1086,6 +1089,7 @@ class MainActivity : ComponentActivity() {
                 val ringtoneViewModel: RingtoneViewModel = viewModel()
                 val ringtoneUiState by ringtoneViewModel.uiState.collectAsState()
 
+                val expandPlayer = remember(playerBottomSheetState) { { playerBottomSheetState.expandSoft() } }
                 CompositionLocalProvider(
                     LocalRingtoneViewModel provides ringtoneViewModel,
                     LocalDatabase provides database,
@@ -1098,6 +1102,7 @@ class MainActivity : ComponentActivity() {
                     LocalListenTogetherManager provides listenTogetherManager,
                     LocalGlassEffectConfig provides glassEffectConfig,
                     LocalAppBackdrop provides appBackdrop,
+                    LocalExpandPlayer provides expandPlayer,
                 ) {
 
                     Scaffold(
@@ -1225,7 +1230,7 @@ class MainActivity : ComponentActivity() {
                                 }
                             }
 
-                            if (!showRail && currentRoute != "update" && currentRoute != "listen_together/chat" && currentRoute != "ambient_mode" && currentRoute != "uptime" && currentRoute?.startsWith("settings") != true) {
+                            if (!showRail && currentRoute != "update" && currentRoute != "listen_together/chat" && currentRoute != "ambient_mode" && currentRoute != "music_flow" && currentRoute != "uptime" && currentRoute?.startsWith("settings") != true) {
                                 Box {
                                     BottomSheetPlayer(
                                         state = playerBottomSheetState,
@@ -1315,7 +1320,7 @@ class MainActivity : ComponentActivity() {
                                     }
                                 }
                             } else {
-                                if (currentRoute != "update" && currentRoute != "listen_together/chat" && currentRoute != "ambient_mode" && currentRoute != "uptime" && currentRoute?.startsWith("settings") != true) {
+                                if (currentRoute != "update" && currentRoute != "listen_together/chat" && currentRoute != "ambient_mode" && currentRoute != "music_flow" && currentRoute != "uptime" && currentRoute?.startsWith("settings") != true) {
                                     BottomSheetPlayer(
                                         state = playerBottomSheetState,
                                         navController = navController,
@@ -1394,7 +1399,13 @@ class MainActivity : ComponentActivity() {
                                     currentRoute = currentRoute,
                                     onItemClick = onRailItemClick,
                                     pureBlack = pureBlack,
-                                    onSearchLongClick = onRailSearchLongClick
+                                    onSearchLongClick = onRailSearchLongClick,
+                                    onMusicFlowClick =
+                                        if (musicFlowEnabled) {
+                                            { navController.navigate("music_flow") { launchSingleTop = true } }
+                                        } else null,
+                                    musicFlowIconRes = R.drawable.swipe,
+                                    musicFlowContentDescription = stringResource(R.string.music_flow),
                                 )
                             }
                             Box(Modifier.weight(1f)) {
@@ -1726,3 +1737,4 @@ val LocalDownloadUtil = staticCompositionLocalOf<DownloadUtil> { error("No Downl
 val LocalSyncUtils = staticCompositionLocalOf<SyncUtils> { error("No SyncUtils provided") }
 val LocalListenTogetherManager = staticCompositionLocalOf<com.epsilonmusic.app.listentogether.ListenTogetherManager?> { null }
 val LocalIsPlayerExpanded = compositionLocalOf { false }
+val LocalExpandPlayer = staticCompositionLocalOf<() -> Unit> { {} }

@@ -79,7 +79,6 @@ import com.epsilonmusic.app.constants.AudioLoudnessPreset
 import com.epsilonmusic.app.constants.AudioLoudnessPresetKey
 import com.epsilonmusic.app.constants.AudioNormalizationKey
 import com.epsilonmusic.app.constants.AudioOffload
-import com.epsilonmusic.app.constants.AudioQualityKey
 import com.epsilonmusic.app.constants.AutoDownloadOnLikeKey
 import com.epsilonmusic.app.constants.AutoLoadMoreKey
 import com.epsilonmusic.app.constants.AutoSkipNextOnErrorKey
@@ -111,6 +110,7 @@ import com.epsilonmusic.app.constants.PauseOnMute
 import com.epsilonmusic.app.constants.PersistentQueueKey
 import com.epsilonmusic.app.constants.PersistentShuffleAcrossQueuesKey
 import com.epsilonmusic.app.constants.PlayerVolumeKey
+import com.epsilonmusic.app.constants.PreferExtensionAudioKey
 
 import com.epsilonmusic.app.constants.RememberShuffleAndRepeatKey
 import com.epsilonmusic.app.constants.RepeatModeKey
@@ -130,6 +130,7 @@ import com.epsilonmusic.app.constants.SkipSilenceInstantKey
 import com.epsilonmusic.app.constants.SkipSilenceKey
 import com.epsilonmusic.app.constants.IpVersionKey
 import com.music.innertube.models.IpVersion
+import com.music.innertube.models.response.PlayerResponse
 import okhttp3.Dns
 import java.net.InetAddress
 import java.net.Inet4Address
@@ -146,6 +147,8 @@ import com.epsilonmusic.app.eq.EqualizerService
 import com.epsilonmusic.app.eq.audio.AutomixDuckAudioProcessor
 import com.epsilonmusic.app.eq.audio.CustomEqualizerAudioProcessor
 import com.epsilonmusic.app.eq.data.EQProfileRepository
+import com.epsilonmusic.app.extensions.AddonStreamResponse
+import com.epsilonmusic.app.extensions.ExtensionManager
 import com.epsilonmusic.app.extensions.SilentHandler
 import com.epsilonmusic.app.extensions.collect
 import com.epsilonmusic.app.extensions.collectLatest
@@ -167,6 +170,7 @@ import com.epsilonmusic.app.db.entities.BeatInfoEntity
 import com.epsilonmusic.app.playback.audio.BeatAnalyzer
 import com.epsilonmusic.app.playback.audio.SilenceDetectorAudioProcessor
 import com.epsilonmusic.app.playback.queues.EmptyQueue
+import com.epsilonmusic.app.playback.queues.ListQueue
 import com.epsilonmusic.app.playback.queues.Queue
 import com.epsilonmusic.app.playback.queues.YouTubeQueue
 import com.epsilonmusic.app.playback.queues.filterExplicit
@@ -177,6 +181,7 @@ import com.epsilonmusic.app.utils.NetworkConnectivityObserver
 import com.epsilonmusic.app.utils.ScrobbleManager
 
 import com.epsilonmusic.app.utils.YTPlayerUtils
+import com.epsilonmusic.app.utils.YTPlayerUtils.PlaybackData
 import com.epsilonmusic.app.utils.dataStore
 import com.epsilonmusic.app.utils.get
 import com.epsilonmusic.app.utils.reportException
@@ -187,12 +192,14 @@ import dagger.hilt.android.AndroidEntryPoint
 import com.epsilonmusic.app.utils.isLocalMediaId
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
@@ -214,6 +221,7 @@ import timber.log.Timber
 import java.io.ObjectInputStream
 import java.io.ObjectOutputStream
 import java.time.LocalDateTime
+import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 import kotlin.coroutines.coroutineContext
 import kotlin.time.Duration.Companion.seconds
@@ -239,6 +247,12 @@ class MusicService :
 
     @Inject
     lateinit var mediaLibrarySessionCallback: MediaLibrarySessionCallback
+
+    @Inject
+    lateinit var extensionManager: ExtensionManager
+
+    /** Resolves and embeds the current cover; cancelled when the track changes. */
+    private val sessionBitmapLoader by lazy { CoilBitmapLoader(this, scope) }
 
     @Inject
     lateinit var equalizerService: EqualizerService
@@ -369,7 +383,35 @@ class MusicService :
     private lateinit var audioQuality: com.epsilonmusic.app.constants.AudioQuality
     private lateinit var ipVersion: IpVersion
 
-    private var currentQueue: Queue = EmptyQueue
+    fun getEffectiveAudioQuality(): com.epsilonmusic.app.constants.AudioQuality {
+        val dataSaver =
+            runCatching { dataStore.get(com.epsilonmusic.app.constants.DataSaverEnabledKey, false) }
+                .getOrDefault(false)
+        if (dataSaver) return com.epsilonmusic.app.constants.AudioQuality.LOW
+
+        val isMetered = runCatching { connectivityManager.isActiveNetworkMetered }.getOrDefault(false)
+        val wifiQuality =
+            dataStore.get(com.epsilonmusic.app.constants.AudioQualityWifiKey)
+                .toEnum(com.epsilonmusic.app.constants.AudioQuality.LOSSLESS)
+        val cellularQuality =
+            dataStore.get(com.epsilonmusic.app.constants.AudioQualityCellularKey)
+                .toEnum(com.epsilonmusic.app.constants.AudioQuality.MEDIUM)
+
+        return if (isMetered) cellularQuality else wifiQuality
+    }
+
+    private val activeQueueState = MutableStateFlow<Queue>(EmptyQueue)
+    val activeQueue: StateFlow<Queue> = activeQueueState.asStateFlow()
+    private var pauseAtEndOwner: Queue? = null
+    private var currentQueue: Queue
+        get() = activeQueueState.value
+        set(value) {
+            if (pauseAtEndOwner != null && value !== pauseAtEndOwner) {
+                pauseAtEndOwner = null
+                player.pauseAtEndOfMediaItems = false
+            }
+            activeQueueState.value = value
+        }
     var queueTitle: String? = null
 
     val currentMediaMetadata = MutableStateFlow<com.epsilonmusic.app.models.MediaMetadata?>(null)
@@ -485,7 +527,7 @@ class MusicService :
     private var silenceSkipJob: Job? = null
 
     
-    private val songUrlCache = HashMap<String, Pair<String, Long>>()
+    private val songUrlCache = ConcurrentHashMap<String, ResolvedStream>()
 
     
     private val bypassCacheForQualityChange = mutableSetOf<String>()
@@ -650,10 +692,11 @@ class MusicService :
             toggleLike = ::toggleLike
             toggleStartRadio = ::toggleStartRadio
             toggleLibrary = ::toggleLibrary
+            onAutomotiveConnected = { prefetchQueueArtwork() }
         }
         mediaSession =
             MediaLibrarySession
-                .Builder(this, player, mediaLibrarySessionCallback)
+                .Builder(this, SessionArtworkPlayer(this, player), mediaLibrarySessionCallback)
                 .setSessionActivity(
                     PendingIntent.getActivity(
                         this,
@@ -661,7 +704,7 @@ class MusicService :
                         Intent(this, MainActivity::class.java),
                         PendingIntent.FLAG_IMMUTABLE,
                     ),
-                ).setBitmapLoader(CoilBitmapLoader(this, scope))
+                ).setBitmapLoader(sessionBitmapLoader)
                 .build()
         player.repeatMode = dataStore.get(RepeatModeKey, REPEAT_MODE_OFF)
 
@@ -686,7 +729,7 @@ class MusicService :
 
         audioManager.registerAudioDeviceCallback(audioDeviceCallback, null)
 
-        audioQuality = dataStore.get(AudioQualityKey).toEnum(com.epsilonmusic.app.constants.AudioQuality.OPUS)
+        audioQuality = getEffectiveAudioQuality()
         ipVersion = dataStore.get(IpVersionKey).toEnum(IpVersion.AUTO)
         playerVolume = MutableStateFlow(restorePlayerVolume(dataStore.get(PlayerVolumeKey, 1f)))
 
@@ -753,14 +796,7 @@ class MusicService :
         var isFirstQualityEmit = true
         scope.launch {
             dataStore.data
-                .map { 
-                    val qualityStr = (try { it[AudioQualityKey] } catch(e: Exception) { null })
-                    val quality = qualityStr?.let { value ->
-                        com.epsilonmusic.app.constants.AudioQuality.entries.find { enumVal -> enumVal.name == value }
-                    } ?: com.epsilonmusic.app.constants.AudioQuality.OPUS
-                    val dataSaver = it[com.epsilonmusic.app.constants.DataSaverEnabledKey] ?: false
-                    if (dataSaver) com.epsilonmusic.app.constants.AudioQuality.OPUS else quality
-                }
+                .map { getEffectiveAudioQuality() }
                 .distinctUntilChanged()
                 .collect { newQuality ->
                     val oldQuality = audioQuality
@@ -1790,6 +1826,48 @@ class MusicService :
         automixItems.value = emptyList()
     }
 
+    data class QueueSnapshot(
+        val items: List<MediaItem>,
+        val mediaItemIndex: Int,
+        val positionMs: Long,
+        val queue: Queue,
+        val title: String?,
+    )
+
+    fun snapshotQueue(): QueueSnapshot? {
+        if (!playerInitialized.value || player.mediaItemCount == 0) return null
+        return QueueSnapshot(
+            items = List(player.mediaItemCount) { player.getMediaItemAt(it) },
+            mediaItemIndex = player.currentMediaItemIndex.coerceAtLeast(0),
+            positionMs = player.currentPosition.coerceAtLeast(0L),
+            queue = currentQueue,
+            title = queueTitle,
+        )
+    }
+
+    fun restoreQueueSnapshot(snapshot: QueueSnapshot, playWhenReady: Boolean) {
+        if (!playerInitialized.value) {
+            if (!scope.isActive) scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
+            scope.launch {
+                playerInitialized.first { it }
+                restoreQueueSnapshot(snapshot, playWhenReady)
+            }
+            return
+        }
+        playQueue(
+            ListQueue(snapshot.title, snapshot.items, snapshot.mediaItemIndex, snapshot.positionMs),
+            playWhenReady,
+        )
+        // Re-attach the original queue so its continuation keeps paging after the restore.
+        currentQueue = snapshot.queue
+    }
+
+    fun setPauseAtEndOfItems(queue: Queue, pause: Boolean) {
+        if (!playerInitialized.value || currentQueue !== queue) return
+        pauseAtEndOwner = if (pause) queue else null
+        player.pauseAtEndOfMediaItems = pause
+    }
+
     fun playNext(items: List<MediaItem>) {
         val isCasting = castConnectionHandler?.isCasting?.value == true
         Timber.d("CastFlow.playNext: items=${items.size}, isCasting=$isCasting, playerItemCount=${player.mediaItemCount}")
@@ -2212,6 +2290,29 @@ class MusicService :
         
         if (dataStore.get(PersistentQueueKey, true)) {
             saveQueueToDisk()
+        }
+
+        prefetchQueueArtwork()
+    }
+
+    /**
+     * Warms the session artwork cache for the current item and the next ones.
+     *
+     * Media3 sends the car the metadata of a new track immediately; the cover is
+     * part of that first update only if [sessionBitmapLoader] can return it
+     * synchronously. The instrument cluster often ignores the follow-up update
+     * that adds the cover, so having it ready before the transition is what makes
+     * it appear there consistently.
+     */
+    private fun prefetchQueueArtwork() {
+        if (!::player.isInitialized) return
+        val timeline = player.currentTimeline
+        var index = player.currentMediaItemIndex
+        if (timeline.isEmpty || index == C.INDEX_UNSET) return
+        repeat(ARTWORK_PREFETCH_COUNT + 1) {
+            if (index == C.INDEX_UNSET || index >= player.mediaItemCount) return
+            sessionBitmapLoader.prefetch(player.getMediaItemAt(index).mediaMetadata.artworkUri)
+            index = timeline.getNextWindowIndex(index, player.repeatMode, player.shuffleModeEnabled)
         }
     }
 
@@ -3218,18 +3319,31 @@ class MusicService :
 
             
             var shouldBypassCache = bypassCacheForQualityChange.contains(mediaId)
-            
+
             val dbFormat = runBlocking(Dispatchers.IO) { database.format(mediaId).firstOrNull() }
-            
+            val dbSong = runBlocking(Dispatchers.IO) { database.song(mediaId).firstOrNull() }
+
             val cachedLength = androidx.media3.datasource.cache.ContentMetadata.getContentLength(downloadCache.getContentMetadata(mediaId))
                 .takeIf { it != androidx.media3.common.C.LENGTH_UNSET.toLong() } ?: dbFormat?.contentLength ?: -1L
-            val isFullyDownloaded = cachedLength > 0 && downloadCache.isCached(mediaId, 0, cachedLength)
+            val isFullyDownloaded =
+                (cachedLength > 0 && downloadCache.isCached(mediaId, 0, cachedLength)) ||
+                    (dbSong?.song?.isDownloaded == true && downloadCache.getCachedSpans(mediaId).isNotEmpty())
 
-            val activeQualityInCache = songUrlCache.keys.find { it.startsWith("${mediaId}_") }?.substringAfter("_")?.let {
-                runCatching { com.epsilonmusic.app.constants.AudioQuality.valueOf(it) }.getOrNull()
-            }
-            val lockedQuality = activeQualityInCache ?: audioQuality
+            val activeQualityInCache = songUrlCache.keys.find { it.startsWith("${mediaId}_") }
+                ?.substringAfterLast("_")
+                ?.let {
+                    runCatching { com.epsilonmusic.app.constants.AudioQuality.valueOf(it) }.getOrNull()
+                }
+            val lockedQuality = activeQualityInCache ?: getEffectiveAudioQuality()
 
+            val preferExtensionAudio = runCatching { dataStore.get(PreferExtensionAudioKey, true) }.getOrDefault(true)
+            val isDataSaver = runCatching { dataStore.get(com.epsilonmusic.app.constants.DataSaverEnabledKey, false) }.getOrDefault(false)
+            val canUseAddon = !isDataSaver && (preferExtensionAudio || lockedQuality.permitsAddons())
+            val hasEnabledAddons = runBlocking(Dispatchers.IO) { extensionManager.hasEnabledAddons() }
+
+            val cachedStream =
+                songUrlCache["${mediaId}_${lockedQuality.name}"]
+                    ?.takeIf { it.expiresAtMs > System.currentTimeMillis() }
 
             if (!shouldBypassCache) {
                 if (isFullyDownloaded) {
@@ -3237,48 +3351,138 @@ class MusicService :
                     return@Factory dataSpec
                 }
 
-                if (downloadCache.isCached(
-                        mediaId,
-                        dataSpec.position,
-                        if (dataSpec.length >= 0) dataSpec.length else 1
-                    )
-                ) {
-                    songUrlCache["${mediaId}_${lockedQuality.name}"]?.takeIf { it.second > System.currentTimeMillis() }?.let {
+                // If a cached stream exists, we only short-circuit if:
+                // 1. It is already an addon/extension stream, OR
+                // 2. Addons cannot be used or none are enabled (so YouTube was expected)
+                if (cachedStream != null && (cachedStream.isFromExtension || !canUseAddon || !hasEnabledAddons)) {
+                    if (downloadCache.isCached(
+                            mediaId,
+                            dataSpec.position,
+                            if (dataSpec.length >= 0) dataSpec.length else 1
+                        )
+                    ) {
                         scope.launch(Dispatchers.IO) { recoverSong(mediaId, isOfflinePlayback = true) }
-                        return@Factory dressStreamSpec(dataSpec, it.first)
+                        return@Factory cachedStream.resolve(dataSpec)
                     }
-                    // Fall through to fetch real URL since it's only partially downloaded
-                }
 
-                if (playerCache.isCached(mediaId, dataSpec.position, CHUNK_LENGTH)) {
-                    songUrlCache["${mediaId}_${lockedQuality.name}"]?.takeIf { it.second > System.currentTimeMillis() }?.let {
+                    if (playerCache.isCached(mediaId, dataSpec.position, CHUNK_LENGTH)) {
                         scope.launch(Dispatchers.IO) { recoverSong(mediaId, isOfflinePlayback = true) }
-                        return@Factory dressStreamSpec(dataSpec, it.first)
+                        return@Factory cachedStream.resolve(dataSpec)
                     }
-                    Timber.tag(TAG).w("Ghost cache entry for $mediaId, re-fetching")
-                    playerCache.removeResource(mediaId)
-                }
 
-                songUrlCache["${mediaId}_${lockedQuality.name}"]?.takeIf { it.second > System.currentTimeMillis() }?.let {
-                        scope.launch(Dispatchers.IO) { recoverSong(mediaId, isOfflinePlayback = true) }
-                        return@Factory dressStreamSpec(dataSpec, it.first)
+                    scope.launch(Dispatchers.IO) { recoverSong(mediaId, isOfflinePlayback = true) }
+                    return@Factory cachedStream.resolve(dataSpec)
                 }
             } else {
                 Timber.tag("MusicService").i("BYPASSING CACHE for $mediaId due to quality change")
             }
 
             Timber.tag("MusicService").i("FETCHING STREAM: $mediaId | quality=$lockedQuality")
+            var isAddonStream = false
             val playbackData = runBlocking(Dispatchers.IO) {
-                val dbSong = database.song(mediaId).firstOrNull()
-                val knownArtist = dbSong?.artists?.joinToString { it.name }?.replace(" - Topic", "")
+                // Use metadata of the item actually being resolved, not the
+                // currently playing item: ExoPlayer resolves N+1 while the current
+                // item is still N, which used to search/addon-resolve the wrong
+                // song and cache its URL under N+1 (same audio repeated, metadata
+                // correct). Player getters must run on the application (main) thread.
+                val (queueItem, currentMeta) = runCatching {
+                    kotlinx.coroutines.withContext(Dispatchers.Main) {
+                        val item = player.findNextMediaItemById(mediaId)
+                            ?: player.mediaItems.find { it.mediaId == mediaId }
+                        // Last resort only when it really is the same track.
+                        val current = player.currentMediaItem?.takeIf { it.mediaId == mediaId }?.mediaMetadata
+                        item to current
+                    }
+                }.getOrNull() ?: (null to null)
+                val queueMeta = queueItem?.metadata
+                val queueMediaMetadata = queueItem?.mediaMetadata
                 val knownTitle = dbSong?.song?.title
+                    ?: queueMeta?.title?.takeIf { it.isNotBlank() }
+                    ?: queueMediaMetadata?.title?.toString()?.takeIf { it.isNotBlank() }
+                    ?: currentMeta?.title?.toString()
+                val knownArtist = dbSong?.artists?.joinToString { it.name }?.replace(" - Topic", "")
+                    ?: queueMeta?.artists?.joinToString(", ") { it.name }?.takeIf { it.isNotBlank() }
+                    ?: queueMediaMetadata?.artist?.toString()?.takeIf { it.isNotBlank() }
+                    ?: currentMeta?.artist?.toString()
                 val knownDuration = dbSong?.song?.duration?.let { if (it > 0) it * 1000L else null }
+                    ?: queueMeta?.duration?.takeIf { it > 0 }?.times(1000L)
 
-                YTPlayerUtils.playerResponseForPlayback(
-                    videoId = mediaId,
-                    audioQuality = lockedQuality,
-                    connectivityManager = connectivityManager
-                )
+                val extStream =
+                    if (canUseAddon && hasEnabledAddons) {
+                        extensionManager.resolveStream(knownTitle, knownArtist, knownDuration, mediaId)
+                    } else null
+                Timber.tag("MusicService").e("ADDON STREAM RESULT: url=${extStream?.url} format=${extStream?.format} quality=${extStream?.quality} audioQuality=${extStream?.audioQuality}")
+                if (extStream != null) {
+                    isAddonStream = true
+                    val flac = extStream.format.contains("flac", ignoreCase = true)
+                    Result.success(PlaybackData(
+                        audioConfig = null,
+                        videoDetails = null,
+                        playbackTracking = null,
+                        format = PlayerResponse.StreamingData.Format(
+                            itag = 0,
+                            url = extStream.url,
+                            mimeType = if (flac) "audio/flac" else "audio/mpeg",
+                            bitrate = if (flac) 1411000 else 320000,
+                            width = null,
+                            height = null,
+                            contentLength = null,
+                            quality = extStream.quality,
+                            fps = null,
+                            qualityLabel = null,
+                            averageBitrate = if (flac) 1411000 else 320000,
+                            audioQuality = "AUDIO_QUALITY_LOSSLESS",
+                            approxDurationMs = null,
+                            audioSampleRate = if (flac) 44100 else 48000,
+                            audioChannels = 2,
+                            loudnessDb = null,
+                            lastModified = null,
+                            signatureCipher = null,
+                            cipher = null,
+                            audioTrack = null
+                        ),
+                        streamUrl = extStream.url,
+                        streamExpiresInSeconds = 3600
+                    ))
+                } else if (cachedStream != null) {
+                    // Extension didn't have this song or failed, but we already have a valid cached YouTube stream!
+                    // Use it directly with zero network delay
+                    Result.success(PlaybackData(
+                        audioConfig = null,
+                        videoDetails = null,
+                        playbackTracking = null,
+                        format = PlayerResponse.StreamingData.Format(
+                            itag = 0,
+                            url = cachedStream.url,
+                            mimeType = "audio/webm",
+                            bitrate = 160000,
+                            width = null,
+                            height = null,
+                            contentLength = null,
+                            quality = lockedQuality.name,
+                            fps = null,
+                            qualityLabel = null,
+                            averageBitrate = 160000,
+                            audioQuality = "AUDIO_QUALITY_MEDIUM",
+                            approxDurationMs = null,
+                            audioSampleRate = 48000,
+                            audioChannels = 2,
+                            loudnessDb = null,
+                            lastModified = null,
+                            signatureCipher = null,
+                            cipher = null,
+                            audioTrack = null
+                        ),
+                        streamUrl = cachedStream.url,
+                        streamExpiresInSeconds = ((cachedStream.expiresAtMs - System.currentTimeMillis()) / 1000L).coerceAtLeast(60L).toInt()
+                    ))
+                } else {
+                    YTPlayerUtils.playerResponseForPlayback(
+                        videoId = mediaId,
+                        audioQuality = lockedQuality,
+                        connectivityManager = connectivityManager
+                    )
+                }
             }.getOrElse { throwable ->
                 when (throwable) {
                     is PlaybackException -> throw throwable
@@ -3335,7 +3539,8 @@ class MusicService :
                                 id = mediaId,
                                 itag = format.itag,
                                 mimeType = format.mimeType.split(";")[0],
-                                codecs = format.mimeType.substringAfter("codecs=", "\"\"").substringBefore(";").removeSurrounding("\"").takeIf { it.isNotEmpty() } ?: "unknown",
+                                codecs = if (format.mimeType.contains("flac", ignoreCase = true)) "flac"
+                                    else format.mimeType.substringAfter("codecs=", "\"\"").substringBefore(";").removeSurrounding("\"").takeIf { it.isNotEmpty() } ?: "unknown",
                                 bitrate = format.bitrate,
                                 sampleRate = format.audioSampleRate,
                                 contentLength = format.contentLength ?: 0L,
@@ -3353,36 +3558,12 @@ class MusicService :
                     Timber.tag("MusicService").d("Cleared bypass cache flag for $mediaId after fresh fetch")
                 }
 
-                val streamUrl = nonNullPlayback.streamUrl
-
-                songUrlCache["${mediaId}_${lockedQuality.name}"] =
-                    streamUrl to System.currentTimeMillis() + (nonNullPlayback.streamExpiresInSeconds * 1000L)
-
-                return@Factory dressStreamSpec(
-                    dataSpec.buildUpon().setKey(targetCacheKey).build(),
-                    streamUrl
-                )
+                val stream = ResolvedStream.from(nonNullPlayback, isFromExtension = isAddonStream)
+                songUrlCache["${mediaId}_${lockedQuality.name}"] = stream
+                return@Factory stream.resolve(dataSpec.buildUpon().setKey(targetCacheKey).build())
             }
         }
     }
-
-    /**
-     * Points [dataSpec] at [url] and dresses the request as the client that
-     * minted the URL (User-Agent / Origin / Referer).
-     *
-     * googlevideo compares the headers of the request fetching the bytes with
-     * the client baked into the URL (`c=`/`cver=`); a mismatch is reason enough
-     * to throttle the response to a crawl or refuse it with 403. Every stream
-     * fetch in this service goes through here so none of them can be mistaken
-     * for a client it is not.
-     */
-    private fun dressStreamSpec(dataSpec: DataSpec, url: String): DataSpec =
-        dataSpec.buildUpon()
-            .setUri(url.toUri())
-            .setHttpRequestHeaders(
-                com.epsilonmusic.app.utils.PlayerClient.forStreamUrl(url).mediaHeaders()
-            )
-            .build()
 
     private fun createMediaSourceFactory() =
         DefaultMediaSourceFactory(
@@ -4341,7 +4522,7 @@ class MusicService :
         sleepTimer.player = player
 
         try {
-            (mediaSession as MediaSession).player = player
+            (mediaSession as MediaSession).player = SessionArtworkPlayer(this, player)
         } catch (e: Exception) {
             timber.log.Timber.e(e, "Failed to swap player in MediaSession")
         }
@@ -4353,6 +4534,9 @@ class MusicService :
         // the outgoing (soon-to-be-released) session, so the incoming track plays
         // without normalization/EQ.
         currentMediaMetadata.value = player.currentMetadata
+        // Same reason: no transition fires for the incoming player, so warm the
+        // covers of what follows it here.
+        prefetchQueueArtwork()
         val oldSessionId = fadingPlayer?.audioSessionId
         // Keep the current enhancer (still bound to the outgoing session) alive and attached
         // through the fade instead of releasing it, so the outgoing track stays normalized
@@ -4481,12 +4665,16 @@ class MusicService :
     }
 
     companion object {
+        /** Upcoming queue items whose covers are kept ready for the car. */
+        private const val ARTWORK_PREFETCH_COUNT = 2
         const val ROOT = "root"
         const val SONG = "song"
         const val ARTIST = "artist"
         const val ALBUM = "album"
         const val PLAYLIST = "playlist"
         const val YOUTUBE_PLAYLIST = "youtube_playlist"
+        const val HOME = "home"
+        const val HOME_SECTION = "home_section"
         const val SEARCH = "search"
         const val SHUFFLE_ACTION = "__shuffle__"
 
@@ -4541,20 +4729,127 @@ class MusicService :
             for (mediaId in upcomingMediaIds) {
 
                 val isFullyDownloaded = downloadCache.getCachedSpans(mediaId).isNotEmpty()
-                if (!mediaId.isLocalMediaId() && !songUrlCache.containsKey("${mediaId}_${audioQuality.name}") && !isFullyDownloaded) {
+                val effectivePreloadQuality = getEffectiveAudioQuality()
+                val cachedPreload = songUrlCache["${mediaId}_${effectivePreloadQuality.name}"]
+
+                if (!mediaId.isLocalMediaId() &&
+                    (cachedPreload == null || !cachedPreload.isFromExtension) &&
+                    !isFullyDownloaded
+                ) {
                     Timber.tag(TAG).d("Preloading stream for $mediaId")
                     kotlin.runCatching {
-                        val dbSong = database.song(mediaId).firstOrNull()
-                        val knownArtist = dbSong?.artists?.joinToString(separator = ", ") { artist -> artist.name }?.replace(" - Topic", "")
-                        
-                        val playbackData = com.epsilonmusic.app.utils.YTPlayerUtils.playerResponseForPlayback(
-                            videoId = mediaId,
-                            audioQuality = audioQuality,
-                            connectivityManager = connectivityManager
-                        )
+                        val preferExtensionAudio = runCatching { dataStore.get(PreferExtensionAudioKey, true) }.getOrDefault(true)
+                        val isDataSaver = runCatching { dataStore.get(com.epsilonmusic.app.constants.DataSaverEnabledKey, false) }.getOrDefault(false)
+                        val canUseAddon = !isDataSaver && (preferExtensionAudio || effectivePreloadQuality.permitsAddons())
+                        val hasEnabledAddons = extensionManager.hasEnabledAddons()
 
-                        playbackData.getOrNull()?.streamUrl?.let { streamUrl ->
-                            songUrlCache["${mediaId}_${audioQuality.name}"] = Pair(streamUrl, System.currentTimeMillis() + 1000 * 60 * 60)
+                        // Try extension first
+                        var extStream: AddonStreamResponse? = null
+                        if (canUseAddon && hasEnabledAddons) {
+                            val queueItem = runCatching {
+                                kotlinx.coroutines.withContext(Dispatchers.Main) {
+                                    player.findNextMediaItemById(mediaId)
+                                        ?: player.mediaItems.find { it.mediaId == mediaId }
+                                }
+                            }.getOrNull()
+                            val queueMeta = queueItem?.metadata
+                            val queueMediaMetadata = queueItem?.mediaMetadata
+                            val dbSongForAddon = database.song(mediaId).firstOrNull()
+                            val addonTitle = dbSongForAddon?.song?.title
+                                ?: queueMeta?.title?.takeIf { it.isNotBlank() }
+                                ?: queueMediaMetadata?.title?.toString()?.takeIf { it.isNotBlank() }
+                            val addonArtist = dbSongForAddon?.artists?.joinToString(", ") { artist -> artist.name }?.replace(" - Topic", "")
+                                ?: queueMeta?.artists?.joinToString(", ") { it.name }?.takeIf { it.isNotBlank() }
+                                ?: queueMediaMetadata?.artist?.toString()?.takeIf { it.isNotBlank() }
+                            val addonDuration = dbSongForAddon?.song?.duration?.let { if (it > 0) it * 1000L else null }
+                                ?: queueMeta?.duration?.takeIf { it > 0 }?.times(1000L)
+
+                            extStream = extensionManager.resolveStream(addonTitle, addonArtist, addonDuration, mediaId)
+                        }
+
+                        if (extStream != null) {
+                            val flac = extStream.format.contains("flac", ignoreCase = true)
+                            val playback = PlaybackData(
+                                audioConfig = null,
+                                videoDetails = null,
+                                playbackTracking = null,
+                                format = PlayerResponse.StreamingData.Format(
+                                    itag = 0,
+                                    url = extStream.url,
+                                    mimeType = if (flac) "audio/flac" else "audio/mpeg",
+                                    bitrate = if (flac) 1411000 else 320000,
+                                    width = null,
+                                    height = null,
+                                    contentLength = null,
+                                    quality = extStream.quality,
+                                    fps = null,
+                                    qualityLabel = null,
+                                    averageBitrate = if (flac) 1411000 else 320000,
+                                    audioQuality = "AUDIO_QUALITY_LOSSLESS",
+                                    approxDurationMs = null,
+                                    audioSampleRate = if (flac) 44100 else 48000,
+                                    audioChannels = 2,
+                                    loudnessDb = null,
+                                    lastModified = null,
+                                    signatureCipher = null,
+                                    cipher = null,
+                                    audioTrack = null
+                                ),
+                                streamUrl = extStream.url,
+                                streamExpiresInSeconds = 3600
+                            )
+                            val stream = ResolvedStream.from(playback, isFromExtension = true)
+                            songUrlCache["${mediaId}_${effectivePreloadQuality.name}"] = stream
+                            Timber.tag(TAG).d("Preloaded addon stream for $mediaId")
+
+                            // AOT prefetch: write the whole track into the player
+                            // cache under the same key playback reads, so the
+                            // transition to this track starts from disk instead of
+                            // the network. Full-track (no byte cap) is affordable
+                            // because the chunked upstream serves at line rate.
+                            kotlin
+                                .runCatching {
+                                    Timber.tag(TAG).d("AOT Preloading bytes for addon $mediaId")
+                                    val dataSpec =
+                                        DataSpec.Builder()
+                                            .setUri(stream.url.toUri())
+                                            .setHttpRequestHeaders(stream.headers)
+                                            .setKey(mediaId)
+                                            .build()
+                                    val cacheDataSource = createCacheDataSource().createDataSource()
+                                    val cacheWriter =
+                                        androidx.media3.datasource.cache.CacheWriter(
+                                            cacheDataSource,
+                                            dataSpec,
+                                            null,
+                                            null
+                                        )
+                                    cacheWriter.cache()
+                                    Timber.tag(TAG).d("AOT Preloading bytes for addon $mediaId completed")
+                                }
+                                .onFailure { e ->
+                                    if (e !is kotlinx.coroutines.CancellationException) {
+                                        Timber.tag(TAG).e(e, "AOT Preloading bytes failed for addon $mediaId")
+                                    }
+                                }
+                            return@runCatching
+                        }
+
+                        if (mediaId.startsWith("addon_")) {
+                            return@runCatching
+                        }
+
+                        // Fallback to YouTube Music prefetch
+                        val playbackData =
+                            YTPlayerUtils.playerResponseForPlayback(
+                                videoId = mediaId,
+                                audioQuality = effectivePreloadQuality,
+                                connectivityManager = connectivityManager
+                            )
+
+                        playbackData.getOrNull()?.let { playback ->
+                            val stream = ResolvedStream.from(playback, isFromExtension = false)
+                            songUrlCache["${mediaId}_${effectivePreloadQuality.name}"] = stream
                             Timber.tag(TAG).d("Preloaded stream for $mediaId")
 
                             // AOT prefetch: write the whole track into the player
@@ -4562,29 +4857,31 @@ class MusicService :
                             // transition to this track starts from disk instead of
                             // the network. Full-track (no byte cap) is affordable
                             // because the chunked upstream serves at line rate.
-                            kotlin.runCatching {
-                                Timber.tag(TAG).d("AOT prefetching bytes for $mediaId")
-                                val prefetchSpec = DataSpec.Builder()
-                                    .setUri(android.net.Uri.parse(streamUrl))
-                                    .setKey(mediaId)
-                                    .setHttpRequestHeaders(
-                                        com.epsilonmusic.app.utils.PlayerClient.forStreamUrl(streamUrl).mediaHeaders()
-                                    )
-                                    .build()
-                                val cacheDataSource = createCacheDataSource().createDataSource()
-                                val cacheWriter = androidx.media3.datasource.cache.CacheWriter(
-                                    cacheDataSource,
-                                    prefetchSpec,
-                                    null,
-                                    null
-                                )
-                                cacheWriter.cache()
-                                Timber.tag(TAG).d("AOT prefetching bytes for $mediaId completed")
-                            }.onFailure { e ->
-                                if (e !is kotlinx.coroutines.CancellationException) {
-                                    Timber.tag(TAG).e(e, "AOT prefetching bytes failed for $mediaId")
+                            kotlin
+                                .runCatching {
+                                    Timber.tag(TAG).d("AOT Preloading bytes for $mediaId")
+                                    val dataSpec =
+                                        DataSpec.Builder()
+                                            .setUri(stream.url.toUri())
+                                            .setHttpRequestHeaders(stream.headers)
+                                            .setKey(mediaId)
+                                            .build()
+                                    val cacheDataSource = createCacheDataSource().createDataSource()
+                                    val cacheWriter =
+                                        androidx.media3.datasource.cache.CacheWriter(
+                                            cacheDataSource,
+                                            dataSpec,
+                                            null,
+                                            null
+                                        )
+                                    cacheWriter.cache()
+                                    Timber.tag(TAG).d("AOT Preloading bytes for $mediaId completed")
                                 }
-                            }
+                                .onFailure { e ->
+                                    if (e !is kotlinx.coroutines.CancellationException) {
+                                        Timber.tag(TAG).e(e, "AOT Preloading bytes failed for $mediaId")
+                                    }
+                                }
                         }
                     }
                 }

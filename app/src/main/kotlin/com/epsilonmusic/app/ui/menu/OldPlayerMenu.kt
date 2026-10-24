@@ -187,9 +187,8 @@ fun OldPlayerMenu(
 
     AddToPlaylistDialog(
         isVisible = showChoosePlaylistDialog,
-        onGetSong = { playlist ->
+        onGetSong = {
             database.transaction { insert(mediaMetadata) }
-            onDismiss()
             listOf(mediaMetadata.id)
         },
         onDismiss = { showChoosePlaylistDialog = false }

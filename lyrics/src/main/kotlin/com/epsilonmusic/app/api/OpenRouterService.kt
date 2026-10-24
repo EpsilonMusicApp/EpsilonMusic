@@ -21,6 +21,18 @@ object OpenRouterService {
         .build()
     private val JSON = "application/json; charset=utf-8".toMediaType()
 
+    fun isUrlSafe(url: String): Boolean {
+        if (url.isBlank()) return true
+        val uri = runCatching { java.net.URI(url.trim()) }.getOrNull() ?: return false
+        val scheme = uri.scheme?.lowercase() ?: return false
+        if (scheme != "https" && scheme != "http") return false
+        val host = uri.host?.lowercase() ?: return false
+        if (host == "169.254.169.254" || host.startsWith("169.254.") || host == "metadata.google.internal" || host == "instance-data") {
+            return false
+        }
+        return true
+    }
+
     suspend fun translate(
         text: String,
         targetLanguage: String,
@@ -32,6 +44,10 @@ object OpenRouterService {
         sourceLanguage: String? = null,
         onLog: ((String) -> Unit)? = null
     ): Result<List<String>> = withContext(Dispatchers.IO) {
+        val effectiveUrl = baseUrl.ifBlank { "https://openrouter.ai/api/v1/chat/completions" }
+        if (!isUrlSafe(effectiveUrl)) {
+            return@withContext Result.failure(SecurityException("Invalid or restricted endpoint destination"))
+        }
         onLog?.invoke("Starting translation...")
         var currentAttempt = 0
         
@@ -245,6 +261,10 @@ Output MUST be a JSON array with EXACTLY $lineCount strings."""
       model: String
     ): Result<String> =
       withContext(Dispatchers.IO) {
+        val effectiveUrl = baseUrl.ifBlank { "https://openrouter.ai/api/v1/chat/completions" }
+        if (!isUrlSafe(effectiveUrl)) {
+          return@withContext Result.failure(SecurityException("Invalid or restricted endpoint destination"))
+        }
         try {
           val messages =
             JSONArray().apply {

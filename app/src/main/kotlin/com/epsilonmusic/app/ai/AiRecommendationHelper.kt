@@ -25,6 +25,7 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONArray
 import org.json.JSONObject
 import java.time.LocalDateTime
+import com.epsilonmusic.app.R
 
 object AiRecommendationHelper {
     private val client = OkHttpClient()
@@ -80,6 +81,11 @@ object AiRecommendationHelper {
 
             if (apiKey.isEmpty()) {
                 onLog?.invoke("API Key is missing.")
+                return@withContext
+            }
+
+            if (!com.epsilonmusic.app.api.OpenRouterService.isUrlSafe(baseUrl)) {
+                onLog?.invoke(context.getString(R.string.ai_endpoint_blocked_log))
                 return@withContext
             }
 

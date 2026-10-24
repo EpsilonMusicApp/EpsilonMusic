@@ -5,6 +5,7 @@ import com.music.innertube.models.Artist
 import com.music.innertube.models.MusicTwoRowItemRenderer
 import com.music.innertube.models.oddElements
 import com.music.innertube.models.splitBySeparator
+import com.music.innertube.text.ApiText
 
 object NewReleaseAlbumPage {
     fun fromMusicTwoRowItemRenderer(renderer: MusicTwoRowItemRenderer): AlbumItem? {
@@ -21,11 +22,11 @@ object NewReleaseAlbumPage {
             title =
                 renderer.title.runs
                     ?.firstOrNull()
-                    ?.text ?: return null,
+                    ?.text?.let(ApiText::clean) ?: return null,
             artists =
                 renderer.subtitle?.runs?.splitBySeparator()?.getOrNull(1)?.oddElements()?.map {
                     Artist(
-                        name = it.text,
+                        name = ApiText.clean(it.text),
                         id = it.navigationEndpoint?.browseEndpoint?.browseId,
                     )
                 } ?: return null,

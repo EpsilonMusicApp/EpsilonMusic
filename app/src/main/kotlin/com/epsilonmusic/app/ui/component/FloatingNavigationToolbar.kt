@@ -89,6 +89,9 @@ fun FloatingNavigationToolbar(
     shuffleContentDescription: String = "",
     onMusicRecognitionClick: (() -> Unit)? = null,
     musicRecognitionContentDescription: String = "",
+    onMusicFlowClick: (() -> Unit)? = null,
+    musicFlowIconRes: Int? = R.drawable.swipe,
+    musicFlowContentDescription: String = "",
     onAiHubClick: (() -> Unit)? = null,
     aiHubIconRes: Int? = null,
     aiHubContentDescription: String = "",
@@ -100,7 +103,8 @@ fun FloatingNavigationToolbar(
     val toolbarColors = FloatingToolbarDefaults.standardFloatingToolbarColors(
         toolbarContainerColor = toolbarContainerColor,
     )
-    val hasOverflowMenu = (onShuffleClick != null && shuffleIconRes != null) || onMusicRecognitionClick != null
+    val hasOverflowMenu =
+        onMusicFlowClick != null || (onShuffleClick != null && shuffleIconRes != null) || onMusicRecognitionClick != null
     val hasFabAction = onFabClick != null && fabIconRes != null
 
     BoxWithConstraints(
@@ -115,6 +119,9 @@ fun FloatingNavigationToolbar(
                 floatingActionButton = {
                     FloatingToolbarOverflowMenuButton(
                         pureBlack = pureBlack,
+                        onMusicFlowClick = onMusicFlowClick,
+                        musicFlowIconRes = musicFlowIconRes,
+                        musicFlowContentDescription = musicFlowContentDescription,
                         onShuffleClick = onShuffleClick,
                         shuffleIconRes = shuffleIconRes,
                         shuffleContentDescription = shuffleContentDescription,
@@ -268,6 +275,9 @@ private fun ToolbarItemsContainer(
 @Composable
 private fun FloatingToolbarOverflowMenuButton(
     pureBlack: Boolean,
+    onMusicFlowClick: (() -> Unit)? = null,
+    musicFlowIconRes: Int? = null,
+    musicFlowContentDescription: String = "",
     onShuffleClick: (() -> Unit)?,
     shuffleIconRes: Int?,
     shuffleContentDescription: String,
@@ -297,6 +307,40 @@ private fun FloatingToolbarOverflowMenuButton(
             containerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.96f),
             tonalElevation = 8.dp,
         ) {
+            if (onMusicFlowClick != null && musicFlowIconRes != null) {
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            if (musicFlowContentDescription.isNotEmpty()) musicFlowContentDescription
+                            else stringResource(R.string.music_flow)
+                        )
+                    },
+                    onClick = {
+                        menuExpanded = false
+                        onMusicFlowClick()
+                    },
+                    leadingIcon = {
+                        Surface(
+                            modifier = Modifier.size(40.dp),
+                            shape = CircleShape,
+                            color = floatingToolbarMenuIconContainerColor(pureBlack = pureBlack),
+                            contentColor = floatingToolbarMenuIconContentColor(pureBlack = pureBlack),
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(
+                                    painter = painterResource(musicFlowIconRes),
+                                    contentDescription = null,
+                                )
+                            }
+                        }
+                    },
+                    colors = MenuDefaults.itemColors(
+                        textColor = if (pureBlack) Color.White else MaterialTheme.colorScheme.onSurface,
+                        leadingIconColor = if (pureBlack) Color.White.copy(alpha = 0.82f) else MaterialTheme.colorScheme.onSurfaceVariant,
+                    ),
+                )
+            }
+
             if (onShuffleClick != null && shuffleIconRes != null) {
                 DropdownMenuItem(
                     text = { Text(stringResource(R.string.shuffle)) },

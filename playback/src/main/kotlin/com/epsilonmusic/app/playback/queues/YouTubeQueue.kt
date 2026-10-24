@@ -7,6 +7,7 @@ import com.music.innertube.YouTube
 import com.music.innertube.models.WatchEndpoint
 import com.epsilonmusic.app.extensions.toMediaItem
 import com.epsilonmusic.app.models.MediaMetadata
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.withContext
 
@@ -17,9 +18,13 @@ class YouTubeQueue(
     private var continuation: String? = null
     private var retryCount = 0
     private val maxRetries = 3
+    private val isRadioQueue = endpoint.playlistId?.startsWith("RD") != false
+    private val pageFilter = RadioQueuePageFilter()
 
     override suspend fun getInitialStatus(): Queue.Status {
         return withContext(IO) {
+            continuation = null
+            pageFilter.reset()
             var lastException: Throwable? = null
             
             
@@ -29,8 +34,9 @@ class YouTubeQueue(
                     endpoint = nextResult.endpoint
                     continuation = nextResult.continuation
                     retryCount = 0
-                    
-                    val mediaItems = nextResult.items.map { it.toMediaItem() }
+
+                    val songs = if (isRadioQueue) pageFilter.filter(nextResult.items) else nextResult.items
+                    val mediaItems = songs.map { it.toMediaItem() }
                     
                     // Determine the correct starting index. YouTube's "selected" flag
                     // is not always reliable — if we have a preloadItem (the song the
@@ -54,6 +60,7 @@ class YouTubeQueue(
                         mediaItemIndex = index,
                     )
                 } catch (e: Exception) {
+                    if (e is CancellationException) throw e
                     lastException = e
                     
                     if (attempt == 0 && endpoint.videoId != null && endpoint.playlistId == null) {
@@ -72,24 +79,33 @@ class YouTubeQueue(
 
     override suspend fun nextPage(): List<MediaItem> {
         return withContext(IO) {
-            var lastException: Throwable? = null
-            
-            for (attempt in 0..maxRetries) {
-                try {
-                    val nextResult = YouTube.next(endpoint, continuation).getOrThrow()
-                    endpoint = nextResult.endpoint
-                    continuation = nextResult.continuation
-                    retryCount = 0
-                    return@withContext nextResult.items.map { it.toMediaItem() }
-                } catch (e: Exception) {
-                    lastException = e
-                    retryCount++
-                    if (retryCount >= maxRetries) {
-                        continuation = null 
+            val visitedContinuations = mutableSetOf<String>()
+
+            repeat(5) {
+                val pageContinuation = continuation ?: return@withContext emptyList()
+                if (!visitedContinuations.add(pageContinuation)) {
+                    continuation = null
+                    return@withContext emptyList()
+                }
+                for (attempt in 0..maxRetries) {
+                    try {
+                        val nextResult = YouTube.next(endpoint, pageContinuation).getOrThrow()
+                        endpoint = nextResult.endpoint
+                        continuation = nextResult.continuation?.takeUnless { it == pageContinuation }
+                        retryCount = 0
+                        val songs = if (isRadioQueue) pageFilter.filter(nextResult.items) else nextResult.items
+                        if (songs.isNotEmpty()) return@withContext songs.map { it.toMediaItem() }
+                        break
+                    } catch (e: Exception) {
+                        if (e is CancellationException) throw e
+                        retryCount++
+                        if (attempt == maxRetries) {
+                            throw e
+                        }
                     }
                 }
             }
-            throw lastException ?: Exception("Failed to get next page")
+            emptyList()
         }
     }
 

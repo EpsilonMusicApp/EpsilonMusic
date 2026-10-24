@@ -7,6 +7,7 @@ import com.music.innertube.models.YouTubeClient
 import com.music.innertube.models.YouTubeLocale
 import com.music.innertube.models.body.*
 import com.music.innertube.models.response.NextResponse
+import com.music.innertube.text.ApiText
 import com.music.innertube.utils.parseCookieString
 import com.music.innertube.utils.sha1
 import io.ktor.client.*
@@ -835,14 +836,14 @@ class InnerTube {
                     ?.title
                     ?.runs
                     ?.firstOrNull()
-                    ?.text,
+                    ?.text?.let(ApiText::clean),
                 author = baseForInfo
                     ?.owner
                     ?.videoOwnerRenderer
                     ?.title
                     ?.runs
                     ?.firstOrNull()
-                    ?.text,
+                    ?.text?.let(ApiText::clean),
                 authorId =
                     baseForInfo
                         ?.owner

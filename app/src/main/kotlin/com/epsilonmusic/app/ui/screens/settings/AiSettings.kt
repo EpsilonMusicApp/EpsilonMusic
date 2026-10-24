@@ -380,7 +380,17 @@ highlightKey: String? = null) {
             icon = { Icon(painterResource(R.drawable.link), null) },
             initialTextFieldValue = TextFieldValue(text = openRouterBaseUrl),
             onDone = {
-                openRouterBaseUrl = it
+                var url = it.trim()
+                if (url.isNotBlank()) {
+                    if (!url.startsWith("http://") && !url.startsWith("https://")) {
+                        url = "https://$url"
+                    }
+                    if (!OpenRouterService.isUrlSafe(url)) {
+                        android.widget.Toast.makeText(context, context.getString(R.string.ai_endpoint_not_allowed), android.widget.Toast.LENGTH_SHORT).show()
+                        return@TextFieldDialog
+                    }
+                }
+                openRouterBaseUrl = url
                 showBaseUrlDialog = false
             },
             onDismiss = { showBaseUrlDialog = false }

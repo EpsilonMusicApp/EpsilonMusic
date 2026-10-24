@@ -71,6 +71,8 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.net.toUri
 import com.epsilonmusic.app.constants.ExportDirectoryUriKey
+import com.epsilonmusic.app.constants.ExportingSongIdsKey
+import com.epsilonmusic.app.playback.AudioExportService
 import timber.log.Timber
 
 @OptIn(ExperimentalCoilApi::class, ExperimentalMaterial3Api::class, DelicateCoilApi::class)
@@ -103,6 +105,7 @@ fun StorageSettings(
         key = ExportDirectoryUriKey,
         defaultValue = "",
     )
+    val exportingSongIds by rememberPreference(ExportingSongIdsKey, "")
     val exportDirectoryLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
             if (uri != null) {
@@ -391,6 +394,21 @@ fun StorageSettings(
                 )
             )
         )
+
+        if (exportingSongIds.isNotBlank()) {
+            Spacer(modifier = Modifier.height(16.dp))
+            Material3SettingsGroup(
+                scrollState = scrollState,
+                items = listOf(
+                    Material3SettingsItem(
+                        icon = painterResource(R.drawable.close),
+                        title = { Text(stringResource(R.string.cancel_exports)) },
+                        description = { Text(stringResource(R.string.exporting)) },
+                        onClick = { AudioExportService.cancelAll(context) },
+                    )
+                ),
+            )
+        }
 
         Spacer(modifier = Modifier.height(16.dp))
 
