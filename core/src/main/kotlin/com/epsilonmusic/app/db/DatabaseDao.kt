@@ -310,19 +310,6 @@ interface DatabaseDao {
     fun recentlyPlayedSongs(limit: Int = 50): Flow<List<Song>>
 
     @Transaction
-    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
-    @Query(
-        """
-        SELECT song.* FROM song
-        JOIN event ON song.id = event.songId
-        GROUP BY song.id
-        ORDER BY MAX(event.timestamp) DESC, MAX(event.rowId) DESC
-        LIMIT :limit
-    """,
-    )
-    fun recentlyPlayedSongs(limit: Int = 50): Flow<List<Song>>
-
-    @Transaction
     @Query(
         """
         SELECT
