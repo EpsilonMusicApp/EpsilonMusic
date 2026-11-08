@@ -461,6 +461,8 @@ private fun WebView.configureSpotifyLoginWebView() {
         domStorageEnabled = true
         javaScriptCanOpenWindowsAutomatically = true
         setSupportMultipleWindows(true)
+        allowFileAccess = false
+        allowContentAccess = false
         setSupportZoom(true)
         builtInZoomControls = true
         displayZoomControls = false
@@ -573,11 +575,7 @@ private fun shouldOverrideSpotifyLoginUrl(
 
 private fun String.isWebViewLoadableUrl(): Boolean {
     val scheme = runCatching { android.net.Uri.parse(this).scheme?.lowercase() }.getOrNull()
-    return scheme == "http" ||
-        scheme == "https" ||
-        scheme == "javascript" ||
-        scheme == "data" ||
-        scheme == "blob"
+    return scheme == "https" || scheme == "http"
 }
 
 private fun String.intentBrowserFallbackUrl(): String? =

@@ -72,7 +72,7 @@ fun AppNavigationRail(
     pureBlack: Boolean = false,
     onSearchLongClick: (() -> Unit)? = null,
     onMusicFlowClick: (() -> Unit)? = null,
-    musicFlowIconRes: Int? = R.drawable.swipe,
+    musicFlowIconRes: Int? = R.drawable.swipe_vertical,
     musicFlowContentDescription: String = ""
 ) {
     val containerColor = if (pureBlack) Color.Black else MaterialTheme.colorScheme.surfaceContainer

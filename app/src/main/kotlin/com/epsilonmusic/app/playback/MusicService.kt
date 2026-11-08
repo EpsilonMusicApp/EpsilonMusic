@@ -2442,7 +2442,13 @@ class MusicService :
         }
 
         
-        if (events.containsAny(Player.EVENT_IS_PLAYING_CHANGED)) {
+        if (
+            events.containsAny(
+                Player.EVENT_IS_PLAYING_CHANGED,
+                Player.EVENT_PLAYBACK_STATE_CHANGED,
+                Player.EVENT_MEDIA_ITEM_TRANSITION
+            )
+        ) {
             scrobbleManager?.onPlayerStateChanged(player.isPlaying, player.currentMetadata, duration = player.duration)
             
             if (player.isPlaying) {
@@ -3327,7 +3333,8 @@ class MusicService :
                 .takeIf { it != androidx.media3.common.C.LENGTH_UNSET.toLong() } ?: dbFormat?.contentLength ?: -1L
             val isFullyDownloaded =
                 (cachedLength > 0 && downloadCache.isCached(mediaId, 0, cachedLength)) ||
-                    (dbSong?.song?.isDownloaded == true && downloadCache.getCachedSpans(mediaId).isNotEmpty())
+                    (dbSong?.song?.isDownloaded == true && downloadCache.getCachedSpans(mediaId).isNotEmpty()) ||
+                    (downloadCache.getCachedSpans(mediaId).isNotEmpty() && (!isNetworkConnected.value || cachedLength <= 0))
 
             val activeQualityInCache = songUrlCache.keys.find { it.startsWith("${mediaId}_") }
                 ?.substringAfterLast("_")

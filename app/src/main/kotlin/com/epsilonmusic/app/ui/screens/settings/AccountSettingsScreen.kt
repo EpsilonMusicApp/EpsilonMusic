@@ -270,7 +270,7 @@ fun AccountSettingsScreen(
                         }
                     ),
                     Material3SettingsItem(
-                        isHighlighted = (highlightKey == stringResource(R.string.discord)),
+                        isHighlighted = (highlightKey == stringResource(R.string.discord) || highlightKey == "Integrations" || highlightKey == stringResource(R.string.integrations)),
                         icon = painterResource(R.drawable.discord),
                         title = { Text(stringResource(R.string.discord)) },
                         description = { Text(stringResource(R.string.discord_integration_desc)) },
@@ -279,7 +279,7 @@ fun AccountSettingsScreen(
                         }
                     ),
                     Material3SettingsItem(
-                        isHighlighted = (highlightKey == stringResource(R.string.lastfm_integration)),
+                        isHighlighted = (highlightKey == stringResource(R.string.lastfm_integration) || highlightKey == "Integrations" || highlightKey == stringResource(R.string.integrations)),
                         icon = painterResource(R.drawable.ic_lastfm),
                         title = { Text(stringResource(R.string.lastfm_integration)) },
                         description = { Text(stringResource(R.string.lastfm_integration_desc)) },

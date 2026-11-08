@@ -273,6 +273,7 @@
     <string name="theme_desc">Customize your app theme</string>
     <string name="theme_colors">Theme &amp; Colors</string>
     <string name="theme_mode">Theme Mode</string>
+    <string name="theme_mode_monochrome">Monochrome</string>
     <string name="color_palette">Color Palette</string>
     <string name="use_system_colors">Use system colors</string>
     <string name="enable_dynamic_theme">Enable dynamic theme</string>
@@ -563,6 +564,7 @@
     <string name="lyrics_translation_menu">Lyrics Translation</string>
     <string name="ai_recommendations">AI Recommendations</string>
     <string name="ai_recommendations_desc">Daily update of a custom playlist based on your taste</string>
+    <string name="taste_mix">Taste Mix</string>
     <string name="ai_recommendations_refresh">Refresh Recommendations</string>
     <string name="about_desc">Manage About settings</string>
     <string name="account_desc">Manage Account settings</string>
