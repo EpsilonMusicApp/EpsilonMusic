@@ -792,7 +792,12 @@ object YTPlayerUtils {
     ): PlayerResponse.StreamingData.Format? {
         Timber.tag(logTag).d("Finding format with audioQuality: $audioQuality, network metered: ${connectivityManager.isActiveNetworkMetered}")
 
-        val targetMaxKbps = audioQuality.maxKbps.coerceAtMost(160)
+        val isLoggedIn = !YouTube.cookie.isNullOrBlank()
+        val targetMaxKbps = if (isLoggedIn || audioQuality.permitsHigh()) {
+            audioQuality.maxKbps.coerceAtMost(320)
+        } else {
+            audioQuality.maxKbps.coerceAtMost(160)
+        }
 
         val audioFormats = playerResponse.streamingData?.adaptiveFormats
             ?.filter { it.isAudio }

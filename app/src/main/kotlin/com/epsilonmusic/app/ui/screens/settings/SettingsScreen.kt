@@ -211,7 +211,7 @@ fun SettingsScreen(
                 add(
                     Material3SettingsItem(
                         isHighlighted = (highlightKey == swipeFlowText),
-                        icon = painterResource(R.drawable.swipe),
+                        icon = painterResource(R.drawable.swipe_vertical),
                         title = { Text(swipeFlowText) },
                         description = { Text(swipeFlowDesc) },
                         onClick = { navController.navigate("settings/music_flow") }

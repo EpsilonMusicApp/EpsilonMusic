@@ -110,6 +110,7 @@ import com.epsilonmusic.app.constants.HideExplicitKey
 import com.epsilonmusic.app.constants.HideVideoSongsKey
 import com.epsilonmusic.app.constants.AlbumCanvasEnabledKey
 import com.epsilonmusic.app.db.entities.Album
+import com.epsilonmusic.app.playback.DownloadUtil
 import com.epsilonmusic.app.playback.ExoDownloadService
 import com.epsilonmusic.app.playback.queues.LocalAlbumRadio
 import com.epsilonmusic.app.ui.component.AlbumGradient
@@ -210,21 +211,12 @@ fun AlbumScreen(
 
     LaunchedEffect(albumWithSongs) {
         val songs = albumWithSongs?.songs?.map { it.id }
-        if (songs.isNullOrEmpty()) return@LaunchedEffect
+        if (songs.isNullOrEmpty()) {
+            downloadState = Download.STATE_STOPPED
+            return@LaunchedEffect
+        }
         downloadUtil.downloads.collect { downloads ->
-            downloadState =
-                if (songs.all { downloads[it]?.state == Download.STATE_COMPLETED }) {
-                    Download.STATE_COMPLETED
-                } else if (songs.all {
-                        downloads[it]?.state == Download.STATE_QUEUED ||
-                                downloads[it]?.state == Download.STATE_DOWNLOADING ||
-                                downloads[it]?.state == Download.STATE_COMPLETED
-                    }
-                ) {
-                    Download.STATE_DOWNLOADING
-                } else {
-                    Download.STATE_STOPPED
-                }
+            downloadState = DownloadUtil.computeDownloadState(songs, downloads)
         }
     }
 
@@ -285,6 +277,8 @@ fun AlbumScreen(
                                     primaryUrl = canvasArtwork.animated,
                                     fallbackUrl = canvasArtwork.videoUrl,
                                     isPlaying = true,
+                                    clipStartMs = canvasArtwork.clipStartMs,
+                                    clipEndMs = canvasArtwork.clipEndMs,
                                     modifier = Modifier.fillMaxSize()
                                 )
                             }

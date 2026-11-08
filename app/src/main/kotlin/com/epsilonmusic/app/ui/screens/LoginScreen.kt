@@ -6,6 +6,7 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.webkit.CookieManager
 import android.webkit.JavascriptInterface
+import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.activity.compose.BackHandler
@@ -70,9 +71,22 @@ fun LoginScreen(
         factory = { webViewContext ->
             WebView(webViewContext).apply {
                 webViewClient = object : WebViewClient() {
+                    override fun shouldOverrideUrlLoading(
+                        view: WebView,
+                        request: WebResourceRequest,
+                    ): Boolean {
+                        val host = request.url?.host?.lowercase() ?: return true
+                        return !(host.endsWith("google.com") ||
+                            host.endsWith("youtube.com") ||
+                            host.endsWith("gstatic.com") ||
+                            host.endsWith("googleusercontent.com"))
+                    }
+
                     override fun onPageFinished(view: WebView, url: String?) {
-                        loadUrl("javascript:Android.onRetrieveVisitorData(window.yt.config_.VISITOR_DATA)")
-                        loadUrl("javascript:Android.onRetrieveDataSyncId(window.yt.config_.DATASYNC_ID)")
+                        if (url?.contains("youtube.com") == true) {
+                            loadUrl("javascript:Android.onRetrieveVisitorData(window.yt && window.yt.config_ ? window.yt.config_.VISITOR_DATA : '')")
+                            loadUrl("javascript:Android.onRetrieveDataSyncId(window.yt && window.yt.config_ ? window.yt.config_.DATASYNC_ID : '')")
+                        }
 
                         if (url?.startsWith("https://music.youtube.com") == true && !hasCompletedLogin) {
                             innerTubeCookie = CookieManager.getInstance().getCookie(url)
@@ -120,6 +134,8 @@ fun LoginScreen(
                 }
                 settings.apply {
                     javaScriptEnabled = true
+                    allowFileAccess = false
+                    allowContentAccess = false
                     setSupportZoom(true)
                     builtInZoomControls = true
                     displayZoomControls = false

@@ -133,6 +133,7 @@ import com.epsilonmusic.app.db.entities.PlaylistSongMap
 import com.epsilonmusic.app.extensions.move
 import com.epsilonmusic.app.extensions.toMediaItem
 import com.epsilonmusic.app.models.toMediaMetadata
+import com.epsilonmusic.app.playback.DownloadUtil
 import com.epsilonmusic.app.playback.ExoDownloadService
 import com.epsilonmusic.app.playback.queues.ListQueue
 import com.epsilonmusic.app.playback.queues.YouTubeQueue
@@ -313,21 +314,12 @@ fun LocalPlaylistScreen(
             clear()
             addAll(songs)
         }
-        if (songs.isEmpty()) return@LaunchedEffect
+        if (songs.isEmpty()) {
+            downloadState = Download.STATE_STOPPED
+            return@LaunchedEffect
+        }
         downloadUtil.downloads.collect { downloads ->
-            downloadState =
-                if (songs.all { downloads[it.song.id]?.state == Download.STATE_COMPLETED }) {
-                    Download.STATE_COMPLETED
-                } else if (songs.all {
-                        downloads[it.song.id]?.state == Download.STATE_QUEUED ||
-                                downloads[it.song.id]?.state == Download.STATE_DOWNLOADING ||
-                                downloads[it.song.id]?.state == Download.STATE_COMPLETED
-                    }
-                ) {
-                    Download.STATE_DOWNLOADING
-                } else {
-                    Download.STATE_STOPPED
-                }
+            downloadState = DownloadUtil.computeDownloadState(songs.map { it.song.id }, downloads)
         }
     }
 
@@ -1042,21 +1034,12 @@ fun LocalPlaylistHeader(
     }
 
     LaunchedEffect(songs) {
-        if (songs.isEmpty()) return@LaunchedEffect
+        if (songs.isEmpty()) {
+            downloadState = Download.STATE_STOPPED
+            return@LaunchedEffect
+        }
         downloadUtil.downloads.collect { downloads ->
-            downloadState =
-                if (songs.all { downloads[it.song.id]?.state == Download.STATE_COMPLETED }) {
-                    Download.STATE_COMPLETED
-                } else if (songs.all {
-                        downloads[it.song.id]?.state == Download.STATE_QUEUED ||
-                                downloads[it.song.id]?.state == Download.STATE_DOWNLOADING ||
-                                downloads[it.song.id]?.state == Download.STATE_COMPLETED
-                    }
-                ) {
-                    Download.STATE_DOWNLOADING
-                } else {
-                    Download.STATE_STOPPED
-                }
+            downloadState = DownloadUtil.computeDownloadState(songs.map { it.song.id }, downloads)
         }
     }
 
@@ -1403,32 +1386,33 @@ fun LocalPlaylistHeader(
                             onDelete = onshowDeletePlaylistDialog,
                             onModifyWithAi = { showAiModifyDialog = true },
                             onDownload = {
-                                when (downloadState) {
-                                    Download.STATE_COMPLETED -> onShowRemoveDownloadDialog()
-                                    Download.STATE_DOWNLOADING -> {
-                                        songs.forEach { song ->
-                                            DownloadService.sendRemoveDownload(
-                                                context,
-                                                ExoDownloadService::class.java,
-                                                song.song.id,
-                                                false
-                                            )
-                                        }
+                                val downloads = downloadUtil.downloads.value
+                                val missingSongs =
+                                    songs.filter { song -> !DownloadUtil.hasDownload(song.song.id, downloads) }
+                                if (missingSongs.isNotEmpty()) {
+                                    missingSongs.forEach { song ->
+                                        val downloadRequest = DownloadRequest
+                                            .Builder(song.song.id, song.song.id.toUri())
+                                            .setCustomCacheKey(song.song.id)
+                                            .setData(song.song.song.title.toByteArray())
+                                            .build()
+                                        DownloadService.sendAddDownload(
+                                            context,
+                                            ExoDownloadService::class.java,
+                                            downloadRequest,
+                                            false
+                                        )
                                     }
-                                    else -> {
-                                        songs.forEach { song ->
-                                            val downloadRequest = DownloadRequest
-                                                .Builder(song.song.id, song.song.id.toUri())
-                                                .setCustomCacheKey(song.song.id)
-                                                .setData(song.song.song.title.toByteArray())
-                                                .build()
-                                            DownloadService.sendAddDownload(
-                                                context,
-                                                ExoDownloadService::class.java,
-                                                downloadRequest,
-                                                false
-                                            )
-                                        }
+                                } else if (downloadState == Download.STATE_COMPLETED) {
+                                    onShowRemoveDownloadDialog()
+                                } else {
+                                    songs.forEach { song ->
+                                        DownloadService.sendRemoveDownload(
+                                            context,
+                                            ExoDownloadService::class.java,
+                                            song.song.id,
+                                            false
+                                        )
                                     }
                                 }
                             },

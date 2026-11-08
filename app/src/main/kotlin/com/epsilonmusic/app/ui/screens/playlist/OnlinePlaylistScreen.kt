@@ -114,6 +114,7 @@ import com.epsilonmusic.app.db.entities.Playlist
 import com.epsilonmusic.app.db.entities.PlaylistEntity
 import com.epsilonmusic.app.db.entities.PlaylistSongMap
 import com.epsilonmusic.app.models.toMediaMetadata
+import com.epsilonmusic.app.playback.DownloadUtil
 import com.epsilonmusic.app.playback.ExoDownloadService
 import com.epsilonmusic.app.playback.queues.YouTubePlaylistQueue
 import com.epsilonmusic.app.ui.component.IconButton
@@ -187,21 +188,12 @@ fun OnlinePlaylistScreen(
     }
 
     LaunchedEffect(songs) {
-        if (songs.isNullOrEmpty()) return@LaunchedEffect
+        if (songs.isNullOrEmpty()) {
+            downloadState = Download.STATE_STOPPED
+            return@LaunchedEffect
+        }
         downloadUtil.downloads.collect { downloads ->
-            downloadState =
-                if (songs.all { downloads[it.id]?.state == Download.STATE_COMPLETED }) {
-                    Download.STATE_COMPLETED
-                } else if (songs.all {
-                        downloads[it.id]?.state == Download.STATE_QUEUED ||
-                                downloads[it.id]?.state == Download.STATE_DOWNLOADING ||
-                                downloads[it.id]?.state == Download.STATE_COMPLETED
-                    }
-                ) {
-                    Download.STATE_DOWNLOADING
-                } else {
-                    Download.STATE_STOPPED
-                }
+            downloadState = DownloadUtil.computeDownloadState(songs.map { it.id }, downloads)
         }
     }
 
@@ -575,6 +567,7 @@ private fun OnlinePlaylistHeader(
     val context = LocalContext.current
     val playerConnection = LocalPlayerConnection.current ?: return
     val database = LocalDatabase.current
+    val downloadUtil = LocalDownloadUtil.current
     val menuState = LocalMenuState.current
     val isPlaying by playerConnection.isEffectivelyPlaying.collectAsState()
     val mediaMetadata by playerConnection.mediaMetadata.collectAsState()
@@ -876,33 +869,32 @@ private fun OnlinePlaylistHeader(
                 ToggleButton(
                     checked = downloadState == Download.STATE_COMPLETED || downloadState == Download.STATE_DOWNLOADING,
                     onCheckedChange = {
-                        when (downloadState) {
-                            Download.STATE_COMPLETED, Download.STATE_DOWNLOADING -> {
-                                songs.forEach { song ->
-                                    DownloadService.sendRemoveDownload(
-                                        context,
-                                        ExoDownloadService::class.java,
-                                        song.id,
-                                        false,
-                                    )
-                                }
+                        val downloads = downloadUtil.downloads.value
+                        val missingSongs =
+                            songs.filter { song -> !DownloadUtil.hasDownload(song.id, downloads) }
+                        if (missingSongs.isNotEmpty()) {
+                            missingSongs.forEach { song ->
+                                val downloadRequest =
+                                    DownloadRequest
+                                        .Builder(song.id, song.id.toUri())
+                                        .setCustomCacheKey(song.id)
+                                        .setData(song.title.toByteArray())
+                                        .build()
+                                DownloadService.sendAddDownload(
+                                    context,
+                                    ExoDownloadService::class.java,
+                                    downloadRequest,
+                                    false,
+                                )
                             }
-
-                            else -> {
-                                songs.forEach { song ->
-                                    val downloadRequest =
-                                        DownloadRequest
-                                            .Builder(song.id, song.id.toUri())
-                                            .setCustomCacheKey(song.id)
-                                            .setData(song.title.toByteArray())
-                                            .build()
-                                    DownloadService.sendAddDownload(
-                                        context,
-                                        ExoDownloadService::class.java,
-                                        downloadRequest,
-                                        false,
-                                    )
-                                }
+                        } else {
+                            songs.forEach { song ->
+                                DownloadService.sendRemoveDownload(
+                                    context,
+                                    ExoDownloadService::class.java,
+                                    song.id,
+                                    false,
+                                )
                             }
                         }
                     },

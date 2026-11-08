@@ -14,6 +14,15 @@
         <exclude
             domain="database"
             path="exoplayer_internal.db" />
+        <exclude
+            domain="sharedpref"
+            path="navidrome_prefs.xml" />
+        <exclude
+            domain="sharedpref"
+            path="jellyfin_prefs.xml" />
+        <exclude
+            domain="sharedpref"
+            path="automotive_artwork_secret.xml" />
     </cloud-backup>
     <device-transfer>
         <exclude
@@ -25,5 +34,14 @@
         <exclude
             domain="database"
             path="exoplayer_internal.db" />
+        <exclude
+            domain="sharedpref"
+            path="navidrome_prefs.xml" />
+        <exclude
+            domain="sharedpref"
+            path="jellyfin_prefs.xml" />
+        <exclude
+            domain="sharedpref"
+            path="automotive_artwork_secret.xml" />
     </device-transfer>
 </data-extraction-rules>
