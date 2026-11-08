@@ -188,6 +188,7 @@ import android.util.Log
 import androidx.compose.ui.platform.LocalContext
 import com.epsilonmusic.app.constants.PauseListenHistoryKey
 import com.epsilonmusic.app.constants.PauseSearchHistoryKey
+import com.epsilonmusic.app.constants.IsMonochromeThemeKey
 import com.epsilonmusic.app.constants.PureBlackKey
 import com.epsilonmusic.app.constants.SYSTEM_DEFAULT
 import com.epsilonmusic.app.constants.SelectedThemeColorKey
@@ -599,6 +600,7 @@ class MainActivity : ComponentActivity() {
         val pureBlack = remember(pureBlackEnabled, useDarkTheme) {
             pureBlackEnabled && useDarkTheme
         }
+        val isMonochrome by rememberPreference(IsMonochromeThemeKey, defaultValue = false)
 
         val (selectedThemeColorInt) = rememberPreference(SelectedThemeColorKey, defaultValue = DefaultThemeColor.toArgb())
         val selectedThemeColor = Color(selectedThemeColorInt)
@@ -653,6 +655,7 @@ class MainActivity : ComponentActivity() {
         epsilonmusicTheme(
             darkTheme = useDarkTheme,
             pureBlack = pureBlack,
+            isMonochrome = isMonochrome,
             themeColor = themeColor,
         ) {
 
@@ -1404,7 +1407,7 @@ class MainActivity : ComponentActivity() {
                                         if (musicFlowEnabled) {
                                             { navController.navigate("music_flow") { launchSingleTop = true } }
                                         } else null,
-                                    musicFlowIconRes = R.drawable.swipe,
+                                    musicFlowIconRes = R.drawable.swipe_vertical,
                                     musicFlowContentDescription = stringResource(R.string.music_flow),
                                 )
                             }
@@ -1610,7 +1613,7 @@ class MainActivity : ComponentActivity() {
                             YouTube.albumSongs(playlistId).onSuccess { songs ->
                                 songs.firstOrNull()?.album?.id?.let { browseId ->
                                     withContext(Dispatchers.Main) {
-                                        navController.navigate("album/$browseId")
+                                        navController.navigate("album/${URLEncoder.encode(browseId, "UTF-8")}")
                                     }
                                 }
                             }.onFailure { reportException(it) }
@@ -1622,11 +1625,11 @@ class MainActivity : ComponentActivity() {
             }
 
             "browse" -> uri.lastPathSegment?.let { browseId ->
-                navController.navigate("album/$browseId")
+                navController.navigate("album/${URLEncoder.encode(browseId, "UTF-8")}")
             }
 
             "channel", "c" -> uri.lastPathSegment?.let { artistId ->
-                navController.navigate("artist/$artistId")
+                navController.navigate("artist/${URLEncoder.encode(artistId, "UTF-8")}")
             }
 
             "search" -> {

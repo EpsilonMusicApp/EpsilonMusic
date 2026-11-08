@@ -71,6 +71,7 @@ import com.materialkolor.rememberDynamicColorScheme
 import com.epsilonmusic.app.R
 import com.epsilonmusic.app.constants.DarkModeKey
 import com.epsilonmusic.app.constants.DynamicThemeKey
+import com.epsilonmusic.app.constants.IsMonochromeThemeKey
 import com.epsilonmusic.app.constants.PureBlackKey
 import com.epsilonmusic.app.constants.PureBlackMiniPlayerKey
 import com.epsilonmusic.app.constants.SelectedThemeColorKey
@@ -118,6 +119,8 @@ highlightKey: String? = null) {
         PureBlackMiniPlayerKey,
         defaultValue = false
     )
+    val (isMonochrome, onMonochromeChange) =
+        rememberPreference(IsMonochromeThemeKey, defaultValue = false)
 
     val onPureBlackChange: (Boolean) -> Unit = { enabled ->
         onPureBlackChangeRaw(enabled)
@@ -132,6 +135,7 @@ highlightKey: String? = null) {
     val selectedThemeColor = Color(selectedThemeColorInt)
 
     val handleColorSelection: (Color) -> Unit = { color ->
+        onMonochromeChange(false)
         onSelectedThemeColorChange(color.toArgb())
         onDynamicThemeChange(color == DefaultThemeColor)
     }
@@ -185,15 +189,15 @@ highlightKey: String? = null) {
                             modifier = Modifier.weight(1f),
                             title = stringResource(R.string.dark_theme_follow_system),
                             icon = Icons.Rounded.BrightnessAuto,
-                            isSelected = darkMode == DarkMode.AUTO,
-                            onClick = { onDarkModeChange(DarkMode.AUTO); onPureBlackChange(false) }
+                            isSelected = darkMode == DarkMode.AUTO && !isMonochrome,
+                            onClick = { onDarkModeChange(DarkMode.AUTO); onPureBlackChange(false); onMonochromeChange(false) }
                         )
                         ThemeModeCard(
                             modifier = Modifier.weight(1f),
                             title = "Light",
                             icon = Icons.Rounded.LightMode,
-                            isSelected = darkMode == DarkMode.OFF,
-                            onClick = { onDarkModeChange(DarkMode.OFF); onPureBlackChange(false) }
+                            isSelected = darkMode == DarkMode.OFF && !isMonochrome,
+                            onClick = { onDarkModeChange(DarkMode.OFF); onPureBlackChange(false); onMonochromeChange(false) }
                         )
                     }
                     Row(
@@ -204,15 +208,34 @@ highlightKey: String? = null) {
                             modifier = Modifier.weight(1f),
                             title = "Dark",
                             icon = Icons.Rounded.DarkMode,
-                            isSelected = darkMode == DarkMode.ON && !pureBlack,
-                            onClick = { onDarkModeChange(DarkMode.ON); onPureBlackChange(false) }
+                            isSelected = darkMode == DarkMode.ON && !pureBlack && !isMonochrome,
+                            onClick = { onDarkModeChange(DarkMode.ON); onPureBlackChange(false); onMonochromeChange(false) }
                         )
                         ThemeModeCard(
                             modifier = Modifier.weight(1f),
                             title = "AMOLED",
                             icon = Icons.Rounded.Contrast,
-                            isSelected = pureBlack,
-                            onClick = { onDarkModeChange(DarkMode.ON); onPureBlackChange(true) }
+                            isSelected = pureBlack && !isMonochrome,
+                            onClick = { onDarkModeChange(DarkMode.ON); onPureBlackChange(true); onMonochromeChange(false) }
+                        )
+                    }
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        ThemeModeCard(
+                            modifier = Modifier.weight(1f),
+                            title = stringResource(R.string.theme_mode_monochrome),
+                            painter = painterResource(R.drawable.ic_monochrome_mode),
+                            isSelected = isMonochrome && !pureBlack,
+                            onClick = { onMonochromeChange(true); onPureBlackChange(false) }
+                        )
+                        ThemeModeCard(
+                            modifier = Modifier.weight(1f),
+                            title = "Monochrome OLED",
+                            painter = painterResource(R.drawable.ic_monochrome_mode),
+                            isSelected = isMonochrome && pureBlack,
+                            onClick = { onDarkModeChange(DarkMode.ON); onMonochromeChange(true); onPureBlackChange(true) }
                         )
                     }
                 }
@@ -278,7 +301,8 @@ highlightKey: String? = null) {
 fun ThemeModeCard(
     modifier: Modifier = Modifier,
     title: String,
-    icon: ImageVector,
+    icon: ImageVector? = null,
+    painter: androidx.compose.ui.graphics.painter.Painter? = null,
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
@@ -332,12 +356,21 @@ fun ThemeModeCard(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.size(32.dp)
-            )
+            if (painter != null) {
+                Icon(
+                    painter = painter,
+                    contentDescription = null,
+                    tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(32.dp)
+                )
+            } else if (icon != null) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(32.dp)
+                )
+            }
             Text(
                 text = title,
                 style = MaterialTheme.typography.titleMedium,

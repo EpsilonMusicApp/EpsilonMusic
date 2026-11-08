@@ -711,7 +711,7 @@ private fun ThumbnailItem(
                 )
             }
             
-            if (canvasThumbnailAnimation && item.mediaId == currentMediaId && !rotatingThumbnail && playerBackground != PlayerBackgroundStyle.APPLE_MUSIC) {
+            if (canvasThumbnailAnimation && item.mediaId == currentMediaId && !rotatingThumbnail && (playerBackground != PlayerBackgroundStyle.APPLE_MUSIC || isLandscape)) {
                 var canvasArtwork by remember(item.mediaId) { mutableStateOf<CanvasArtwork?>(null) }
                 var canvasFetchInFlight by remember(item.mediaId) { mutableStateOf(false) }
                 val storefront = remember {
@@ -779,7 +779,12 @@ private fun ThumbnailItem(
                     val requestedArtist = item.mediaMetadata.artist?.toString() ?: ""
                     val requestedTitle = item.mediaMetadata.title?.toString() ?: ""
                     
-                    val validated = fetched?.let { artwork ->
+                    // A clip-bearing canvas was already matched to this exact
+                    // video, so it skips the artist/title validation below.
+                    val validated = if (fetched?.clipStartMs != null) {
+                        fetched
+                    } else {
+                        fetched?.let { artwork ->
                         val resultArtist = artwork.artist
                         val resultName = artwork.name
                         
@@ -836,6 +841,7 @@ private fun ThumbnailItem(
                         } else {
                             null
                         }
+                        }
                     }
                     
                     canvasArtwork = validated
@@ -845,12 +851,14 @@ private fun ThumbnailItem(
                     canvasFetchInFlight = false
                 }
 
-                if (playerBackground != PlayerBackgroundStyle.APPLE_MUSIC) {
+                if (playerBackground != PlayerBackgroundStyle.APPLE_MUSIC || isLandscape) {
                     canvasArtwork?.let { artwork ->
                         CanvasArtworkPlayer(
                             primaryUrl = artwork.animated,
                             fallbackUrl = artwork.videoUrl,
                             isPlaying = isPlaying,
+                            clipStartMs = artwork.clipStartMs,
+                            clipEndMs = artwork.clipEndMs,
                             modifier = Modifier.fillMaxSize()
                         )
                     }

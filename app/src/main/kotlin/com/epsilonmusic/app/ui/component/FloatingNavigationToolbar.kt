@@ -90,7 +90,7 @@ fun FloatingNavigationToolbar(
     onMusicRecognitionClick: (() -> Unit)? = null,
     musicRecognitionContentDescription: String = "",
     onMusicFlowClick: (() -> Unit)? = null,
-    musicFlowIconRes: Int? = R.drawable.swipe,
+    musicFlowIconRes: Int? = R.drawable.swipe_vertical,
     musicFlowContentDescription: String = "",
     onAiHubClick: (() -> Unit)? = null,
     aiHubIconRes: Int? = null,

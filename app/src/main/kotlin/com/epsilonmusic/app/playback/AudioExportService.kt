@@ -122,7 +122,7 @@ class AudioExportService : Service() {
                 ?: error("No connectivity manager")
             val playbackData = YTPlayerUtils.playerResponseForPlayback(
                 videoId = songId,
-                audioQuality = AudioQuality.OPUS,
+                audioQuality = AudioQuality.AUTO,
                 connectivityManager = connectivityManager,
             ).getOrThrow()
 
@@ -215,7 +215,7 @@ class AudioExportService : Service() {
         year: Int?,
         artworkFile: File?,
     ) {
-        val command = buildFfmpegCommand(
+        val args = buildFfmpegArguments(
             inputPath = sourceFile.absolutePath,
             outputPath = outputFile.absolutePath,
             title = songTitle,
@@ -225,8 +225,8 @@ class AudioExportService : Service() {
             coverPath = artworkFile?.absolutePath,
         )
         suspendCancellableCoroutine<Unit> { continuation ->
-            val session = FFmpegKit.executeAsync(command) { completed ->
-                if (!continuation.isActive) return@executeAsync
+            val session = FFmpegKit.executeWithArgumentsAsync(args) { completed ->
+                if (!continuation.isActive) return@executeWithArgumentsAsync
                 val returnCode = completed.returnCode
                 if (returnCode != null && ReturnCode.isSuccess(returnCode) && outputFile.length() > 0L) {
                     continuation.resume(Unit)
@@ -235,6 +235,7 @@ class AudioExportService : Service() {
                 }
             }
             continuation.invokeOnCancellation { FFmpegKit.cancel(session.sessionId) }
+        }
         }
     }
 
@@ -392,7 +393,7 @@ class AudioExportService : Service() {
                 .trim()
                 .ifBlank { "song_${System.currentTimeMillis()}" }
 
-        private fun buildFfmpegCommand(
+        private fun buildFfmpegArguments(
             inputPath: String,
             outputPath: String,
             title: String,
@@ -400,22 +401,45 @@ class AudioExportService : Service() {
             album: String,
             year: Int?,
             coverPath: String?,
-        ): String {
-            val escapedInput = inputPath.ffmpegEscape()
-            val escapedOutput = outputPath.ffmpegEscape()
-            val titleMeta = title.ffmpegEscape()
-            val artistMeta = artist.ffmpegEscape()
-            val albumMeta = album.ffmpegEscape()
-            val yearMeta = year?.toString()?.ffmpegEscape()
-            val dateFlags = if (yearMeta != null) " -metadata date='$yearMeta' -metadata year='$yearMeta'" else ""
-            return if (coverPath != null) {
-                val escapedCover = coverPath.ffmpegEscape()
-                "-y -i '$escapedInput' -i '$escapedCover' -map 0:a -map 1:v -c:v mjpeg -disposition:v attached_pic -c:a libmp3lame -b:a 320k -id3v2_version 3 -metadata title='$titleMeta' -metadata artist='$artistMeta' -metadata album='$albumMeta'$dateFlags -metadata:s:v title='Album cover' -metadata:s:v comment='Cover (front)' '$escapedOutput'"
-            } else {
-                "-y -i '$escapedInput' -c:a libmp3lame -b:a 320k -id3v2_version 3 -metadata title='$titleMeta' -metadata artist='$artistMeta' -metadata album='$albumMeta'$dateFlags '$escapedOutput'"
+        ): Array<String> {
+            val args = mutableListOf("-y", "-i", inputPath)
+            if (coverPath != null) {
+                args.addAll(
+                    listOf(
+                        "-i",
+                        coverPath,
+                        "-map",
+                        "0:a",
+                        "-map",
+                        "1:v",
+                        "-c:v",
+                        "mjpeg",
+                        "-disposition:v",
+                        "attached_pic",
+                    )
+                )
             }
+            args.addAll(listOf("-c:a", "libmp3lame", "-b:a", "320k", "-id3v2_version", "3"))
+            args.addAll(
+                listOf(
+                    "-metadata",
+                    "title=$title",
+                    "-metadata",
+                    "artist=$artist",
+                    "-metadata",
+                    "album=$album",
+                )
+            )
+            if (year != null) {
+                args.addAll(listOf("-metadata", "date=$year", "-metadata", "year=$year"))
+            }
+            if (coverPath != null) {
+                args.addAll(
+                    listOf("-metadata:s:v", "title=Album cover", "-metadata:s:v", "comment=Cover (front)")
+                )
+            }
+            args.add(outputPath)
+            return args.toTypedArray()
         }
-
-        private fun String.ffmpegEscape(): String = replace("'", "'\\''")
     }
 }

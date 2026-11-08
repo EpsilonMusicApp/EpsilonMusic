@@ -520,6 +520,13 @@ fun NavGraphBuilder.navigationBuilder(
     }
 
     composable(
+        route = "settings/integrations?highlightKey={highlightKey}",
+        arguments = listOf(navArgument("highlightKey") { type = NavType.StringType; nullable = true })
+    ) { backStackEntry ->
+        AccountSettingsScreen(navController, scrollBehavior, highlightKey = backStackEntry.arguments?.getString("highlightKey") ?: "Integrations")
+    }
+
+    composable(
         route = "settings/about?highlightKey={highlightKey}",
         arguments = listOf(navArgument("highlightKey") { type = NavType.StringType; nullable = true })
     ) { backStackEntry ->

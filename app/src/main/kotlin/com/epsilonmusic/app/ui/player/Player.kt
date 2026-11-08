@@ -41,6 +41,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.border
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -83,6 +84,7 @@ import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.runtime.produceState
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -176,6 +178,7 @@ import com.epsilonmusic.app.constants.QueuePeekHeight
 import com.epsilonmusic.app.constants.SliderStyle
 import com.epsilonmusic.app.constants.SliderStyleKey
 import com.epsilonmusic.app.constants.SquigglySliderKey
+import com.epsilonmusic.app.constants.MusicFlowEnabledKey
 import com.epsilonmusic.app.constants.SwipeLyricsKey
 import com.epsilonmusic.app.constants.ThumbnailCornerRadius
 import com.epsilonmusic.app.constants.UseNewPlayerDesignKey
@@ -223,18 +226,8 @@ import kotlinx.coroutines.withContext
 import kotlin.math.max
 import kotlin.math.roundToInt
 import com.epsilonmusic.app.ui.component.Icon as MIcon
-import androidx.media3.exoplayer.trackselection.DefaultTrackSelector
-import androidx.media3.exoplayer.DefaultLoadControl
-import android.view.TextureView
-import android.view.ViewGroup
-import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.media3.common.MediaItem
-import androidx.media3.common.MimeTypes
-import androidx.media3.exoplayer.ExoPlayer
-import androidx.media3.ui.AspectRatioFrameLayout
-import androidx.media3.ui.PlayerView
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import com.epsilonmusic.app.applecanvas.AppleMusicCanvasProvider
@@ -308,6 +301,8 @@ fun BottomSheetPlayer(
         UseNewPlayerDesignKey,
         defaultValue = true
     )
+    val (musicFlowEnabled) =
+        rememberPreference(MusicFlowEnabledKey, defaultValue = true)
     val showCodecOnPlayer by rememberPreference(com.epsilonmusic.app.constants.ShowCodecOnPlayerKey, false)
     val hidePlayerSlider by rememberPreference(com.epsilonmusic.app.constants.HidePlayerSliderKey, true)
     val (hidePlayerThumbnail, onHidePlayerThumbnailChange) = rememberPreference(HidePlayerThumbnailKey, false)
@@ -1230,8 +1225,8 @@ fun BottomSheetPlayer(
                                                     brush = Brush.verticalGradient(
                                                         colorStops = arrayOf(
                                                             0.00f to Color.Black,
-                                                            0.75f to Color.Black,
-                                                            0.92f to Color.Black.copy(alpha = 0.4f),
+                                                            0.70f to Color.Black,
+                                                            0.88f to Color.Black.copy(alpha = 0.4f),
                                                             1.00f to Color.Transparent,
                                                         )
                                                     ),
@@ -1250,9 +1245,12 @@ fun BottomSheetPlayer(
                                         )
 
                                         if (enableCanvas && canvasArtwork != null && showCanvas) {
-                                            BackgroundVideoView(
-                                                videoUrl = canvasArtwork?.animated ?: canvasArtwork?.videoUrl ?: "",
+                                            CanvasArtworkPlayer(
+                                                primaryUrl = canvasArtwork?.animated,
+                                                fallbackUrl = canvasArtwork?.videoUrl,
                                                 isPlaying = isPlaying,
+                                                clipStartMs = canvasArtwork?.clipStartMs,
+                                                clipEndMs = canvasArtwork?.clipEndMs,
                                                 modifier = Modifier.fillMaxSize()
                                             )
                                         }
@@ -1524,6 +1522,43 @@ fun BottomSheetPlayer(
                             onSwipeLeft = { playerConnection.seekToNext() }
                         )
                 ) {
+                    if (musicFlowEnabled) {
+                        Surface(
+                            onClick = {
+                                navController.navigate("music_flow") { launchSingleTop = true }
+                                state.collapseSoft()
+                            },
+                            shape = CircleShape,
+                            color = TextBackgroundColor.copy(alpha = 0.12f),
+                            contentColor = TextBackgroundColor,
+                            border = BorderStroke(1.dp, TextBackgroundColor.copy(alpha = 0.2f)),
+                            modifier = Modifier.padding(bottom = 6.dp)
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+                            ) {
+                                Icon(
+                                    painter = painterResource(R.drawable.swipe_vertical),
+                                    contentDescription = null,
+                                    tint = TextBackgroundColor,
+                                    modifier = Modifier.size(13.dp)
+                                )
+                                Spacer(Modifier.width(5.dp))
+                                Text(
+                                    text = stringResource(R.string.music_flow),
+                                    style =
+                                    MaterialTheme.typography.labelSmall.copy(
+                                        fontWeight = FontWeight.SemiBold,
+                                        fontSize = 11.5.sp,
+                                        letterSpacing = 0.2.sp
+                                    ),
+                                    color = TextBackgroundColor
+                                )
+                            }
+                        }
+                    }
+
                     AnimatedContent(
                         targetState = mediaMetadata.title,
                         transitionSpec = { fadeIn() togetherWith fadeOut() },
@@ -3083,108 +3118,4 @@ private fun PlayerMoreMenuButton(
             colorFilter = ColorFilter.tint(iconButtonColor),
         )
     }
-}
-
-@Composable
-private fun BackgroundVideoView(
-    videoUrl: String,
-    isPlaying: Boolean,
-    modifier: Modifier = Modifier
-) {
-    val context = LocalContext.current
-    var isVideoReady by remember(videoUrl) { mutableStateOf(false) }
-    
-    val trackSelector = remember {
-        DefaultTrackSelector(context).apply {
-            parameters = buildUponParameters()
-                .setMaxVideoSize(4096, 4096)
-                .setForceHighestSupportedBitrate(true)
-                .build()
-        }
-    }
-
-    val exoPlayer = remember {
-        ExoPlayer.Builder(context)
-            .setTrackSelector(trackSelector)
-            .setLoadControl(
-                DefaultLoadControl.Builder()
-                    .setTargetBufferBytes(20 * 1024 * 1024) 
-                    .build()
-            )
-            .build().apply {
-                repeatMode = Player.REPEAT_MODE_ONE
-                volume = 0f
-                videoScalingMode = C.VIDEO_SCALING_MODE_SCALE_TO_FIT_WITH_CROPPING
-                playWhenReady = isPlaying
-            }
-    }
-
-    val aspectRatioFrameLayout = remember {
-        AspectRatioFrameLayout(context).apply {
-            resizeMode = AspectRatioFrameLayout.RESIZE_MODE_ZOOM
-            setBackgroundColor(android.graphics.Color.TRANSPARENT)
-        }
-    }
-
-    DisposableEffect(exoPlayer) {
-        val listener = object : Player.Listener {
-            override fun onVideoSizeChanged(videoSize: androidx.media3.common.VideoSize) {
-                if (videoSize.width > 0 && videoSize.height > 0) {
-                    aspectRatioFrameLayout.setAspectRatio(videoSize.width.toFloat() / videoSize.height)
-                }
-            }
-            override fun onRenderedFirstFrame() {
-                isVideoReady = true
-            }
-        }
-        exoPlayer.addListener(listener)
-        onDispose { exoPlayer.removeListener(listener) }
-    }
-
-    LaunchedEffect(videoUrl) {
-        isVideoReady = false
-        val mediaItem = MediaItem.Builder()
-            .setUri(videoUrl)
-            .setMimeType(if (videoUrl.contains("m3u8")) MimeTypes.APPLICATION_M3U8 else MimeTypes.VIDEO_MP4)
-            .build()
-        exoPlayer.setMediaItem(mediaItem)
-        exoPlayer.prepare()
-    }
-
-    LaunchedEffect(isPlaying) {
-        exoPlayer.playWhenReady = isPlaying
-    }
-
-    DisposableEffect(Unit) {
-        onDispose {
-            exoPlayer.release()
-        }
-    }
-
-    val alpha by animateFloatAsState(
-        targetValue = if (isVideoReady) 1f else 0f,
-        animationSpec = tween(800),
-        label = "videoAlpha"
-    )
-
-    AndroidView(
-        factory = { _ ->
-            aspectRatioFrameLayout.apply {
-                
-                isEnabled = false
-                isClickable = false
-                isFocusable = false
-
-                
-                if (childCount == 0) {
-                    val textureView = TextureView(context).apply {
-                        layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
-                    }
-                    addView(textureView)
-                    exoPlayer.setVideoTextureView(textureView)
-                }
-            }
-        },
-        modifier = modifier.alpha(alpha)
-    )
 }

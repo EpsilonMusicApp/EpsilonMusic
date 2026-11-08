@@ -61,7 +61,7 @@ import com.epsilonmusic.app.ui.component.ListItem
 import com.epsilonmusic.app.utils.joinByBullet
 import com.epsilonmusic.app.utils.listItemShape
 
-private const val SPOTIFY_LIKED_SONGS_COVER = "https://misc.scdn.co/liked-songs/liked-songs-640.png"
+internal const val SPOTIFY_LIKED_SONGS_COVER = "https://misc.scdn.co/liked-songs/liked-songs-640.png"
 
 @Composable
 fun LibrarySpotifyScreen(
@@ -284,7 +284,7 @@ fun LibrarySpotifyScreen(
 }
 
 @Composable
-private fun SpotifyConnectBanner(
+internal fun SpotifyConnectBanner(
   onConnect: () -> Unit,
   onRefresh: () -> Unit,
   modifier: Modifier = Modifier,

@@ -121,8 +121,8 @@ fun ExtensionSettingsScreen(
             items = listOf(
                 Material3SettingsItem(
                     title = { Text("Prefer add-on audio") },
-                    description = { Text("Check add-on servers first for lossless or high-quality audio, falling back to YouTube Music when they cannot provide a track") },
-                    icon = painterResource(R.drawable.ic_apple_lossless),
+                    description = { Text("Search add-ons before YouTube Music") },
+                    icon = painterResource(R.drawable.extension),
                     trailingContent = {
                         Switch(
                             checked = preferExtensionAudio,
