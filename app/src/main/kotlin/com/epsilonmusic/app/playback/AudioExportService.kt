@@ -236,7 +236,6 @@ class AudioExportService : Service() {
             }
             continuation.invokeOnCancellation { FFmpegKit.cancel(session.sessionId) }
         }
-        }
     }
 
     private suspend fun writeOutputFile(
