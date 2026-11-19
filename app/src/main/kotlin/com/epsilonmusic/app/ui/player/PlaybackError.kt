@@ -33,6 +33,7 @@ import com.epsilonmusic.app.R
 fun PlaybackError(
     error: PlaybackException,
     retry: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     
     val rawErrorMessage = error.cause?.cause?.message 
@@ -50,8 +51,17 @@ fun PlaybackError(
             rawErrorMessage.contains("Response code: 403", ignoreCase = true) ||
             error.errorCode == PlaybackException.ERROR_CODE_IO_BAD_HTTP_STATUS
     
+    val isNetworkError =
+        error.errorCode == PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_FAILED ||
+            error.errorCode == PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_TIMEOUT ||
+            rawErrorMessage.contains("SocketTimeoutException", ignoreCase = true) ||
+            rawErrorMessage.contains("ConnectException", ignoreCase = true) ||
+            rawErrorMessage.contains("UnknownHostException", ignoreCase = true)
+
     val errorMessage = if (isAgeRestricted) {
         "This track is unplayable or age-restricted on YouTube Music. We are working on fixing this issue."
+    } else if (isNetworkError) {
+        "Connection timed out while loading audio stream. Please check your internet connection or tap Retry."
     } else {
         rawErrorMessage
     }
@@ -59,7 +69,7 @@ fun PlaybackError(
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(16.dp)
     ) {

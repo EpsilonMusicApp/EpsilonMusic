@@ -78,7 +78,7 @@ object DiscordSocialPresenceClient {
         }
 
     private fun ensureConnected(token: String): Result<Unit> {
-        if (activeToken == token && gateway != null) return Result.success(Unit)
+        if (activeToken == token && gateway?.isConnected == true) return Result.success(Unit)
 
         gateway?.disconnect()
         gateway = null
@@ -95,7 +95,7 @@ object DiscordSocialPresenceClient {
             scope = newScope
             gateway = newGateway
             activeToken = token
-        }
+        }.onFailure { newGateway.disconnect() }
     }
 
     private suspend fun buildPresencePayload(

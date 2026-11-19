@@ -166,6 +166,11 @@ object AppleMusicCanvasProvider {
                 parameter("extend", "editorialVideo")
                 parameter("include", "albums")
             }
+            if (response.status == HttpStatusCode.Unauthorized) {
+                AppleMusicTokenProvider.clearToken()
+                AppleCanvasLogger.w("search failed with status ${response.status}")
+                return@runCatching null
+            }
             if (response.status != HttpStatusCode.OK) {
                 AppleCanvasLogger.w("search failed with status ${response.status}")
                 return@runCatching null
@@ -347,6 +352,11 @@ object AppleMusicCanvasProvider {
                 header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
                 parameter("extend", "editorialVideo")
                 parameter("include", "tracks")
+            }
+            if (response.status == HttpStatusCode.Unauthorized) {
+                AppleMusicTokenProvider.clearToken()
+                AppleCanvasLogger.w("album fetch failed for $albumId: ${response.status}")
+                return@runCatching null
             }
             if (response.status != HttpStatusCode.OK) {
                 AppleCanvasLogger.w("album fetch failed for $albumId: ${response.status}")

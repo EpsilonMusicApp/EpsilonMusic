@@ -45,7 +45,8 @@ constructor(
         val orderString = preferences[LyricsProviderOrderKey].orEmpty()
 
         if (orderString.isNotBlank()) {
-            return LyricsProviderRegistry.getOrderedProviders(orderString)
+            return LyricsProviderRegistry.orderedProviderNames(orderString)
+                .mapNotNull { LyricsProviderRegistry.getProviderByName(it) }
         }
 
         
@@ -102,34 +103,43 @@ constructor(
         if (providers.isEmpty()) return LyricsWithProvider(LYRICS_NOT_FOUND, "Unknown")
 
         return coroutineScope {
-            val channel = Channel<LyricsWithProvider?>(providers.size)
+            val outcomes = ConcurrentHashMap<String, ProviderOutcome>()
+            val lyricsByProvider = ConcurrentHashMap<String, String>()
+            val channel = Channel<Unit>(providers.size)
+            val order = providers.map { it.name }
+
             providers.forEach { provider ->
                 launch {
                     val lyrics = fetchLyricsFromProvider(provider, mediaMetadata)
-                    val result =
-                        lyrics
-                            ?.takeIf { it != LYRICS_NOT_FOUND && it.isNotBlank() }
-                            ?.let { LyricsWithProvider(it, provider.name) }
-                    channel.send(result)
+                    val usable = lyrics?.takeIf { it != LYRICS_NOT_FOUND && it.isNotBlank() }
+                    if (usable == null) {
+                        outcomes[provider.name] = ProviderOutcome.FAILED
+                    } else {
+                        lyricsByProvider[provider.name] = usable
+                        outcomes[provider.name] =
+                            if (LyricsUtils.hasSyncedLyrics(usable)) ProviderOutcome.SYNCED
+                            else ProviderOutcome.UNSYNCED
+                    }
+                    channel.send(Unit)
                 }
             }
 
-            val receivedUnsynced = mutableListOf<LyricsWithProvider>()
             repeat(providers.size) {
-                val result = channel.receive() ?: return@repeat
-                if (result.lyrics?.let(LyricsUtils::hasSyncedLyrics) == true) {
-                    coroutineContext.cancelChildren()
-                    cache.put(mediaMetadata.id, listOf(LyricsResult(result.providerName, result.lyrics.orEmpty())))
-                    return@coroutineScope result
+                channel.receive()
+                when (val choice = LyricsProviderRegistry.chooseProvider(order, outcomes)) {
+                    is ProviderChoice.Selected -> {
+                        val lyrics = lyricsByProvider[choice.name] ?: return@repeat
+                        coroutineContext.cancelChildren()
+                        cache.put(mediaMetadata.id, listOf(LyricsResult(choice.name, lyrics)))
+                        return@coroutineScope LyricsWithProvider(lyrics, choice.name)
+                    }
+                    ProviderChoice.None ->
+                        return@coroutineScope LyricsWithProvider(LYRICS_NOT_FOUND, "Unknown")
+                    ProviderChoice.Pending -> Unit
                 }
-                receivedUnsynced.add(result)
             }
 
-            val best = receivedUnsynced.firstOrNull() ?: LyricsWithProvider(LYRICS_NOT_FOUND, "Unknown")
-            if (best.lyrics != null && best.lyrics != LYRICS_NOT_FOUND) {
-                cache.put(mediaMetadata.id, listOf(LyricsResult(best.providerName, best.lyrics.orEmpty())))
-            }
-            best
+            LyricsWithProvider(LYRICS_NOT_FOUND, "Unknown")
         }
     }
 

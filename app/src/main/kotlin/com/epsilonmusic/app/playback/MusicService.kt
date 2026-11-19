@@ -4,7 +4,6 @@
 
 package com.epsilonmusic.app.playback
 
-import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -23,7 +22,6 @@ import android.media.audiofx.LoudnessEnhancer
 import android.net.ConnectivityManager
 import android.os.Binder
 import android.os.Build
-import androidx.core.app.NotificationCompat
 import androidx.core.content.getSystemService
 import androidx.core.net.toUri
 import androidx.datastore.preferences.core.edit
@@ -197,6 +195,8 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.guava.await
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -477,6 +477,14 @@ class MusicService :
 
     
     private val playerInitialized = MutableStateFlow(false)
+    private var queueRestored = false
+
+    /** Set once a controller replaced the queue, so a late restore does not undo it. */
+    @Volatile
+    private var queueTakenOver = false
+
+    /** The queue restored at startup. */
+    private var restoredQueue: Queue? = null
     val isPlayerReady: kotlinx.coroutines.flow.StateFlow<Boolean> = playerInitialized.asStateFlow()
 
     
@@ -647,22 +655,8 @@ class MusicService :
                     NotificationManager.IMPORTANCE_LOW
                 )
             )
-            val pending = PendingIntent.getActivity(
-                this,
-                0,
-                Intent(this, MainActivity::class.java),
-                PendingIntent.FLAG_IMMUTABLE
-            )
-            val notification: Notification = NotificationCompat.Builder(this, CHANNEL_ID)
-                .setContentTitle(getString(R.string.music_player))
-                .setContentText("")
-                .setSmallIcon(R.drawable.ic_launcher_nobg)  
-                .setContentIntent(pending)
-                .setOngoing(true)
-                .build()
-            startForeground(NOTIFICATION_ID, notification)
         } catch (e: Exception) {
-            Timber.tag(TAG).e(e, "Failed to create foreground notification")
+            Timber.tag(TAG).e(e, "Failed to create notification channel")
             reportException(e)
         }
 
@@ -1045,25 +1039,31 @@ class MusicService :
                     runCatching {
                         
                         val restoredQueue = queue.toQueue()
-                        
+                        this@MusicService.restoredQueue = restoredQueue
+
                         scope.launch {
                             playerInitialized.first { it }
-                            if (isActive) {
+                            if (isActive && !queueTakenOver) {
                                 playQueue(
                                     queue = restoredQueue,
                                     playWhenReady = false,
                                     restoredShuffledIndices = queue.shuffledIndices,
                                 )
                             }
+                            queueRestored = true
                         }
                     }.onFailure { error ->
                         Timber.tag(TAG).w(error, "Failed to restore persisted queue, clearing data")
                         clearPersistedQueueFiles()
+                        queueRestored = true
                     }
                 }.onFailure { error ->
                     Timber.tag(TAG).w(error, "Failed to read persisted queue, clearing data")
                     clearPersistedQueueFiles()
+                    queueRestored = true
                 }
+            } else {
+                queueRestored = true
             }
 
             val automixFile = filesDir.resolve(PERSISTENT_AUTOMIX_FILE)
@@ -1115,6 +1115,8 @@ class MusicService :
                     clearPersistedQueueFiles()
                 }
             }
+        } else {
+            queueRestored = true
         }
 
         
@@ -1135,6 +1137,36 @@ class MusicService :
                     saveQueueToDisk()
                 }
             }
+        }
+    }
+
+    /** Waits for the saved queue to be back in the player, within a bound. */
+    internal suspend fun awaitQueueRestored() {
+        withTimeoutOrNull(QUEUE_RESTORE_WAIT_MS) { while (!queueRestored) delay(100) }
+    }
+
+    /**
+     * A controller (Android Auto, a voice request) is about to set its own items: the app's queue
+     * no longer owns the player, so it must not append its next pages to them.
+     */
+    internal fun releaseQueueToSession() {
+        queueTakenOver = true
+        currentQueue = EmptyQueue
+    }
+
+    /**
+     * The queue a controller's items came from, such as a mix started from Android Auto: its next
+     * pages then follow those items, as they do for a queue started in the app. Called after
+     * [releaseQueueToSession].
+     */
+    internal fun adoptSessionQueue(queue: Queue) {
+        currentQueue = queue
+    }
+
+    internal suspend fun warmArtwork(artworkUri: android.net.Uri?) {
+        if (artworkUri == null) return
+        withTimeoutOrNull(ARTWORK_WARM_TIMEOUT_MS) {
+            runCatching { sessionBitmapLoader.loadBitmap(artworkUri).await() }
         }
     }
 
@@ -3156,6 +3188,9 @@ class MusicService :
                             OkHttpDataSource.Factory(
                             OkHttpClient
                                     .Builder()
+                                    .connectTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
+                                    .readTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
+                                    .retryOnConnectionFailure(true)
                                     .dns(object : Dns {
                                         override fun lookup(hostname: String): List<InetAddress> {
                                             val addresses = Dns.SYSTEM.lookup(hostname)
@@ -4680,6 +4715,7 @@ class MusicService :
         const val ALBUM = "album"
         const val PLAYLIST = "playlist"
         const val YOUTUBE_PLAYLIST = "youtube_playlist"
+        const val YOUTUBE_ARTIST = "youtube_artist"
         const val HOME = "home"
         const val HOME_SECTION = "home_section"
         const val SEARCH = "search"
@@ -4693,6 +4729,8 @@ class MusicService :
         const val PERSISTENT_AUTOMIX_FILE = "persistent_automix.data"
         /** How far ahead of the crossfade trigger to start buffering the incoming track. */
         const val PREBUFFER_LEAD_MS = 10000L
+        private const val QUEUE_RESTORE_WAIT_MS = 8_000L
+        private const val ARTWORK_WARM_TIMEOUT_MS = 2_000L
         const val PERSISTENT_PLAYER_STATE_FILE = "persistent_player_state.data"
         const val MAX_CONSECUTIVE_ERR = 5
         const val MAX_RETRY_COUNT = 10
