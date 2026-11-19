@@ -26,6 +26,7 @@ data class SearchSummary(
 
 data class SearchSummaryPage(
     val summaries: List<SearchSummary>,
+    val ranked: List<YTItem> = emptyList(),
 ) {
     fun filterExplicit(enabled: Boolean) =
         if (enabled) {

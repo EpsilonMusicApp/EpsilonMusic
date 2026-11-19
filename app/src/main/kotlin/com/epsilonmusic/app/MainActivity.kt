@@ -20,6 +20,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import androidx.datastore.preferences.core.edit
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.filterNotNull
 import android.app.PendingIntent
 import android.content.ComponentName
 import android.content.Intent
@@ -90,6 +91,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -229,6 +231,7 @@ import com.epsilonmusic.app.utils.get
 import com.epsilonmusic.app.utils.onlinePlaylistRoute
 import com.epsilonmusic.app.utils.rememberEnumPreference
 import com.epsilonmusic.app.utils.rememberPreference
+import com.epsilonmusic.app.playback.queues.ListQueue
 import com.epsilonmusic.app.utils.reportException
 import com.epsilonmusic.app.utils.setAppLocale
 import com.epsilonmusic.app.utils.validOnlinePlaylistId
@@ -256,7 +259,11 @@ class MainActivity : ComponentActivity() {
         const val ACTION_LIBRARY = "com.epsilonmusic.app.action.LIBRARY"
         const val ACTION_RECOGNITION = "com.epsilonmusic.app.action.RECOGNITION"
         const val EXTRA_AUTO_START_RECOGNITION = "auto_start_recognition"
+        private const val EXTRA_VOICE_REQUEST_HANDLED = "com.epsilonmusic.app.voice_request_handled"
     }
+
+    /** Voice requests seen so far; only the latest one may start playback. */
+    private var voiceRequestCount = 0
 
     @Inject
     lateinit var database: MusicDatabase
@@ -1724,8 +1731,42 @@ class MainActivity : ComponentActivity() {
         navController: NavHostController,
     ) {
         if (intent.action == android.provider.MediaStore.INTENT_ACTION_MEDIA_PLAY_FROM_SEARCH) {
-            val query = intent.getStringExtra(android.app.SearchManager.QUERY) ?: return
-            navController.navigate("search/${URLEncoder.encode(query, "UTF-8")}")
+            // A recreated activity gets the same intent again: play it only once.
+            if (intent.getBooleanExtra(EXTRA_VOICE_REQUEST_HANDLED, false)) return
+            intent.putExtra(EXTRA_VOICE_REQUEST_HANDLED, true)
+            val query = intent.getStringExtra(android.app.SearchManager.QUERY)
+            val extras = intent.extras
+            val request = ++voiceRequestCount
+            lifecycleScope.launch {
+                // On a cold start the voice request arrives before the service is connected.
+                val connection = snapshotFlow { playerConnection }.filterNotNull().first()
+                val queue =
+                    withContext(Dispatchers.IO) {
+                        runCatching {
+                            connection.service.mediaLibrarySessionCallback.voiceSearchQueue(query, extras)
+                        }
+                            .onFailure(::reportException)
+                            .getOrNull()
+                    }
+                queue?.mediaItems?.getOrNull(queue.startIndex)?.let {
+                    connection.service.warmArtwork(it.mediaMetadata.artworkUri)
+                }
+                // A later request already took over.
+                if (request != voiceRequestCount) return@launch
+                when {
+                    queue != null ->
+                        connection.playQueue(
+                            ListQueue(
+                                items = queue.mediaItems,
+                                startIndex = queue.startIndex,
+                                position = queue.startPositionMs.coerceAtLeast(0L),
+                            )
+                        )
+                    // Nothing to play: at least show what was asked for.
+                    !query.isNullOrBlank() ->
+                        navController.navigate("search/${URLEncoder.encode(query, "UTF-8")}")
+                }
+            }
         }
     }
 }

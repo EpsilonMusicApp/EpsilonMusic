@@ -75,6 +75,7 @@ import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonPrimitive
 import java.net.Proxy
+import java.text.Normalizer
 import kotlin.random.Random
 
 /**
@@ -223,13 +224,64 @@ object YouTube {
             groupedSummaries.add(SearchSummary(title = "Playlists", items = flatPlaylists))
         }
 
+        val ranked = (shelfSummaries.flatMap { it.items } + flatItems).distinctBy { it.id }
         SearchSummaryPage(
-            summaries = shelfSummaries + groupedSummaries
+            summaries = withTrackOnTop(shelfSummaries, ranked) + groupedSummaries
         ).filterBlockedArtists()
+            .copy(ranked = tracksBeforeVideos(ranked).filterBlockedArtists())
     }
 
-    suspend fun search(query: String, filter: SearchFilter): Result<SearchResult> = runCatching {
-        val response = innerTube.search(WEB_REMIX, query, filter.value).body<SearchResponse>()
+    /** Album tracks before the music videos of the same song, in one flat list. */
+    private fun tracksBeforeVideos(items: List<YTItem>): List<YTItem> {
+        val ordered = items.toMutableList()
+        var index = 0
+        while (index < ordered.size) {
+            val item = ordered[index]
+            if (item is SongItem && item.isVideoSong && !item.isPodcastEpisode) {
+                val track = trackOf(item, ordered.drop(index + 1))
+                if (track != null) {
+                    ordered.remove(track)
+                    ordered.add(index, track)
+                    index++
+                }
+            }
+            index++
+        }
+        return ordered
+    }
+
+    /** The album track of the same song as [video] and by the same artist, if there is one. */
+    private fun trackOf(video: SongItem, items: List<YTItem>): SongItem? {
+        val title = comparableText(video.title)
+        val artists = video.artists.map { comparableText(it.name) }.toSet()
+        return items.filterIsInstance<SongItem>().firstOrNull { track ->
+            !track.isVideoSong &&
+                comparableText(track.title) == title &&
+                track.artists.any { comparableText(it.name) in artists }
+        }
+    }
+
+    private fun comparableText(text: String): String =
+        Normalizer.normalize(text, Normalizer.Form.NFD)
+            .replace(Regex("\\p{M}+"), "")
+            .lowercase()
+            .replace(Regex("[^\\p{L}\\p{N}]+"), " ")
+            .trim()
+
+    /** The same for the top result the app shows, which holds only what the card lists. */
+    private fun withTrackOnTop(
+        shelves: List<SearchSummary>,
+        ranked: List<YTItem>,
+    ): List<SearchSummary> {
+        val top = shelves.firstOrNull() ?: return shelves
+        val first = top.items.firstOrNull() as? SongItem ?: return shelves
+        if (!first.isVideoSong || first.isPodcastEpisode) return shelves
+        val track = trackOf(first, ranked) ?: return shelves
+        return listOf(top.copy(items = (listOf(track) + top.items).distinctBy { it.id })) + shelves.drop(1)
+    }
+
+    suspend fun search(query: String, filter: SearchFilter, setLogin: Boolean? = null): Result<SearchResult> = runCatching {
+        val response = innerTube.search(WEB_REMIX, query, filter.value, setLogin = setLogin).body<SearchResponse>()
         val musicShelfRenderer = response.contents?.tabbedSearchResultsRenderer?.tabs?.firstOrNull()
             ?.tabRenderer?.content?.sectionListRenderer?.contents
             ?.mapNotNull { it.musicShelfRenderer }
@@ -692,7 +744,9 @@ object YouTube {
             .mapNotNull { it.musicCarouselShelfRenderer }
             .mapNotNull {
                 HomePage.Section.fromMusicCarouselShelfRenderer(it)
-            }.toMutableList()
+            }
+            .filterNot { it.isStationListenTogether }
+            .toMutableList()
         val chips = sectionListRender?.header?.chipCloudRenderer?.chips?.mapNotNull { HomePage.Chip.fromChipCloudChipRenderer(it) }
         HomePage(chips, sections, continuation).filterBlockedArtists()
     }
@@ -708,7 +762,9 @@ object YouTube {
             ?.mapNotNull { it.musicCarouselShelfRenderer }
             ?.mapNotNull {
                 HomePage.Section.fromMusicCarouselShelfRenderer(it)
-            }.orEmpty(), continuation
+            }
+            ?.filterNot { it.isStationListenTogether }
+            .orEmpty(), continuation
         )
     }
 

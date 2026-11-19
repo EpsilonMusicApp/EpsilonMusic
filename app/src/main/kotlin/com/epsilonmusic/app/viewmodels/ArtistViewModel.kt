@@ -34,6 +34,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import com.epsilonmusic.app.extensions.filterVideoSongs as filterVideoSongsLocal
+import com.epsilonmusic.app.applecanvas.AppleMusicCanvasProvider
 import com.epsilonmusic.app.artistvideo.ArtistVideoCanvasProvider
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -108,12 +109,19 @@ class ArtistViewModel @Inject constructor(
                     val topSongsSection = page.sections.find { it.items.firstOrNull() is com.music.innertube.models.SongItem }
                     topSongsSection?.items?.forEach { item ->
                         if (item is com.music.innertube.models.SongItem) {
-                            val canvas = ArtistVideoCanvasProvider.getBySongArtist(
-                                song = item.title,
-                                artist = page.artist?.title ?: ""
-                            )
-                            if (canvas?.preferredAnimationUrl != null) {
-                                _artistVideoUrl.value = canvas.preferredAnimationUrl
+                            val artistTitle = page.artist?.title ?: ""
+                            val canvasUrl =
+                                AppleMusicCanvasProvider.getBySongArtist(
+                                    song = item.title,
+                                    artist = artistTitle,
+                                )?.preferredAnimationUrl
+                                    ?: ArtistVideoCanvasProvider.getBySongArtist(
+                                        song = item.title,
+                                        artist = artistTitle
+                                    )?.preferredAnimationUrl
+
+                            if (canvasUrl != null) {
+                                _artistVideoUrl.value = canvasUrl
                                 _artistVideoSong.value = item
                                 return@forEach
                             }
