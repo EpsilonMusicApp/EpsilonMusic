@@ -1631,6 +1631,25 @@ object Spotify {
             authenticatedGet("artists/$artistId/related-artists")
         }
 
+    suspend fun getCanvas(trackId: String): String? = runCatching {
+        if (!isAuthenticated()) return@runCatching null
+        val vars = buildJsonObject {
+            put("trackUri", "spotify:track:$trackId")
+        }
+        val response = graphqlPost("canvas", vars)
+        response.obj("data")?.obj("trackUnion")?.obj("canvas")?.str("url")
+    }
+        .getOrNull()
+
+    suspend fun getCanvasForSong(title: String, artist: String): String? = runCatching {
+        if (!isAuthenticated()) return@runCatching null
+        val searchResult =
+            search(query = "$title $artist", types = listOf("track"), limit = 5).getOrNull()
+        val topTrack = searchResult?.tracks?.items?.firstOrNull() ?: return@runCatching null
+        getCanvas(topTrack.id)
+    }
+        .getOrNull()
+
     fun isAuthenticated(): Boolean = accessToken != null
 }
 

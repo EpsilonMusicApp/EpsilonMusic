@@ -233,6 +233,7 @@ import androidx.core.view.WindowInsetsControllerCompat
 import com.epsilonmusic.app.applecanvas.AppleMusicCanvasProvider
 import com.epsilonmusic.app.canvas.CanvasArtwork
 import com.epsilonmusic.app.canvas.TidalCanvasProvider
+import com.epsilonmusic.app.spotify.Spotify
 import com.epsilonmusic.app.constants.CanvasThumbnailAnimationKey
 import com.epsilonmusic.app.extensions.metadata
 import com.epsilonmusic.app.ui.player.CanvasArtworkPlaybackCache
@@ -652,7 +653,7 @@ fun BottomSheetPlayer(
     var canvasArtwork by remember(mediaMetadata?.id) { mutableStateOf<CanvasArtwork?>(null) }
     var canvasFetchInFlight by remember(mediaMetadata?.id) { mutableStateOf(false) }
 
-    LaunchedEffect(mediaMetadata?.id, playerBackground) {
+    LaunchedEffect(mediaMetadata?.id, playerBackground, enableCanvas) {
         if (playerBackground != PlayerBackgroundStyle.APPLE_MUSIC || !enableCanvas) {
             canvasArtwork = null
             return@LaunchedEffect
@@ -677,19 +678,48 @@ fun BottomSheetPlayer(
             val s = normalizeCanvasSongTitle(requestedTitle)
             val a = normalizeCanvasArtistName(requestedArtist)
             
-            val fetched = epsilonmusicCanvasProvider.getBySongArtist(s, a)
-                ?.takeIf { !it.preferredAnimationUrl.isNullOrBlank() }
-                ?: TidalCanvasProvider.getBySongArtist(s, a, requestedAlbum)
-                ?.takeIf { !it.preferredAnimationUrl.isNullOrBlank() }
-                ?: AppleMusicCanvasProvider.getBySongArtist(s, a, requestedAlbum, storefront)
-                ?.takeIf { !it.preferredAnimationUrl.isNullOrBlank() }
+            val fetched =
+                linkedSetOf(
+                    s to a,
+                    requestedTitle to a,
+                    s to requestedArtist,
+                    requestedTitle to requestedArtist,
+                )
+                    .filter { (song, artist) -> song.isNotBlank() && artist.isNotBlank() }
+                    .firstNotNullOfOrNull { (song, artist) ->
+                        if (requestedAlbum.isNotBlank()) {
+                            AppleMusicCanvasProvider.getByAlbumArtist(
+                                album = requestedAlbum,
+                                artist = artist,
+                                storefront = storefront,
+                            )
+                                ?.takeIf { !it.preferredAnimationUrl.isNullOrBlank() }
+                                ?.let { return@firstNotNullOfOrNull it }
+                        }
+
+                        Spotify.getCanvasForSong(title = song, artist = artist)?.let { spotifyUrl ->
+                            return@firstNotNullOfOrNull CanvasArtwork(
+                                name = song,
+                                artist = artist,
+                                animated = spotifyUrl,
+                            )
+                        }
+
+                        epsilonmusicCanvasProvider.getBySongArtist(song, artist)
+                            ?.takeIf { !it.preferredAnimationUrl.isNullOrBlank() }
+                            ?: AppleMusicCanvasProvider.getBySongArtist(song, artist, requestedAlbum, storefront)
+                                ?.takeIf { !it.preferredAnimationUrl.isNullOrBlank() }
+                            ?: TidalCanvasProvider.getBySongArtist(song, artist, requestedAlbum)
+                                ?.takeIf { !it.preferredAnimationUrl.isNullOrBlank() }
+                    }
 
             val validated = fetched?.let { artwork ->
+                if (artwork.isYouTubeSnippet) return@let artwork
                 val localArtists = splitAndNormalizeArtists(requestedArtist)
                 val returnedArtists = splitAndNormalizeArtists(artwork.artist ?: "")
                 val artistMatches = localArtists.isNotEmpty() && returnedArtists.isNotEmpty() &&
                     (localArtists.any { local -> returnedArtists.any { it.equals(local, ignoreCase = true) } })
-                
+
                 if (artistMatches) artwork else null
             }
 
@@ -2387,6 +2417,15 @@ fun BottomSheetPlayer(
 
                             val isPlayPausePressed by playPauseInteractionSource.collectIsPressedAsState()
                             val isBackPressed by backInteractionSource.collectIsPressedAsState()
+                            var backLongPressFired by remember { mutableStateOf(false) }
+                            LaunchedEffect(isBackPressed) {
+                                if (isBackPressed) {
+                                    backLongPressFired = false
+                                    delay(1000L)
+                                    backLongPressFired = true
+                                    playerConnection.skipToPreviousItem()
+                                }
+                            }
                             val isNextPressed by nextInteractionSource.collectIsPressedAsState()
 
                             val playPauseScale by animateFloatAsState(
@@ -2408,7 +2447,10 @@ fun BottomSheetPlayer(
                             )
 
                             FilledIconButton(
-                                onClick = playerConnection::seekToPrevious,
+                                onClick = {
+                                    if (backLongPressFired) backLongPressFired = false
+                                    else playerConnection.seekToPrevious()
+                                },
                                 enabled = canSkipPrevious && !isListenTogetherGuest,
                                 shape = CircleShape,
                                 interactionSource = backInteractionSource,

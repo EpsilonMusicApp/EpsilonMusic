@@ -107,6 +107,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.delay
 import com.epsilonmusic.app.applecanvas.AppleMusicCanvasProvider
 import com.epsilonmusic.app.epsilonmusiccanvas.epsilonmusicCanvasProvider
+import com.epsilonmusic.app.spotify.Spotify
 import java.util.Locale
 
 
@@ -209,11 +210,17 @@ object CanvasArtworkPlaybackCache {
     @Synchronized
     fun get(mediaId: String): CanvasArtwork? {
         if (maxSize <= 0) return null
-        return map[mediaId]
+        val artwork = map[mediaId] ?: return null
+        if (artwork.isYouTubeSnippet) {
+            map.remove(mediaId)
+            return null
+        }
+        return artwork
     }
 
     @Synchronized
     fun put(mediaId: String, artwork: CanvasArtwork) {
+        if (artwork.isYouTubeSnippet) return
         val limit = maxSize
         if (limit <= 0) return
         if (mediaId.isBlank()) return
@@ -384,7 +391,11 @@ fun Thumbnail(
             error?.let { playbackError ->
                 PlaybackError(
                     error = playbackError,
-                    retry = playerConnection.player::prepare,
+                    retry = {
+                        playerConnection.player.prepare()
+                        playerConnection.player.play()
+                    },
+                    modifier = Modifier.fillMaxSize(),
                 )
             }
         }
@@ -760,6 +771,13 @@ private fun ThumbnailItem(
                                     song = s,
                                     artist = a
                                 )?.takeIf { !it.preferredAnimationUrl.isNullOrBlank() }
+                                    ?: Spotify.getCanvasForSong(title = s, artist = a)?.let { spotifyUrl ->
+                                        CanvasArtwork(
+                                            name = s,
+                                            artist = a,
+                                            animated = spotifyUrl,
+                                        )
+                                    }
                                     ?: TidalCanvasProvider.getBySongArtist(
                                         song = s,
                                         artist = a,
@@ -779,9 +797,9 @@ private fun ThumbnailItem(
                     val requestedArtist = item.mediaMetadata.artist?.toString() ?: ""
                     val requestedTitle = item.mediaMetadata.title?.toString() ?: ""
                     
-                    // A clip-bearing canvas was already matched to this exact
+                    // A YouTube-snippet canvas was already matched to this exact
                     // video, so it skips the artist/title validation below.
-                    val validated = if (fetched?.clipStartMs != null) {
+                    val validated = if (fetched?.isYouTubeSnippet == true) {
                         fetched
                     } else {
                         fetched?.let { artwork ->

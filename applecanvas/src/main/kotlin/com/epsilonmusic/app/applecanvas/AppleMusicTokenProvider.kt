@@ -15,6 +15,12 @@ internal object AppleMusicTokenProvider {
         expectSuccess = true
     }
 
+    suspend fun clearToken() {
+        mutex.withLock {
+            cachedToken = null
+        }
+    }
+
     suspend fun getToken(): String {
         return mutex.withLock {
             cachedToken?.let { return@withLock it }

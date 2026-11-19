@@ -11,6 +11,7 @@ import android.content.Context
 import android.os.Build
 import android.widget.Toast
 import androidx.datastore.preferences.core.edit
+import androidx.work.Configuration
 import coil3.ImageLoader
 import coil3.PlatformContext
 import coil3.SingletonImageLoader
@@ -30,6 +31,7 @@ import com.epsilonmusic.app.extensions.toEnum
 import com.epsilonmusic.app.extensions.toInetSocketAddress
 import com.epsilonmusic.app.utils.CrashHandler
 import com.epsilonmusic.app.utils.AppContextHolder
+import com.epsilonmusic.app.utils.LocalAlbumArtFetcher
 import com.epsilonmusic.app.utils.YouTubeThumbnailFallbackInterceptor
 import com.epsilonmusic.app.utils.dataStore
 import com.epsilonmusic.app.utils.reportException
@@ -53,11 +55,19 @@ import java.util.Locale
 import javax.inject.Inject
 
 @HiltAndroidApp
-class App : Application(), SingletonImageLoader.Factory {
+class App : Application(), SingletonImageLoader.Factory, Configuration.Provider {
 
     @Inject
     @ApplicationScope
     lateinit var applicationScope: CoroutineScope
+
+    override val workManagerConfiguration: Configuration
+        get() =
+            Configuration.Builder()
+                .setMinimumLoggingLevel(
+                    if (BuildConfig.DEBUG) android.util.Log.DEBUG else android.util.Log.ERROR
+                )
+                .build()
 
     override fun startForegroundService(service: Intent): android.content.ComponentName? {
         return try {
@@ -72,18 +82,23 @@ class App : Application(), SingletonImageLoader.Factory {
         }
     }
 
+    private fun getCurrentProcessName(): String? {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            Application.getProcessName()
+        } else {
+            val pid = android.os.Process.myPid()
+            val manager = getSystemService(Context.ACTIVITY_SERVICE) as? android.app.ActivityManager
+            manager?.runningAppProcesses?.firstOrNull { it.pid == pid }?.processName
+        }
+    }
+
     private fun isCrashProcess(): Boolean {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            return Application.getProcessName() == "$packageName:crash"
-        }
-        val pid = android.os.Process.myPid()
-        val manager = getSystemService(Context.ACTIVITY_SERVICE) as android.app.ActivityManager
-        for (processInfo in manager.runningAppProcesses ?: emptyList()) {
-            if (processInfo.pid == pid) {
-                return processInfo.processName == "$packageName:crash"
-            }
-        }
-        return false
+        return getCurrentProcessName() == "$packageName:crash"
+    }
+
+    private fun isMainProcess(): Boolean {
+        val processName = getCurrentProcessName()
+        return processName == null || processName == packageName
     }
 
     override fun onCreate() {
@@ -99,7 +114,10 @@ class App : Application(), SingletonImageLoader.Factory {
         
         CrashHandler.install(this)
 
-        
+        if (!isMainProcess()) {
+            return
+        }
+
         AppContextHolder.initialize(this)
         com.epsilonmusic.app.utils.cipher.CipherDeobfuscator.initialize(this)
 
@@ -323,7 +341,10 @@ class App : Application(), SingletonImageLoader.Factory {
         return ImageLoader.Builder(this).apply {
             crossfade(true)
             allowHardware(Build.VERSION.SDK_INT >= Build.VERSION_CODES.P)
-            components { add(YouTubeThumbnailFallbackInterceptor()) }
+            components {
+                add(YouTubeThumbnailFallbackInterceptor())
+                add(LocalAlbumArtFetcher.Factory())
+            }
             
             memoryCache {
                 MemoryCache.Builder()
