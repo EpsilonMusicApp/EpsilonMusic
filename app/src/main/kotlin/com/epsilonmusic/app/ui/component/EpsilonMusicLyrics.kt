@@ -40,8 +40,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.epsilonmusic.app.constants.LyricsRomanizeAsMainKey
 import com.epsilonmusic.app.lyrics.LyricsEntry
 import com.epsilonmusic.app.ui.screens.settings.LyricsPosition
+import com.epsilonmusic.app.utils.rememberPreference
 
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -67,6 +69,8 @@ fun epsilonmusicLyricsLine(
     expressiveAccent: Color,
     modifier: Modifier = Modifier
 ) {
+    val (romanizeAsMain) = rememberPreference(LyricsRomanizeAsMainKey, false)
+    val romanizedTextState by entry.romanizedTextFlow.collectAsState()
 
     val duration = remember(entry.time, nextEntryTime) {
         if (nextEntryTime != null) nextEntryTime - entry.time else 4000L
@@ -181,6 +185,27 @@ fun epsilonmusicLyricsLine(
         modifier = itemModifier,
         horizontalAlignment = agentAlignment
     ) {
+        val romanizedText = romanizedTextState
+        if (showRomanized && romanizeAsMain && romanizedText != null) {
+            Text(
+                text = romanizedText,
+                fontSize = textSize.sp,
+                color = textColor,
+                textAlign = agentTextAlign,
+                fontWeight = if (isActive) FontWeight.ExtraBold else FontWeight.Bold,
+                modifier = Modifier.fillMaxWidth(),
+                lineHeight = (textSize * lineSpacing.coerceAtMost(1.3f)).sp,
+            )
+            Text(
+                text = entry.text,
+                fontSize = (textSize * 0.65f).sp,
+                color = textColor.copy(alpha = 0.6f),
+                textAlign = agentTextAlign,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.padding(top = 2.dp).fillMaxWidth(),
+                lineHeight = (textSize * 0.65f * lineSpacing.coerceAtMost(1.3f)).sp,
+            )
+        } else {
         FlowRow(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = when (agentTextAlign) {
@@ -252,10 +277,10 @@ fun epsilonmusicLyricsLine(
                 }
             }
         }
+        }
 
         
-        if (showRomanized) {
-            val romanizedText by entry.romanizedTextFlow.collectAsState()
+        if (showRomanized && !(romanizeAsMain && romanizedText != null)) {
             romanizedText?.let { romanized ->
                 Text(
                     text = romanized,

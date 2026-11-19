@@ -101,6 +101,10 @@ object AppleMusicArtistBackgroundProvider {
                 parameter("types", "artists")
                 parameter("limit", "3")
             }
+            if (response.status == HttpStatusCode.Unauthorized) {
+                com.epsilonmusic.app.canvas.AppleMusicTokenProvider.clearToken()
+                return@runCatching null
+            }
             if (response.status != HttpStatusCode.OK) return@runCatching null
 
             val root = response.body<JsonObject>()
@@ -144,6 +148,10 @@ object AppleMusicArtistBackgroundProvider {
                 header("Referer", "https://music.apple.com/")
                 header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
                 parameter("extend", "editorialVideo,editorialArtwork")
+            }
+            if (response.status == HttpStatusCode.Unauthorized) {
+                com.epsilonmusic.app.canvas.AppleMusicTokenProvider.clearToken()
+                return@runCatching null
             }
             if (response.status != HttpStatusCode.OK) return@runCatching null
 

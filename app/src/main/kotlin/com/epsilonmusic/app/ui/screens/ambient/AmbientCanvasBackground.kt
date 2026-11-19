@@ -12,6 +12,7 @@ import com.epsilonmusic.app.LocalPlayerConnection
 import com.epsilonmusic.app.applecanvas.AppleMusicCanvasProvider
 import com.epsilonmusic.app.canvas.CanvasArtwork
 import com.epsilonmusic.app.canvas.TidalCanvasProvider
+import com.epsilonmusic.app.spotify.Spotify
 import com.epsilonmusic.app.epsilonmusiccanvas.epsilonmusicCanvasProvider
 import com.epsilonmusic.app.ui.player.CanvasArtworkPlaybackCache
 import com.epsilonmusic.app.ui.player.CanvasArtworkPlayer
@@ -70,6 +71,13 @@ fun AmbientCanvasBackground(modifier: Modifier = Modifier) {
 
                     epsilonmusicCanvasProvider.getBySongArtist(song = song, artist = artist)
                         ?.takeIf { !it.preferredAnimationUrl.isNullOrBlank() }
+                        ?: Spotify.getCanvasForSong(title = song, artist = artist)?.let { spotifyUrl ->
+                            CanvasArtwork(
+                                name = song,
+                                artist = artist,
+                                animated = spotifyUrl,
+                            )
+                        }
                         ?: TidalCanvasProvider.getBySongArtist(
                             song = song,
                             artist = artist,
@@ -86,7 +94,8 @@ fun AmbientCanvasBackground(modifier: Modifier = Modifier) {
                 }
         }
 
-        val validated = fetched?.takeIf { artwork ->
+        val validated = fetched?.let { artwork ->
+            if (artwork.isYouTubeSnippet) return@let artwork
             val resultArtist = artwork.artist
             val artistMatches =
                 if (resultArtist != null && artistNameRaw.isNotBlank()) {
@@ -113,7 +122,7 @@ fun AmbientCanvasBackground(modifier: Modifier = Modifier) {
                     else -> true
                 }
 
-            artistMatches && titleMatches
+            if (artistMatches && titleMatches) artwork else null
         }
 
         canvasArtwork = validated

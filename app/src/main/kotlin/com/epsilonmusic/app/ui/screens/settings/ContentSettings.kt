@@ -92,6 +92,7 @@ import com.epsilonmusic.app.constants.RecommendationSource
 import com.epsilonmusic.app.constants.RecommendationSourceKey
 import com.epsilonmusic.app.constants.RandomizeHomeOrderKey
 import com.epsilonmusic.app.constants.SYSTEM_DEFAULT
+import com.epsilonmusic.app.constants.LyricsRomanizeAsMainKey
 import com.epsilonmusic.app.constants.ShowArtistDescriptionKey
 import com.epsilonmusic.app.constants.ShowArtistSubscriberCountKey
 import com.epsilonmusic.app.constants.ShowMonthlyListenersKey
@@ -158,6 +159,8 @@ highlightKey: String? = null) {
     val (enableSimpMusic, onEnableSimpMusicChange) = rememberPreference(key = EnableSimpMusicKey, defaultValue = true)
     val (enableYouLyPlus, onEnableYouLyPlusChange) = rememberPreference(key = EnableYouLyPlusKey, defaultValue = true)
     val (enablePaxsenix, onEnablePaxsenixChange) = rememberPreference(key = EnablePaxsenixKey, defaultValue = true)
+    val (lyricsRomanizeAsMain, onLyricsRomanizeAsMainChange) =
+        rememberPreference(LyricsRomanizeAsMainKey, defaultValue = false)
     val (lyricsProviderOrder, onLyricsProviderOrderChange) = rememberPreference(
         key = LyricsProviderOrderKey,
         defaultValue = "",
@@ -1175,6 +1178,28 @@ highlightKey: String? = null) {
                         )
                     },
                     onClick = { onEnablePaxsenixChange(!enablePaxsenix) }
+                ),
+                Material3SettingsItem(
+    isHighlighted = (highlightKey == stringResource(R.string.lyrics_romanize_as_main)),
+                    icon = painterResource(R.drawable.language_korean_latin),
+                    title = { Text(stringResource(R.string.lyrics_romanize_as_main)) },
+                    description = { Text(stringResource(R.string.lyrics_romanize_as_main_desc)) },
+                    trailingContent = {
+                        Switch(
+                            checked = lyricsRomanizeAsMain,
+                            onCheckedChange = onLyricsRomanizeAsMainChange,
+                            thumbContent = {
+                                Icon(
+                                    painter = painterResource(
+                                        id = if (lyricsRomanizeAsMain) R.drawable.check else R.drawable.close
+                                    ),
+                                    contentDescription = null,
+                                    modifier = Modifier.size(SwitchDefaults.IconSize)
+                                )
+                            }
+                        )
+                    },
+                    onClick = { onLyricsRomanizeAsMainChange(!lyricsRomanizeAsMain) },
                 ),
                 Material3SettingsItem(
     isHighlighted = (highlightKey == stringResource(R.string.lyrics_provider_priority)),

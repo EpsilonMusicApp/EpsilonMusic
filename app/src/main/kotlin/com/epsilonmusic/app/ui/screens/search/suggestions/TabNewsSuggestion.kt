@@ -294,7 +294,13 @@ fun TrendingAppleMusicSection(
                                         if (base >= 1_000_000) String.format("%.1fM plays", base / 1_000_000f)
                                         else String.format("%dk plays", base / 1_000)
                                     }
-                                    Text(playCount, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f))
+                                    Text(
+                                        playCount,
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                                        maxLines = 1,
+                                        softWrap = false
+                                    )
                                 }
                             }
                             if (track.thumbnailUrl != null) {
