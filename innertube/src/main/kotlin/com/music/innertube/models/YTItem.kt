@@ -1,6 +1,7 @@
 package com.music.innertube.models
 
 import com.music.innertube.models.WatchEndpoint.WatchEndpointMusicSupportedConfigs.WatchEndpointMusicConfig.Companion.MUSIC_VIDEO_TYPE_ATV
+import com.music.innertube.models.WatchEndpoint.WatchEndpointMusicSupportedConfigs.WatchEndpointMusicConfig.Companion.MUSIC_VIDEO_TYPE_PODCAST_EPISODE
 
 sealed class YTItem {
     abstract val id: String
@@ -39,6 +40,9 @@ data class SongItem(
 ) : YTItem() {
     val isVideoSong: Boolean
         get() = musicVideoType != null && musicVideoType != MUSIC_VIDEO_TYPE_ATV
+
+    val isPodcastEpisode: Boolean
+        get() = musicVideoType == MUSIC_VIDEO_TYPE_PODCAST_EPISODE
 
     override val shareLink: String
         get() = "https://epsilonmusic.ct.ws/watch?v=$id"
