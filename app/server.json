@@ -1,5 +1,6 @@
 {
   "name": "Epsilon Music Server",
+  "operator": "nyxiereal",
   "region": "Poland",
   "serverUrl": "wss://metroserverx.meowery.eu/ws"
 }
