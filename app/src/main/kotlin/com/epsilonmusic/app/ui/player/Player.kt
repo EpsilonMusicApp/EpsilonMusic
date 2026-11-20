@@ -512,10 +512,16 @@ fun BottomSheetPlayer(
     }
     val gradientColorsCache = remember { mutableMapOf<String, List<Color>>() }
 
-    LaunchedEffect(canSkipNext) {
-        if (!canSkipNext && automix.isNotEmpty()) {
-            playerConnection.service.addToQueueAutomix(automix[0], 0)
-        }
+    // An automix pick is only a last resort to keep playback going when nothing follows. It must not
+    // be appended while the queue of a song that just started is still loading: a one-item queue
+    // takes the pick right after the current song, and it then sits in front of the whole radio that
+    // arrives a moment later (an unrelated track every time a searched song was skipped).
+    LaunchedEffect(canSkipNext, automix.firstOrNull()?.mediaId) {
+        if (canSkipNext || automix.isEmpty()) return@LaunchedEffect
+        // Let a queue that just started deliver its first page before treating the queue as empty.
+        delay(AUTOMIX_APPEND_GRACE_MS)
+        if (playerConnection.player.hasNextMediaItem()) return@LaunchedEffect
+        playerConnection.service.addToQueueAutomix(automix[0], 0)
     }
 
     val bluetoothDeviceName by produceState<String?>(initialValue = getConnectedBluetoothDeviceName(context)) {
@@ -2184,11 +2190,21 @@ fun BottomSheetPlayer(
                         val localAudioFormat = currentAudioFormat
                         val localFormatEntity = currentFormatEntity
                         val codecStr = localAudioFormat?.sampleMimeType?.substringAfter("audio/")?.uppercase() ?: localFormatEntity?.codecs?.uppercase() ?: ""
+                        // The saved format of a lossless song can be one of a past YouTube play: a song
+                        // preloaded from the addon starts without saving its own. FLAC never runs at
+                        // a YouTube bitrate, so that figure is not shown.
+                        val entityCodecs = localFormatEntity?.codecs?.lowercase() ?: ""
+                        val losslessWithStaleEntity = (codecStr == "FLAC" || codecStr == "ALAC") &&
+                            !(entityCodecs.contains("flac") || entityCodecs.contains("alac"))
                         var bitrateStr = ""
-                        if (localFormatEntity?.bitrate != null && localFormatEntity.bitrate > 0) {
+                        if (!losslessWithStaleEntity && localFormatEntity?.bitrate != null && localFormatEntity.bitrate > 0) {
                             bitrateStr = "${localFormatEntity.bitrate / 1000} kbps"
                         } else if (localAudioFormat?.bitrate != null && localAudioFormat.bitrate > 0) {
                             bitrateStr = "${localAudioFormat.bitrate / 1000} kbps"
+                        } else if ((codecStr == "FLAC" || codecStr == "ALAC") && (localAudioFormat?.sampleRate ?: 0) > 0) {
+                            // Lossless without a known bitrate: its sample rate says more.
+                            bitrateStr = "%.1f kHz".format(java.util.Locale.ROOT, localAudioFormat!!.sampleRate / 1000f)
+                                .replace(".0 kHz", " kHz")
                         }
                         listOf(codecStr, bitrateStr).filter { it.isNotEmpty() }.joinToString(" • ")
                     }
@@ -3161,3 +3177,6 @@ private fun PlayerMoreMenuButton(
         )
     }
 }
+
+/** How long an empty queue waits for a page that just started before an automix pick fills in. */
+private const val AUTOMIX_APPEND_GRACE_MS = 3_000L

@@ -36,15 +36,13 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.Alignment
-import android.content.Intent
-import android.net.Uri
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
-import androidx.core.content.ContextCompat
+import com.epsilonmusic.app.ui.utils.safeOpenUri
 import com.epsilonmusic.app.epsilonmusic.updater.extractUrls
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontFamily
@@ -280,7 +278,7 @@ fun ChangelogItem(
                 text = annotatedText,
                 onClick = { offset ->
                     annotatedText.getStringAnnotations("URL", offset, offset).firstOrNull()?.let {
-                        ContextCompat.startActivity(context, Intent(Intent.ACTION_VIEW, Uri.parse(it.item)), null)
+                        context.safeOpenUri(it.item)
                     }
                 },
                 style = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurface)
