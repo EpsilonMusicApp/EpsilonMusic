@@ -1,28 +1,14 @@
 <div align="center">
-  <img src="assets/logo-animated.gif" alt="Epsilon Music Logo" width="120"/>
+  <img src="assets/Epsilon-new.png" alt="Epsilon Music Logo" width="120"/>
 
   <h1>Epsilon Music</h1>
 
   <p><b>A modern Android music app with ad-free streaming, synced lyrics, offline playback, YouTube Music cloud sync, and an intuitive user experience.</b></p>
 
-  <p>
-    <a href="LICENSE"><img src="https://img.shields.io/badge/License-GPL--3.0-blue.svg" alt="License: GPL-3.0"/></a>
-    <a href="https://github.com/EpsilonMusicApp/EpsilonMusic/releases"><img src="https://img.shields.io/github/v/release/EpsilonMusicApp/EpsilonMusic?include_prereleases&label=Release" alt="Latest release"/></a>
-    <a href="https://github.com/EpsilonMusicApp/EpsilonMusic/stargazers"><img src="https://img.shields.io/github/stars/EpsilonMusicApp/EpsilonMusic?label=Stars" alt="GitHub stars"/></a>
-  </p>
-
   <table style="margin: 0 auto; border-collapse: collapse; border: none;">
     <tr>
       <td align="center" style="padding: 15px; border: none;">
         <a href="https://epsilonmusic.ct.ws" style="text-decoration:none;"><img src="assets/download.png" alt="Download" width="150" style="border-radius: 12px; box-shadow: 0 8px 16px rgba(0,0,0,0.2);"/></a>
-      </td>
-      <td align="center" style="padding: 15px; border: none;">
-        <a href='https://epsilon-music.en.uptodown.com/android' title='Download Epsilon Music' >
-                <img src='https://stc.utdstc.com/img/mediakit/download-aao-small.png' alt='Download Epsilon Music'>
-                </a>
-      </td>
-      <td align="center" style="padding: 15px; border: none;">
-        <a href="https://apkpure.com/p/com.epsilonmusic.app" title="Download Epsilon Music on APKPure" style="text-decoration:none;"><img src="https://img.shields.io/badge/APKPure-Download-24B574?style=for-the-badge" alt="Download on APKPure" width="150"/></a>
       </td>
     </tr>
   </table>
@@ -32,36 +18,20 @@
 
 ## Overview
 
-Epsilon Music delivers a seamless, premium listening experience built on YouTube Music's vast library — without the ads. It adds powerful extras on top: offline downloads, real-time synchronized lyrics, music recognition, YouTube Music cloud sync, smart recommendations, and Discord Rich Presence.
-
-**100% free and open source (GPL-3.0). No ads, no subscriptions, no premium tiers.**
+Epsilon Music delivers a seamless, premium listening experience by leveraging YouTube Music's vast library — without the ads. It adds powerful extras including offline downloads, real-time synchronized lyrics, environment-aware music recognition, YouTube Music cloud sync, and Discord Rich Presence integration.
 
 ---
 
 ## Table of Contents
 
 - [Overview](#overview)
-- [Highlights](#highlights)
 - [Screenshots](#screenshots)
 - [Features](#features)
-- [Download & Installation](#download--installation)
+- [Installation & Setup](#installation--setup)
 - [Translations](#translations)
 - [Community & Support](#community--support)
 - [Support the Project](#support-the-project)
 - [Legal Disclaimer & Terms of Use](#legal-disclaimer--terms-of-use)
-
----
-
-## Highlights
-
-- 🧠 **Epsilon Brain** — an intelligent engine that reads your listening momentum and queues up tracks that fit the flow.
-- 🎙️ **Epsilon Find** — recognize songs playing around you.
-- 🎧 **Create from Taste** — a daily **My Taste Mix** playlist built from your most-played songs.
-- 📊 **Listening Summary** — weekly totals, your dominant music vibe, and per-day top songs, artists and albums.
-- 👥 **Listen Together** — synchronized listening with friends, in real time.
-- 🔄 **Spotify import & recommendations** — bring your playlists over, and optionally let Spotify power your Home recommendations.
-- ☁️ **YouTube Music cloud sync** — your playlists, likes and library, synced both ways.
-- 🎤 **Word-by-word lyrics** — synchronized lyrics with multiple animations, plus AI translation with your own API key.
 
 ---
 
@@ -117,6 +87,20 @@ Epsilon Music delivers a seamless, premium listening experience built on YouTube
 
 ## Features
 
+### What's New
+
+> - **YouTube Music Cloud Sync** — Sign in with your YouTube Music account to sync your playlists, liked songs, saved albums, and library across devices.
+> - **Discord Rich Presence** — Show what you're listening to on your Discord profile.
+> - **Data Saver Mode (Beta)** — Automatically reduces data usage during playback for limited connections.
+> - **Settings Search Index** — Quickly find and navigate to any settings option instantly.
+> - **Redesigned UI** — Cleaner, faster, and more intuitive interface from the ground up.
+> - **Import from Spotify** — Bring your playlists and tracks over with ease.
+> - **Listen Together** — Sync music in real time, similar to Spotify Jam.
+> - **Local Media Support** — Play music files stored directly on your device.
+> - **Dynamic Island Support** — Enhanced playback notifications on supported Android devices.
+
+<br>
+
 <details>
 <summary><b>Streaming & Playback</b></summary>
 <br>
@@ -136,18 +120,9 @@ Epsilon Music delivers a seamless, premium listening experience built on YouTube
 <br>
 
 - **Epsilon Find** — Identify songs playing around you using advanced audio recognition.
-- **Epsilon Brain** — An intelligent engine that analyzes your listening momentum and auto-injects perfectly aligned tracks into your queue.
-- **Smart Recommendations** — Personalized suggestions based on your listening history, with an optional Spotify recommendation source.
+- **Epsilon Brain** — An intelligent, on-device engine that analyzes your listening momentum and auto-injects perfectly aligned tracks into your queue.
+- **Smart Recommendations** — Personalized suggestions based on your listening history.
 - **Comprehensive Browsing** — Explore Charts, Moods, and Genres.
-
-</details>
-
-<details>
-<summary><b>Personalization</b></summary>
-<br>
-
-- **Create from Taste** — A daily job builds your **My Taste Mix** playlist from your most-played songs (liked tracks first), expanded with similar tracks.
-- **Listening Summary** — Weekly listening totals, your dominant music vibe compared with last week, an interactive chart, and per-day drill-down into top songs, artists, and albums.
 
 </details>
 
@@ -158,7 +133,7 @@ Epsilon Music delivers a seamless, premium listening experience built on YouTube
 - **Multiple Lyric Animations** — Choose from various lyric display styles.
 - **Word-by-Word Lyrics** — Precise per-word synchronization.
 - **Lyrics+** — New lyrics provider for improved accuracy and coverage.
-- **AI Translation** — Translate lyrics with your own API key (OpenRouter, DeepL). No AI keys are bundled with the app.
+- **AI Translation** — Built-in translation integration for lyrics in any language.
 
 </details>
 
@@ -179,7 +154,7 @@ Epsilon Music delivers a seamless, premium listening experience built on YouTube
 
 - **Discord Rich Presence** — Display your current track on your Discord profile with customizable buttons and assets.
 - **Music Sharing via Odesli** — Share songs as Song.link for cross-platform listening.
-- **Set as Ringtone** — Directly set any song as your device ringtone, with a built-in trimmer.
+- **Set as Ringtone** — Directly set any song as your device ringtone.
 - **Last.fm Scrobbling** — Scrobble your plays to your Last.fm account.
 - **ListenBrainz Support** — Submit listens to ListenBrainz.
 
@@ -191,8 +166,6 @@ Epsilon Music delivers a seamless, premium listening experience built on YouTube
 
 - **Pause on Mute** — Auto-pause when your device is muted.
 - **Resume on Bluetooth** — Playback resumes when headphones or earbuds reconnect.
-- **Listen Together** — Sync music in real time with friends, similar to Spotify Jam.
-- **Dynamic Island Support** — Enhanced playback notifications on supported Android devices.
 
 </details>
 
@@ -211,12 +184,11 @@ Epsilon Music delivers a seamless, premium listening experience built on YouTube
 
 ---
 
-## Download & Installation
+## Installation & Setup
 
-- **Website:** [epsilonmusic.ct.ws](https://epsilonmusic.ct.ws)
-- **GitHub Releases:** download the latest APK from the [Releases Page](https://github.com/EpsilonMusicApp/EpsilonMusic/releases/latest)
-- **Uptodown:** [Epsilon Music on Uptodown](https://epsilon-music.en.uptodown.com/android)
-- **APKPure:** [Epsilon Music on APKPure](https://apkpure.com/p/com.epsilonmusic.app)
+### Android Installation
+
+Download the latest pre-compiled APK from the [Releases Page](https://github.com/EpsilonMusicApp/EpsilonMusic/releases/latest).
 
 <details>
 <summary><b>Building from Source</b></summary>
@@ -235,32 +207,27 @@ Epsilon Music delivers a seamless, premium listening experience built on YouTube
    ```
    *(For detailed paths on Windows/macOS/Linux, refer to [SETUP.md](SETUP.md))*
 
-3. **Choose a Variant**
-   Epsilon Music ships in two variants:
-   - **GMS** — the full build: Google Cast + Firebase Analytics/Crashlytics enabled.
-   - **FOSS** — no Google Play Services, no Firebase, no Cast. This is the build prepared for F-Droid / IzzyOnDroid.
+3. **Firebase Configuration (Optional)**
+   Firebase is used for analytics and crash reporting. See the instructions in [SETUP.md](SETUP.md#3-configure-firebase-optional) for adding your `google-services.json`. The included config is for the `epsilonmusic-b7b95` Firebase project with package `com.epsilonmusic.app`.
 
-4. **Firebase Configuration (Optional, GMS only)**
-   Firebase is used for analytics and crash reporting in the GMS variant. See the instructions in [SETUP.md](SETUP.md#3-configure-firebase-optional) for adding your `google-services.json`. The included config is for the `epsilonmusic-b7b95` Firebase project with package `com.epsilonmusic.app`. FOSS builds skip Firebase entirely — no config needed.
-
-5. **Build the Application**
-   - Universal **GMS** release:
+4. **Build the Application**
+   Epsilon Music ships as a single **GMS** build variant (Google Cast + Firebase enabled). The previous FOSS flavor has been removed.
+   
+   - To build the **Universal GMS Debug** variant:
+     ```bash
+     ./gradlew assembleUniversalGmsDebug
+     ```
+   - To build the **Universal GMS Release** variant:
      ```bash
      ./gradlew assembleUniversalGmsRelease
      ```
-   - Universal **FOSS** release:
-     ```bash
-     ./gradlew assembleUniversalFossRelease
-     ```
-   - ARM64 **FOSS** release (the store build):
-     ```bash
-     ./gradlew assembleArm64FossRelease
-     ```
-   *(For debug builds, signing config, or other options, refer to [SETUP.md](SETUP.md))*
+   *(For optimized ARM64 builds, signing config, or other options, refer to [SETUP.md](SETUP.md))*
 
 </details>
 
 ---
+
+
 
 ## Translations
 
@@ -288,6 +255,9 @@ If Epsilon Music has been useful to you, consider supporting its development.
 <div align="center">
   <a href="https://buymeacoffee.com/vihaanangaria" style="text-decoration:none;">
     <img src="assets/bmac.png" alt="Buy Me A Coffee" width="180" style="border-radius: 12px; box-shadow: 0 8px 16px rgba(0,0,0,0.2);"/>
+  </a>
+  <a href="https://paypal.me/VihaanAngaria007" style="text-decoration:none;">
+    <img src="https://img.shields.io/badge/PayPal-00457C?style=for-the-badge&logo=paypal&logoColor=white" alt="PayPal" width="180" style="border-radius: 12px; box-shadow: 0 8px 16px rgba(0,0,0,0.2);"/>
   </a>
 </div>
 
