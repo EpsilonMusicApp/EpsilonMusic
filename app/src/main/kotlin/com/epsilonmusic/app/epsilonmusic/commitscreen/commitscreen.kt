@@ -1,7 +1,5 @@
 package com.epsilonmusic.app.epsilonmusic.commitscreen
 
-import android.content.Intent
-import android.net.Uri
 import android.util.Log
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.foundation.background
@@ -57,11 +55,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import coil3.compose.AsyncImage
 import com.epsilonmusic.app.LocalPlayerAwareWindowInsets
 import com.epsilonmusic.app.R
+import com.epsilonmusic.app.ui.utils.safeOpenUri
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -220,11 +218,7 @@ fun CommitScreen(
                             CommitItem(
                                 commit = commit,
                                 onClick = {
-                                    ContextCompat.startActivity(
-                                        context,
-                                        Intent(Intent.ACTION_VIEW, Uri.parse(commit.htmlUrl)),
-                                        null
-                                    )
+                                    context.safeOpenUri(commit.htmlUrl)
                                 }
                             )
                             if (index < commits.lastIndex) {

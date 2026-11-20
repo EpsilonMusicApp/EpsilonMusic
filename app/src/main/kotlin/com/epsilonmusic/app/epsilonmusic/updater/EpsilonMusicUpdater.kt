@@ -48,6 +48,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.graphics.Color
+import com.epsilonmusic.app.ui.utils.safeOpenUri
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.navigation.NavHostController
@@ -485,7 +486,7 @@ fun UpdateScreen(navController: NavHostController) {
                                             text = annotatedText,
                                             onClick = { offset ->
                                                 annotatedText.getStringAnnotations("URL", offset, offset).firstOrNull()?.let {
-                                                    ContextCompat.startActivity(context, Intent(Intent.ACTION_VIEW, Uri.parse(it.item)), null)
+                                                    context.safeOpenUri(it.item)
                                                 }
                                             },
                                             style = MaterialTheme.typography.bodyMedium.copy(

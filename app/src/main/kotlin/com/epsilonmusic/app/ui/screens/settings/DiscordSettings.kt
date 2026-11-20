@@ -4,8 +4,6 @@
 
 package com.epsilonmusic.app.ui.screens.settings
 
-import android.content.Intent
-import android.net.Uri
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.animateContentSize
 
@@ -61,6 +59,7 @@ import com.epsilonmusic.app.ui.component.PreferenceGroupTitle
 import com.epsilonmusic.app.ui.theme.PlayerColorExtractor
 import com.epsilonmusic.app.ui.theme.extractThemeColor
 import com.epsilonmusic.app.ui.utils.backToMain
+import com.epsilonmusic.app.ui.utils.safeOpenUri
 import com.epsilonmusic.app.utils.makeTimeString
 import com.epsilonmusic.app.utils.rememberEnumPreference
 import com.epsilonmusic.app.utils.rememberPreference
@@ -1396,7 +1395,7 @@ fun RichPresence(
                             enabled = !resolvedButton1Url.isNullOrBlank(),
                             onClick = {
                                 resolvedButton1Url?.let {
-                                    context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(it)))
+                                    context.safeOpenUri(it)
                                 }
                             },
                             modifier = Modifier.fillMaxWidth(),
@@ -1411,7 +1410,7 @@ fun RichPresence(
                             enabled = !resolvedButton2Url.isNullOrBlank(),
                             onClick = {
                                 resolvedButton2Url?.let {
-                                    context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(it)))
+                                    context.safeOpenUri(it)
                                 }
                             },
                             modifier = Modifier.fillMaxWidth(),

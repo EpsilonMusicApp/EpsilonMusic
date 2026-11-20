@@ -3,8 +3,6 @@ package com.epsilonmusic.app.epsilonmusic.changelog
 
 
 import android.content.Context
-import android.content.Intent
-import android.net.Uri
 import android.util.Log
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.foundation.background
@@ -77,12 +75,12 @@ import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import coil3.compose.AsyncImage
 import com.epsilonmusic.app.BuildConfig
 import com.epsilonmusic.app.LocalPlayerAwareWindowInsets
 import com.epsilonmusic.app.R
+import com.epsilonmusic.app.ui.utils.safeOpenUri
 import com.epsilonmusic.app.epsilonmusic.updater.extractUrls
 import com.epsilonmusic.app.ui.component.parseMarkdown
 import kotlinx.coroutines.Dispatchers
@@ -429,7 +427,7 @@ fun ChangelogScreen(
                                                     text = annotatedText,
                                                     onClick = { offset ->
                                                         annotatedText.getStringAnnotations("URL", offset, offset).firstOrNull()?.let {
-                                                            ContextCompat.startActivity(context, Intent(Intent.ACTION_VIEW, Uri.parse(it.item)), null)
+                                                            context.safeOpenUri(it.item)
                                                         }
                                                     },
                                                     style = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface)
