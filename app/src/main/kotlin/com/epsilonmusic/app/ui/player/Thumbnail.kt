@@ -101,6 +101,7 @@ import com.epsilonmusic.app.canvas.TidalCanvasProvider
 import com.epsilonmusic.app.canvas.CanvasArtwork
 import com.epsilonmusic.app.extensions.metadata
 import com.epsilonmusic.app.ui.utils.resize
+import com.epsilonmusic.app.ui.utils.ytimgFallbackUrl
 import com.epsilonmusic.app.utils.rememberPreference
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -934,9 +935,11 @@ private fun ThumbnailImage(
             error = painterResource(R.drawable.ic_launcher_nobg),
             fallback = painterResource(R.drawable.ic_launcher_nobg),
             onError = {
+                // Walk the same ladder the loader uses: maxresdefault -> hq720 -> hqdefault, instead of
+                // dropping straight to the 480x360 variant that looks soft and squashed on a phone.
                 val url = currentUrl
-                if (url != null && url.contains("maxresdefault.jpg")) {
-                    currentUrl = url.replace("maxresdefault.jpg", "hqdefault.jpg")
+                if (url != null) {
+                    ytimgFallbackUrl(url)?.let { currentUrl = it }
                 }
             },
             modifier = Modifier.fillMaxSize()

@@ -35,6 +35,7 @@ import com.epsilonmusic.app.LocalPlayerAwareWindowInsets
 import com.epsilonmusic.app.R
 import com.epsilonmusic.app.listentogether.ChatMessagePayload
 import com.epsilonmusic.app.listentogether.RepliedMessage
+import com.epsilonmusic.app.ui.utils.safeOpenUri
 import androidx.compose.ui.text.*
 import androidx.compose.ui.text.style.TextDecoration
 import android.net.Uri
@@ -444,7 +445,7 @@ private fun formatMessageWithLinks(text: String): AnnotatedString {
                         context.startActivity(intent)
                         Toast.makeText(context, "Playing now", Toast.LENGTH_SHORT).show()
                     } catch (e: Exception) {
-                        context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+                        context.safeOpenUri(url)
                     }
                 }
             )
