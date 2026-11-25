@@ -758,11 +758,11 @@ private fun RoomStatusCard(
             if (isHost) {
                 Spacer(modifier = Modifier.height(16.dp))
                 val inviteLink = remember(roomCode) {
-                    // Deep link handled by AndroidManifest (scheme "epsilonmusic", host
-                    // "listen") and parsed by MainActivity.handleDeepLinkIntent, which
-                    // auto-joins the room. The old https invite URL pointed to a
-                    // non-existent onrender.com host and never resolved.
-                    "epsilonmusic://listen?code=$roomCode"
+                    // https invite link: opens the app directly for friends who
+                    // have it (App Link, parsed by MainActivity.handleDeepLinkIntent
+                    // which auto-joins the room) and shows a landing page with a
+                    // download button for friends who don't.
+                    "https://epsilonmusic.ct.ws/listen?code=$roomCode"
                 }
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
