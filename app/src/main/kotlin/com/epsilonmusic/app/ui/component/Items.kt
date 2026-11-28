@@ -1101,6 +1101,7 @@ fun YouTubeListItem(
             isSelected = isSelected,
             isActive = isActive,
             shape = shape,
+            color = color,
             drawHighlight = drawHighlight
         )
     }

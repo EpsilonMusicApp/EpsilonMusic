@@ -23,9 +23,9 @@ import kotlin.math.floor
  * Uses sp_dc cookies (extracted from WebView login) to obtain access tokens
  * without requiring a Spotify Developer Client ID.
  *
- * Token acquisition requires a TOTP (Time-based One-Time Password) generated
- * from a shared secret that Spotify rotates periodically. The secret and its
- * version are fetched from a community-maintained GitHub Gist.
+ * Token acquisition requires a TOTP (Time-based One-Time Password) generated from a shared secret
+ * that Spotify rotates periodically. The secret and its version are cached from a known default
+ * and refreshed when needed from a community-maintained GitHub Gist.
  *
  * Reference: https://github.com/sonic-liberation/spotube-plugin-spotify
  */
@@ -33,7 +33,7 @@ object SpotifyAuth {
     private const val TOKEN_URL = "https://open.spotify.com/api/token"
     private const val SERVER_TIME_URL = "https://open.spotify.com/api/server-time"
     private const val NUANCE_GIST_URL =
-        "https://gist.githubusercontent.com/sonic-liberation/22ed9c6ba463899e933427f7de1f0eef/raw/"
+        "https://api.github.com/gists/22ed9c6ba463899e933427f7de1f0eef"
     private const val USER_AGENT =
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
 
@@ -47,22 +47,49 @@ object SpotifyAuth {
     @Serializable
     private data class Nuance(val s: String, val v: Int)
 
+    // Known working fallback nuance secret so token generation doesn't block on GitHub.
+    // This is the same community-maintained secret the app already fetches from the
+    // public Gist at runtime; it is only a fallback when that fetch fails.
+    private val DEFAULT_NUANCE =
+        Nuance(
+            s = "GM3TMMJTGYZTQNZVGM4DINJZHA4TGOBYGMZTCMRTGEYDSMJRHE4TEOBUG4YTCMRUGQ4DQOJUGQYTAMRRGA2TCMJSHE3TCMBY",
+            v = 61,
+        )
+
+    @Volatile
+    private var cachedNuance: Nuance = DEFAULT_NUANCE
+
+    @Volatile
+    private var serverTimeOffsetSec: Long? = null
+
+    @Serializable
+    private data class GistFile(val content: String)
+
+    @Serializable
+    private data class GistFiles(val files: Map<String, GistFile>)
+
     @Serializable
     private data class ServerTimeResponse(val serverTime: Long)
 
     /**
      * Fetches an internal web-player access token using session cookies and TOTP.
-     *
-     * 1. Fetches the TOTP secret from the community Gist
-     * 2. Gets the server time from Spotify
+     * 1. Uses cached nuance secret (or refreshes from gist if [forceRefreshNuance] is true)
+     * 2. Gets the server time (cached offset or local epoch fallback)
      * 3. Generates a 6-digit TOTP (SHA1, 30s interval)
      * 4. Calls /api/token with the TOTP and sp_dc cookie
+     * 5. Automatically retries once with [forceRefreshNuance] = true if an anonymous token is received
      */
     suspend fun fetchAccessToken(
         spDc: String,
         spKey: String = "",
+        forceRefreshNuance: Boolean = false,
     ): Result<SpotifyInternalToken> = runCatching {
-        val nuance = fetchNuance()
+        val nuance =
+            if (forceRefreshNuance) {
+                refreshNuance()
+            } else {
+                cachedNuance
+            }
         val serverTimeSec = fetchServerTime()
         val totp = generateTotp(nuance.s, serverTimeSec)
 
@@ -89,6 +116,9 @@ object SpotifyAuth {
         val token = json.decodeFromString<SpotifyInternalToken>(body)
 
         if (token.isAnonymous || token.accessToken.isBlank()) {
+            if (!forceRefreshNuance) {
+                return fetchAccessToken(spDc, spKey, forceRefreshNuance = true)
+            }
             throw Spotify.SpotifyException(
                 401,
                 "Received anonymous token — sp_dc cookie is invalid or expired",
@@ -98,32 +128,39 @@ object SpotifyAuth {
         token
     }
 
-    private suspend fun fetchNuance(): Nuance = withContext(Dispatchers.IO) {
-        val body = try {
-            httpGet(NUANCE_GIST_URL, emptyMap())
-        } catch (e: Exception) {
-            throw Spotify.SpotifyException(
-                503,
-                "Failed to fetch TOTP secret from gist: ${e.message}",
-            )
+    private suspend fun refreshNuance(): Nuance =
+        withContext(Dispatchers.IO) {
+            try {
+                val body = httpGet(NUANCE_GIST_URL, emptyMap())
+                val gist = json.decodeFromString<GistFiles>(body)
+                val nuancesJson = gist.files.values.firstOrNull()?.content
+                    ?: throw Spotify.SpotifyException(500, "Gist has no files")
+                val nuances = json.decodeFromString<List<Nuance>>(nuancesJson)
+                val latest = nuances.maxByOrNull { it.v } ?: DEFAULT_NUANCE
+                cachedNuance = latest
+                latest
+            } catch (e: Exception) {
+                cachedNuance
+            }
         }
-        val nuances = json.decodeFromString<List<Nuance>>(body)
-        nuances.maxByOrNull { it.v }
-            ?: throw Spotify.SpotifyException(500, "No nuance data found in gist")
-    }
 
-    private suspend fun fetchServerTime(): Long = withContext(Dispatchers.IO) {
-        val body = try {
-            httpGet(SERVER_TIME_URL, emptyMap())
-        } catch (e: Exception) {
-            throw Spotify.SpotifyException(
-                503,
-                "Failed to fetch Spotify server time: ${e.message}",
-            )
+    private suspend fun fetchServerTime(): Long =
+        withContext(Dispatchers.IO) {
+            val now = System.currentTimeMillis() / 1000
+            serverTimeOffsetSec?.let { offset ->
+                return@withContext now + offset
+            }
+            val serverTime =
+                try {
+                    val body = httpGet(SERVER_TIME_URL, emptyMap())
+                    val response = json.decodeFromString<ServerTimeResponse>(body)
+                    response.serverTime
+                } catch (e: Exception) {
+                    now
+                }
+            serverTimeOffsetSec = serverTime - now
+            serverTime
         }
-        val response = json.decodeFromString<ServerTimeResponse>(body)
-        response.serverTime
-    }
 
     /**
      * Generates a 6-digit TOTP using HMAC-SHA1 (RFC 6238).

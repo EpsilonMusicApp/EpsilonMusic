@@ -445,7 +445,7 @@ private fun SpotifyLoginSheet(
     }
 }
 
-private const val SpotifyLoginUserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+private const val SpotifyLoginUserAgent = "Mozilla/5.0 (Linux; Android 14; SM-S921U; Build/UP1A.231005.007) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Mobile Safari/537.36"
 
 private fun WebView.destroySpotifyLoginWebView() {
     stopLoading()
@@ -564,7 +564,7 @@ private fun shouldOverrideSpotifyLoginUrl(
     url: String?,
     captureCookies: (String?) -> Boolean,
 ): Boolean {
-    if (captureCookies(url)) return true
+    captureCookies(url)
 
     val targetUrl = url?.takeIf(String::isNotBlank) ?: return false
     if (targetUrl.isWebViewLoadableUrl()) return false

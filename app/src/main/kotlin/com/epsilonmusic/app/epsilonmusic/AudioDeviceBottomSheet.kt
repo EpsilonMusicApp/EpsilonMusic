@@ -46,6 +46,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.gestures.detectDragGestures
@@ -130,11 +131,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.epsilonmusic.app.R
 import com.epsilonmusic.app.LocalPlayerConnection
 import com.epsilonmusic.app.constants.AudioQuality
 import com.epsilonmusic.app.constants.AudioQualityKey
+import com.epsilonmusic.app.constants.PreferredAudioAddonIdKey
+import com.epsilonmusic.app.extensions.AddonEndpoint
+import com.epsilonmusic.app.ui.screens.settings.ExtensionSettingsViewModel
 import com.epsilonmusic.app.utils.rememberEnumPreference
+import com.epsilonmusic.app.utils.rememberPreference
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
@@ -169,6 +175,11 @@ fun AudioDeviceBottomSheet(onDismiss: () -> Unit, modifier: Modifier = Modifier)
 
     val playerConnection = LocalPlayerConnection.current
     val service = playerConnection?.service
+
+    val extensionSettingsViewModel: ExtensionSettingsViewModel = hiltViewModel()
+    val availableAddons by extensionSettingsViewModel.addons.collectAsState()
+    val (preferredAddonId, onPreferredAddonIdChange) =
+        rememberPreference(key = PreferredAudioAddonIdKey, defaultValue = "")
 
     // Cast volume support
     val castHandler = remember(service) {
@@ -352,6 +363,16 @@ fun AudioDeviceBottomSheet(onDismiss: () -> Unit, modifier: Modifier = Modifier)
                 .padding(bottom = 24.dp)
                 .animateContentSize()
         ) {
+            val enabledAddons = availableAddons.filter { it.enabled }
+            if (enabledAddons.isNotEmpty()) {
+                ExtensionAudioSourceSelector(
+                    addons = enabledAddons,
+                    preferredAddonId = preferredAddonId,
+                    onPreferredAddonChange = onPreferredAddonIdChange
+                )
+                Spacer(modifier = Modifier.height(24.dp))
+            }
+
             when {
                 isLoading -> {
                     Box(
@@ -1331,6 +1352,52 @@ fun DeviceSelector(
                     Text(
                         text = if (device.type == AudioDeviceType.PHONE_SPEAKER) stringResource(R.string.this_phone) else device.name,
                         style = MaterialTheme.typography.labelLarge,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+private fun ExtensionAudioSourceSelector(
+    addons: List<AddonEndpoint>,
+    preferredAddonId: String,
+    onPreferredAddonChange: (String) -> Unit,
+) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Text(
+            text = "Audio Source",
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.padding(bottom = 12.dp).fillMaxWidth()
+        )
+
+        FlowRow(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            ToggleButton(
+                checked = preferredAddonId.isBlank(),
+                onCheckedChange = { if (it) onPreferredAddonChange("") },
+                modifier = Modifier.height(44.dp).semantics { role = Role.RadioButton }
+            ) {
+                Text("Automatic", style = MaterialTheme.typography.bodyMedium)
+            }
+
+            addons.forEach { addon ->
+                ToggleButton(
+                    checked = preferredAddonId == addon.id,
+                    onCheckedChange = { if (it) onPreferredAddonChange(addon.id) },
+                    modifier = Modifier.height(44.dp).semantics { role = Role.RadioButton }
+                ) {
+                    Text(
+                        text = addon.name,
+                        style = MaterialTheme.typography.bodyMedium,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )

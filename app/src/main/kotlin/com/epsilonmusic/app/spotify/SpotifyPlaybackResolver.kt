@@ -9,6 +9,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import timber.log.Timber
+import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -123,6 +124,25 @@ class SpotifyPlaybackResolver @Inject constructor() {
     }
 
     fun getCached(trackId: String): SongItem? = synchronized(trackCache) { trackCache[trackId] }
+
+    suspend fun resolveTracks(
+        tracks: List<SpotifyTrack>,
+        hideExplicit: Boolean = false
+    ): Map<String, SongItem> = coroutineScope {
+        val uniqueTracks = tracks.distinctBy { it.id }
+        val resultMap = ConcurrentHashMap<String, SongItem>()
+
+        uniqueTracks.map { track ->
+            async {
+                val resolved = resolveTrack(track, hideExplicit)
+                if (resolved != null) {
+                    resultMap[track.id] = resolved
+                }
+            }
+        }.awaitAll()
+
+        resultMap
+    }
 
     suspend fun resolveAndFilter(
         tracks: List<SpotifyTrack>,

@@ -126,7 +126,7 @@ interface DatabaseDao {
     fun likedSongsByRowIdAsc(): Flow<List<Song>>
 
     @Transaction
-    @Query("SELECT * FROM song WHERE liked ORDER BY likedDate")
+    @Query("SELECT * FROM song WHERE liked ORDER BY likedDate ASC, rowId ASC")
     fun likedSongsByCreateDateAsc(): Flow<List<Song>>
 
     @Transaction
@@ -1044,9 +1044,17 @@ interface DatabaseDao {
         songIds: List<String>,
     ): List<String>
 
+    @Query(
+        "SELECT COALESCE(MAX(position), -1) + 1 FROM playlist_song_map WHERE playlistId = :playlistId",
+    )
+    fun nextPlaylistPosition(playlistId: String): Int
+
     @Transaction
     fun addSongToPlaylist(playlist: Playlist, songIds: List<String>) {
-        var position = playlist.songCount
+        // Compute the next position from the table itself, not from playlist.songCount:
+        // that snapshot goes stale and, after removals that leave position gaps, it
+        // collides with an existing position, corrupting ORDER BY position.
+        var position = nextPlaylistPosition(playlist.id)
         songIds.forEach { id ->
             insert(
                 PlaylistSongMap(

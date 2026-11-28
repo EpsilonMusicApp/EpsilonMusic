@@ -10,6 +10,10 @@ import com.epsilonmusic.app.ui.screens.CrashActivity
 import timber.log.Timber
 import java.io.PrintWriter
 import java.io.StringWriter
+import java.net.SocketException
+import java.net.SocketTimeoutException
+import java.net.UnknownHostException
+import javax.net.ssl.SSLException
 import kotlin.system.exitProcess
 
 class CrashHandler private constructor(
@@ -37,6 +41,14 @@ class CrashHandler private constructor(
                 }
                 return
             }
+            return
+        }
+
+        if (thread != android.os.Looper.getMainLooper().thread && isNetworkFailure(throwable)) {
+            // A connection dropped mid-request on a background thread (e.g. Wi-Fi/data switch, or the
+            // system cutting background network). The request has already failed; that thread or
+            // coroutine is finished and the rest of the app is unaffected, so don't kill the process.
+            Timber.w(throwable, "Suppressed uncaught network failure on thread ${thread.name}")
             return
         }
 
@@ -71,6 +83,27 @@ class CrashHandler private constructor(
             Timber.e(e, "Error handling crash")
             defaultHandler?.uncaughtException(thread, throwable)
         }
+    }
+
+    /**
+     * True if [throwable] or one of its causes is a connection-level network error. Walks the whole
+     * cause chain, stopping only when a throwable repeats, so cyclic chains can't loop forever.
+     */
+    private fun isNetworkFailure(throwable: Throwable): Boolean {
+        val visited = java.util.Collections.newSetFromMap(java.util.IdentityHashMap<Throwable, Boolean>())
+        var current: Throwable? = throwable
+        while (current != null && visited.add(current)) {
+            if (
+                current is SocketException ||
+                    current is SocketTimeoutException ||
+                    current is UnknownHostException ||
+                    current is SSLException
+            ) {
+                return true
+            }
+            current = current.cause
+        }
+        return false
     }
 
     private fun buildCrashLog(throwable: Throwable): String {

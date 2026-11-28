@@ -89,10 +89,21 @@ class SpotifyImportRepository @Inject constructor(
                             accountAvatarUrl = refreshed[SpotifyAccountAvatarUrlKey],
                         )
                     },
-                    onFailure = {
-                        if (it is CancellationException) throw it
-                        reportException(it)
-                        SpotifyImportSession()
+                    onFailure = { error ->
+                        if (error is CancellationException) throw error
+                        reportException(error)
+                        if ((error as? Spotify.SpotifyException)?.statusCode == 401) {
+                            logout()
+                            SpotifyImportSession(isAuthenticated = false)
+                        } else {
+                            // Transient network failure: retain cached session credentials
+                            val cached = context.dataStore.data.first()
+                            SpotifyImportSession(
+                                isAuthenticated = true,
+                                accountName = cached[SpotifyAccountNameKey].orEmpty(),
+                                accountAvatarUrl = cached[SpotifyAccountAvatarUrlKey],
+                            )
+                        }
                     },
                 )
         }
