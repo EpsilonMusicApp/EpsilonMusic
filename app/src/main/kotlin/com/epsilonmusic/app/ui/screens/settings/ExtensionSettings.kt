@@ -1,6 +1,7 @@
 package com.epsilonmusic.app.ui.screens.settings
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -12,11 +13,14 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
@@ -40,6 +44,7 @@ import coil3.compose.SubcomposeAsyncImage
 import com.epsilonmusic.app.LocalPlayerAwareWindowInsets
 import com.epsilonmusic.app.R
 import com.epsilonmusic.app.constants.PreferExtensionAudioKey
+import com.epsilonmusic.app.constants.PreferredAudioAddonIdKey
 import com.epsilonmusic.app.extensions.AddonEndpoint
 import com.epsilonmusic.app.extensions.ExtensionManager
 import com.epsilonmusic.app.ui.component.IconButton
@@ -105,6 +110,10 @@ fun ExtensionSettingsScreen(
     var showDialog by remember { mutableStateOf(false) }
     val (preferExtensionAudio, onPreferExtensionAudioChange) =
         rememberPreference(key = PreferExtensionAudioKey, defaultValue = true)
+    val (preferredAddonId, onPreferredAddonIdChange) =
+        rememberPreference(key = PreferredAudioAddonIdKey, defaultValue = "")
+    var preferredAddonMenuExpanded by remember { mutableStateOf(false) }
+    val selectedAddon = addons.firstOrNull { it.id == preferredAddonId && it.enabled }
     val scrollState = rememberScrollState()
 
     Column(
@@ -136,6 +145,55 @@ fun ExtensionSettingsScreen(
         )
 
         Spacer(Modifier.height(16.dp))
+
+        if (addons.any { it.enabled }) {
+            Material3SettingsGroup(
+                title = "Audio Source",
+                items = listOf(
+                    Material3SettingsItem(
+                        title = { Text("Preferred Extension") },
+                        description = {
+                            Text(
+                                selectedAddon?.name ?: "Automatic — use the first available extension",
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        },
+                        icon = painterResource(R.drawable.extension),
+                        trailingContent = {
+                            Box {
+                                TextButton(onClick = { preferredAddonMenuExpanded = true }) {
+                                    Text(selectedAddon?.name ?: "Automatic")
+                                }
+                                DropdownMenu(
+                                    expanded = preferredAddonMenuExpanded,
+                                    onDismissRequest = { preferredAddonMenuExpanded = false }
+                                ) {
+                                    DropdownMenuItem(
+                                        text = { Text("Automatic") },
+                                        onClick = {
+                                            onPreferredAddonIdChange("")
+                                            preferredAddonMenuExpanded = false
+                                        }
+                                    )
+                                    addons.filter { it.enabled }.forEach { addon ->
+                                        DropdownMenuItem(
+                                            text = { Text(addon.name) },
+                                            onClick = {
+                                                onPreferredAddonIdChange(addon.id)
+                                                preferredAddonMenuExpanded = false
+                                            }
+                                        )
+                                    }
+                                }
+                            }
+                        },
+                        onClick = { preferredAddonMenuExpanded = true }
+                    )
+                )
+            )
+            Spacer(Modifier.height(16.dp))
+        }
 
         if (addons.isNotEmpty()) {
             Material3SettingsGroup(

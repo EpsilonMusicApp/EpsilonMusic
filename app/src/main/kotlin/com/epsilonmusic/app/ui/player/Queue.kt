@@ -1162,10 +1162,7 @@ fun Queue(
                                     dismissJob?.cancel()
                                     dismissJob = coroutineScope.launch {
                                         val snackbarResult = snackbarHostState.showSnackbar(
-                                            message = context.getString(
-                                                R.string.removed_song_from_playlist,
-                                                currentItem.mediaItem.metadata?.title,
-                                            ),
+                                            message = context.getString(R.string.removed_from_queue),
                                             actionLabel = context.getString(R.string.undo),
                                             duration = SnackbarDuration.Short,
                                         )

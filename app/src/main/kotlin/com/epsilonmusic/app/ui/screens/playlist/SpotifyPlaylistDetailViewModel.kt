@@ -3,8 +3,10 @@ package com.epsilonmusic.app.ui.screens.playlist
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.epsilonmusic.app.models.toMediaMetadata
 import com.epsilonmusic.app.spotify.Spotify
 import com.epsilonmusic.app.spotify.SpotifyPlaybackResolver
+import com.epsilonmusic.app.spotify.SpotifyQueue
 import com.epsilonmusic.app.spotify.models.SpotifyTrack
 import com.epsilonmusic.app.spotifyimport.SpotifyImportRepository
 import com.epsilonmusic.app.utils.reportException
@@ -12,10 +14,12 @@ import com.music.innertube.models.SongItem
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -90,6 +94,7 @@ constructor(
             error = null,
           )
         }
+        prewarmTracks(tracksList)
       } catch (e: Exception) {
         reportException(e)
         _uiState.update {
@@ -98,6 +103,58 @@ constructor(
             error = e.message ?: "Couldn't load tracks",
           )
         }
+      }
+    }
+  }
+
+  private fun prewarmTracks(tracks: List<SpotifyTrack>) {
+    viewModelScope.launch(Dispatchers.IO) {
+      val toPrewarm = tracks.take(15)
+      for (t in toPrewarm) {
+        if (!isActive) break
+        if (spotifyPlaybackResolver.getCached(t.id) == null) {
+          spotifyPlaybackResolver.resolveTrack(t)
+        }
+      }
+    }
+  }
+
+  fun playTrack(
+    track: SpotifyTrack,
+    tracks: List<SpotifyTrack> = _uiState.value.tracks,
+    startIndex: Int? = null,
+    onQueueReady: (SpotifyQueue) -> Unit,
+    onError: () -> Unit = {},
+  ) {
+    val effectiveIndex = startIndex ?: tracks.indexOfFirst { it.id == track.id }.coerceAtLeast(0)
+    viewModelScope.launch {
+      _uiState.update { it.copy(resolvingTrackId = track.id) }
+      val nextTrack = tracks.getOrNull(effectiveIndex + 1)
+      val prevTrack = if (effectiveIndex > 0) tracks.getOrNull(effectiveIndex - 1) else null
+
+      val resolved: SongItem? = withContext(Dispatchers.IO) {
+        if (nextTrack != null && spotifyPlaybackResolver.getCached(nextTrack.id) == null) {
+          async { spotifyPlaybackResolver.resolveTrack(nextTrack) }
+        }
+        if (prevTrack != null && spotifyPlaybackResolver.getCached(prevTrack.id) == null) {
+          async { spotifyPlaybackResolver.resolveTrack(prevTrack) }
+        }
+        spotifyPlaybackResolver.resolveTrack(track)
+      }
+      _uiState.update { it.copy(resolvingTrackId = null) }
+
+      if (resolved != null) {
+        onQueueReady(
+          SpotifyQueue(
+            tracks = tracks,
+            startIndex = effectiveIndex,
+            title = _uiState.value.title.ifBlank { initialTitle },
+            preloadItem = resolved.toMediaMetadata(),
+            resolver = spotifyPlaybackResolver,
+          )
+        )
+      } else {
+        onError()
       }
     }
   }
